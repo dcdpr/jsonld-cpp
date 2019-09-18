@@ -23,6 +23,16 @@ namespace JsonLdUtils {
 
     bool isRelativeIri(const std::string& value);
 
+    bool isList(json j);
+
+    bool isValue(json j);
+
+    bool isObject(json j);
+
+    bool deepContains(json values, json value);
+
+    void mergeValue(json & obj, std::string key, json value);
+
 
 }
 

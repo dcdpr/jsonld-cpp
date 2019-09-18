@@ -1,5 +1,9 @@
 #include "JsonLdUtils.cpp"
 #include "testHelpers.h"
+#include "json.hpp"
+#include "JsonLdOptions.h"
+
+using nlohmann::json;
 
 #include <gtest/gtest.h>
 #pragma clang diagnostic push
@@ -8,9 +12,6 @@
 #pragma GCC diagnostic ignored "-Wall"
 #pragma GCC diagnostic ignored "-Wextra"
 #include <rapidcheck/gtest.h>
-#include <json.hpp>
-#include <JsonLdOptions.h>
-
 #pragma clang diagnostic pop
 #pragma GCC diagnostic pop
 

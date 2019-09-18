@@ -1,5 +1,6 @@
 #include "JsonLdProcessor.cpp"
 #include "testHelpers.h"
+#include <fstream>
 
 #include <gtest/gtest.h>
 #pragma clang diagnostic push
@@ -8,18 +9,17 @@
 #pragma GCC diagnostic ignored "-Wall"
 #pragma GCC diagnostic ignored "-Wextra"
 #include <rapidcheck/gtest.h>
-#include <fstream>
-
 #pragma clang diagnostic pop
 #pragma GCC diagnostic pop
 
 void performExpandTest(int testNumber) {
 
+    std::string testName = "expand";
     std::string testNumberStr = getTestNumberStr(testNumber);
 
-    std::string baseUri = getBaseUri(testNumberStr);
-    std::string inputStr = getInputStr(testNumberStr);
-    json expected = getExpectedJson(testNumberStr);
+    std::string baseUri = getBaseUri(testName, testNumberStr);
+    std::string inputStr = getInputStr(testName, testNumberStr);
+    json expected = getExpectedJson(testName, testNumberStr);
 
     DocumentLoader dl;
     dl.addDocumentToCache(baseUri, inputStr);

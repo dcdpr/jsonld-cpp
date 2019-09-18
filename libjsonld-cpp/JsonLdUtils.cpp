@@ -1,4 +1,5 @@
 #include "JsonLdUtils.h"
+#include "JsonLdConsts.h"
 
 bool JsonLdUtils::isKeyword(std::string property) {
 
@@ -73,5 +74,41 @@ bool JsonLdUtils::deepCompare(JsonLdUtils::json v1, JsonLdUtils::json v2) {
         return true;
     } else {
         return v1 == v2;
+    }
+}
+
+bool JsonLdUtils::isList(JsonLdUtils::json j) {
+    return j.contains(JsonLdConsts::LIST);
+}
+
+bool JsonLdUtils::isValue(JsonLdUtils::json j) {
+    return j.contains(JsonLdConsts::VALUE);
+}
+
+bool JsonLdUtils::isObject(JsonLdUtils::json j) {
+    return j.is_object();
+}
+
+bool JsonLdUtils::deepContains(JsonLdUtils::json values, JsonLdUtils::json value) {
+    for (auto item : values) {
+        if (deepCompare(item, value)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+void JsonLdUtils::mergeValue(json & obj, std::string key, json value) {
+    if (obj.is_null()) {
+        return;
+    }
+    json & values = obj[key];
+    if (values.is_null()) {
+        values = json::array();
+        obj[key] = values;
+    }
+    if (key == "@list" || value.contains("@list") || !deepContains(values, value)) {
+        values.push_back(value);
     }
 }

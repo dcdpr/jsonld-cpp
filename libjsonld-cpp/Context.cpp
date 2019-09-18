@@ -4,6 +4,8 @@
 #include "JsonLdUrl.h"
 #include "ObjUtils.h"
 
+using nlohmann::json;
+
 void Context::checkEmptyKey(json map) {
     auto it = map.find("");
     if (it != map.end()) {
@@ -255,11 +257,10 @@ std::string Context::expandIri(
         std::string value, bool relative, bool vocab,
         json context, std::map<std::string, bool> & defined) {
         // 1)
-        if (value.empty() || JsonLdUtils::isKeyword(value)) { // todo was null
+        if (JsonLdUtils::isKeyword(value)) { // todo: also checked for if value was null
             return value;
         }
         // 2)
-    //if (context != null && context.containsKey(value)
         if (!context.is_null() && context.contains(value) &&
             defined.find(value) != defined.end() && !defined.at(value) ) {
             createTermDefinition(context, value, defined);
@@ -397,9 +398,6 @@ void Context::createTermDefinition(json context, std::string term,
         throw JsonLdError(JsonLdError::InvalidTermDefinition, value);
     }
 
-//        // casting the value so it doesn't have to be done below everytime
-//        final Map<String, Object> val = (Map<String, Object>) value;
-
     // 11) create a new term definition
     auto definition = ObjUtils::newMap();
 
@@ -418,7 +416,7 @@ void Context::createTermDefinition(json context, std::string term,
         // 13.2)
         try {
             typeStr = expandIri(typeStr, false, true, context, defined);
-//        } catch (JsonLdError::InvalidIriMapping &error) { // hmm, what to do about the type?
+//        } catch (JsonLdError::InvalidIriMapping &error) { // todo, what to do about the type?
 //            throw error;
         } catch (JsonLdError &error) {
             if(typeid(error.getType()) == typeid(JsonLdError::InvalidIriMapping)) {
@@ -449,7 +447,6 @@ void Context::createTermDefinition(json context, std::string term,
                 throw  JsonLdError(JsonLdError::InvalidIriMapping,
                                       "Expected String for @reverse value.");
             }
-            //std::string reverseStr = reverse.dump();
             std::string reverseStr = reverse.get<std::string>();
 
             reverseStr = expandIri(reverseStr, false, true, context, defined);
@@ -569,7 +566,7 @@ size_t Context::erase(const std::string &key) {
 
 std::pair<Context::StringMap::iterator,bool> Context::insert( const StringMap::value_type& value ) {
     // unlike a normal c++ map, which does not insert a value if the key is already present,
-    // we DO want to replace
+    // we DO want to replace, so we have to erase first
     if(contextMap.find(value.first) != contextMap.end()) {
         contextMap.erase(value.first);
     }
@@ -606,8 +603,7 @@ json Context::expandValue(std::string activeProperty, json value)  {
     json td = getTermDefinition(activeProperty);
     // 1)
     if (!td.is_null() && td.contains(JsonLdConsts::TYPE) && td.at(JsonLdConsts::TYPE) == JsonLdConsts::ID) {
-        // TODO: i'm pretty sure value should be a string if the @type is
-        // @id
+        // TODO: i'm pretty sure value should be a string if the @type is @id
         rval[JsonLdConsts::ID] = expandIri(value.get<std::string>(), true, false);
         return rval;
     }

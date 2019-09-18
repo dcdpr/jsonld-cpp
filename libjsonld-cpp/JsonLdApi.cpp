@@ -5,6 +5,8 @@
 #include <iostream>
 #include <set>
 
+using nlohmann::json;
+
 json JsonLdApi::expand(Context activeCtx, json element) {
     return expand(std::move(activeCtx), nullptr, std::move(element));
 }
@@ -533,5 +535,246 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
     }
     // 13)
     return result;
+}
+
+RDF::RDFDataset JsonLdApi::toRDF() {
+    auto nodeMap = ObjUtils::newMap();
+    nodeMap[JsonLdConsts::DEFAULT] = ObjUtils::newMap();
+    std::cout << nodeMap << std::endl;
+    generateNodeMap(this->value, nodeMap);
+    std::cout << nodeMap << std::endl;
+    RDF::RDFDataset dataset(options, &blankNodeIdGenerator);
+
+    std::vector<std::string> keys;
+    for (json::iterator it = nodeMap.begin(); it != nodeMap.end(); ++it) {
+        keys.push_back(it.key());
+    }
+
+    for (auto & graphName : keys) {
+        // 4.1)
+        if (JsonLdUtils::isRelativeIri(graphName)) {
+            continue;
+        }
+        json & graph = nodeMap[graphName];
+        dataset.graphToRDF(graphName, graph);
+    }
+
+    return dataset;
+}
+
+void JsonLdApi::generateNodeMap(json & element, json &nodeMap, std::string *activeGraph, nlohmann::json *activeSubject,
+                                std::string *activeProperty, json *list)
+{
+    std::cout << "enter generateNodeMap: element: " << element << std::endl;
+    std::cout << "enter generateNodeMap: nodeMap: " << nodeMap << std::endl;
+    std::cout << "enter generateNodeMap: activeGraph: " << (activeGraph == nullptr ? "null" : *activeGraph) << std::endl;
+    std::cout << "enter generateNodeMap: activeSubject: " << (activeSubject == nullptr ? "null" : *activeSubject) << std::endl;
+    std::cout << "enter generateNodeMap: activeProperty: " << (activeProperty == nullptr ? "null" : *activeProperty) << std::endl;
+    std::cout << "enter generateNodeMap: list: " << (list == nullptr ? "null" : *list) << std::endl;
+
+    // 1)
+    if (element.is_array()) {
+        // 1.1)
+        for (auto item : element) {
+            std::cout << "item: " << item << std::endl;
+            generateNodeMap(item, nodeMap, activeGraph, activeSubject, activeProperty, list);
+        }
+        return;
+    }
+
+    // 2)
+    if (!nodeMap.contains(*activeGraph)) {
+        nodeMap[*activeGraph] = ObjUtils::newMap();
+    }
+    json & graph = nodeMap[*activeGraph];
+    std::cout << "nodeMap: " << nodeMap << std::endl;
+    std::cout << "graph: " << graph << std::endl;
+
+    json * node = nullptr;
+    if (activeSubject != nullptr && activeSubject->is_string() &&
+        graph.contains(activeSubject->get<std::string>())) {
+        node = &graph[activeSubject->get<std::string>()];
+    }
+    std::cout << "node: " << (node == nullptr ? "null" : *node) << std::endl;
+
+    // 3)
+    if (element.contains(JsonLdConsts::TYPE)) {
+        // 3.1)
+        json oldTypes;
+        json newTypes;
+        oldTypes = element[JsonLdConsts::TYPE];
+        for (auto item : oldTypes) {
+            std::string s = item.get<std::string>();
+            if (s.find_first_of("_:") == 0) {
+                newTypes.push_back(blankNodeIdGenerator.generate(item));
+            } else {
+                newTypes.push_back(item);
+            }
+        }
+        if(newTypes.size() > 0) {
+            if (element[JsonLdConsts::TYPE].is_array())
+                element[JsonLdConsts::TYPE] = newTypes;
+            else
+                element[JsonLdConsts::TYPE] = newTypes.front();
+        }
+    }
+
+    // 4)
+    if (element.contains(JsonLdConsts::VALUE)) {
+        // 4.1)
+        if (list == nullptr) {
+            // todo: seems like at this point there shouldn't ever be a way for activeProperty to be null, but we might want to check anyway
+            if(activeProperty == nullptr)
+                throw  std::runtime_error("activeProperty should not be nullptr");
+            JsonLdUtils::mergeValue(*node, *activeProperty, element);
+        }
+            // 4.2)
+        else {
+            JsonLdUtils::mergeValue(*list, JsonLdConsts::LIST, element);
+        }
+    }
+
+        // 5)
+    else if (element.contains(JsonLdConsts::LIST)) {
+        // 5.1)
+        json result = ObjUtils::newMap(JsonLdConsts::LIST, json::array());
+        // 5.2)
+        generateNodeMap(element[JsonLdConsts::LIST], nodeMap, activeGraph, activeSubject,
+                        activeProperty, &result);
+        // 5.3)
+        JsonLdUtils::mergeValue(*node, *activeProperty, result);
+    }
+
+    else {
+
+        // 6.1)
+        std::string id;
+        if(element.contains(JsonLdConsts::ID)) {
+            id = element[JsonLdConsts::ID];
+            element.erase(JsonLdConsts::ID);
+            if (id.find_first_of("_:") == 0) {
+                id = blankNodeIdGenerator.generate(id);
+            }
+        }
+        // 6.2)
+        else {
+            id = blankNodeIdGenerator.generate();
+        }
+        // 6.3)
+        std::cout << "graph: " << graph << std::endl;
+        if (!graph.contains(id)) {
+            json tmp = ObjUtils::newMap(JsonLdConsts::ID, id);
+            graph[id] = tmp;
+            std::cout << "graph: " << graph << std::endl;
+        }
+        // 6.4) removed for now
+        // 6.5)
+        if (activeSubject != nullptr && activeSubject->is_object()) {
+            // 6.5.1)
+            JsonLdUtils::mergeValue(graph[id], *activeProperty, *activeSubject);
+        }
+            // 6.6)
+        else if (activeProperty != nullptr) {
+            json reference = ObjUtils::newMap(JsonLdConsts::ID, id);
+            // 6.6.2)
+            if (list == nullptr) {
+                // 6.6.2.1+2)
+                JsonLdUtils::mergeValue(*node, *activeProperty, reference);
+            }
+                // 6.6.3) TODO: SPEC says to add ELEMENT to @list member, should be REFERENCE
+            else {
+                JsonLdUtils::mergeValue(*list, JsonLdConsts::LIST, reference);
+            }
+        }
+        // TODO: SPEC this is removed in the spec now, but it's still needed
+        // (see 6.4)
+        std::cout << "node: " << (node == nullptr ? "null" : *node) << std::endl;
+        std::cout << graph << std::endl;
+        node = &graph[id];
+        std::cout << "node: " << (node == nullptr ? "null" : *node) << std::endl;
+        std::cout << graph << std::endl;
+        // 6.7)
+        if (element.contains(JsonLdConsts::TYPE)) {
+            json types = element[JsonLdConsts::TYPE];
+            element.erase(JsonLdConsts::TYPE);
+            for (auto type : types) {
+                JsonLdUtils::mergeValue(*node, JsonLdConsts::TYPE, type);
+            }
+        }
+        // 6.8)
+        if (element.contains(JsonLdConsts::INDEX)) {
+            json elemIndex = element[JsonLdConsts::INDEX];
+            element.erase(JsonLdConsts::INDEX);
+            if (node->contains(JsonLdConsts::INDEX)) {
+                if (!JsonLdUtils::deepCompare(node->at(JsonLdConsts::INDEX), elemIndex)) {
+                    throw JsonLdError(JsonLdError::ConflictingIndexes);
+                }
+            } else {
+                (*node)[JsonLdConsts::INDEX] = elemIndex;
+            }
+        }
+        // 6.9)
+        if (element.contains(JsonLdConsts::REVERSE)) {
+            // 6.9.1)
+            json referencedNode = ObjUtils::newMap(JsonLdConsts::ID, id);
+            // 6.9.2+6.9.4)
+            json reverseMap = element[JsonLdConsts::REVERSE];
+            element.erase(JsonLdConsts::REVERSE);
+            // 6.9.3)
+            std::vector<std::string> keys;
+            for (json::iterator it = reverseMap.begin(); it != reverseMap.end(); ++it) {
+                keys.push_back(it.key());
+            }
+            for (auto property : keys) {
+                json values = reverseMap[property];
+                // 6.9.3.1)
+                for (auto value : values) {
+                    // 6.9.3.1.1)
+                    generateNodeMap(value, nodeMap, activeGraph, &referencedNode, &property, nullptr);
+                }
+            }
+        }
+        // 6.10)
+        if (element.contains(JsonLdConsts::GRAPH)) {
+            json elemGraph = element[JsonLdConsts::GRAPH];
+            element.erase(JsonLdConsts::GRAPH);
+            generateNodeMap(elemGraph, nodeMap, &id, nullptr, nullptr, nullptr);
+        }
+        // 6.11)
+        std::vector<std::string> keys;
+        for (json::iterator it = element.begin(); it != element.end(); ++it) {
+            keys.push_back(it.key());
+        }
+        std::sort(keys.begin(), keys.end());
+        for (auto property : keys) {
+            json & propertyValue = element[property];
+            // 6.11.1)
+            if (property.find_first_of("_:") == 0) {
+                property = blankNodeIdGenerator.generate(property);
+            }
+            // 6.11.2)
+            if (node != nullptr && !node->contains(property)) {
+                std::cout << graph << std::endl;
+                std::cout << "node: " << (node == nullptr ? "null" : *node) << std::endl;
+                std::cout << nodeMap << std::endl;
+                (*node)[property] = json::array();
+                std::cout << (*node)[property] << std::endl;
+                std::cout << graph << std::endl;
+                std::cout << "node: " << (node == nullptr ? "null" : *node) << std::endl;
+                std::cout << nodeMap << std::endl;
+            }
+            // 6.11.3)
+            json jid = id;
+            generateNodeMap(propertyValue, nodeMap, activeGraph, &jid, &property, nullptr);
+        }
+
+    }
+
+}
+
+void JsonLdApi::generateNodeMap(json & element, json & nodeMap)
+{
+    std::string defaultGraph(JsonLdConsts::DEFAULT);
+    generateNodeMap(element, nodeMap, &defaultGraph, nullptr, nullptr, nullptr);
 }
 

@@ -22,7 +22,7 @@ private:
 
     void checkEmptyKey(nlohmann::json map);
     void checkEmptyKey(std::map<std::string, std::string> map);
-    void createTermDefinition(json context, std::string term, std::map<std::string, bool> & defined);
+    void createTermDefinition(nlohmann::json context, std::string term, std::map<std::string, bool> & defined);
     nlohmann::json getTermDefinition(std::string key);
 
 
@@ -52,12 +52,12 @@ public:
         init();
     }
 
+// todo: should these be static constructors?
+    Context parse(nlohmann::json localContext, std::vector<std::string> remoteContexts, bool parsingARemoteContext);
 
-    Context parse(json localContext, std::vector<std::string> remoteContexts, bool parsingARemoteContext);
+    Context parse(nlohmann::json localContext, std::vector<std::string> remoteContexts);
 
-    Context parse(json localContext, std::vector<std::string> remoteContexts);
-
-    Context parse(json localContext);
+    Context parse(nlohmann::json localContext);
 
 
     /**
@@ -71,8 +71,8 @@ public:
 
 
     std::string expandIri(std::string value, bool relative, bool vocab);
-    std::string expandIri(std::string value, bool relative, bool vocab, json context, std::map<std::string, bool> & defined);
-    json expandValue(std::string activeProperty, json value);
+    std::string expandIri(std::string value, bool relative, bool vocab, nlohmann::json context, std::map<std::string, bool> & defined);
+    nlohmann::json expandValue(std::string activeProperty, nlohmann::json value);
 
 
 

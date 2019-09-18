@@ -1,7 +1,7 @@
 ############################################################
 # Target: libjsonld-cpp
 
-add_library(jsonld-cpp STATIC RemoteDocument.cpp RemoteDocument.h DocumentLoader.cpp DocumentLoader.h JsonLdOptions.h JsonLdConsts.h JsonLdUtils.cpp JsonLdUtils.h JsonLdApi.cpp JsonLdApi.h JsonLdOptions.cpp Context.cpp Context.h JsonLdError.cpp JsonLdError.h JsonLdProcessor.cpp JsonLdProcessor.h ObjUtils.cpp ObjUtils.h JsonLdUrl.cpp JsonLdUrl.h IriUtils.cpp IriUtils.h)
+add_library(jsonld-cpp STATIC RemoteDocument.cpp RemoteDocument.h DocumentLoader.cpp DocumentLoader.h JsonLdOptions.h JsonLdConsts.h JsonLdUtils.cpp JsonLdUtils.h JsonLdApi.cpp JsonLdApi.h JsonLdOptions.cpp Context.cpp Context.h JsonLdError.cpp JsonLdError.h JsonLdProcessor.cpp JsonLdProcessor.h ObjUtils.cpp ObjUtils.h JsonLdUrl.cpp JsonLdUrl.h IriUtils.cpp IriUtils.h RDFDataset.cpp RDFDataset.h BlankNodeIdentifierGenerator.cpp BlankNodeIdentifierGenerator.h RDFDatasetUtils.cpp RDFDatasetUtils.h DoubleFormatter.cpp DoubleFormatter.h)
 
 target_include_directories(jsonld-cpp
     PUBLIC

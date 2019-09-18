@@ -7,6 +7,7 @@
 #include "JsonLdOptions.h"
 #include "JsonLdError.h"
 #include "Context.h"
+#include "RDFDataset.h"
 #include "JsonLdApi.h"
 
 /**
@@ -58,7 +59,9 @@ namespace JsonLdProcessor {
     }
 
 
-
+    static RDF::RDFDataset toRDF(std::string input, JsonLdOptions options);
+    // todo: this second method is needed in c++
+    static std::string toRDFString(std::string input, JsonLdOptions options);
 }
 
 #endif //LIBJSONLD_CPP_JSONLDPROCESSOR_H

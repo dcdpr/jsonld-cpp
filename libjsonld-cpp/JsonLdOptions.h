@@ -9,8 +9,6 @@
 #include "DocumentLoader.h"
 #include "JsonLdConsts.h"
 
-using json = nlohmann::json;
-
 class JsonLdOptions {
 private:
     // Base options : http://www.w3.org/TR/json-ld-api/#idl-def-JsonLdOptions
@@ -27,7 +25,7 @@ private:
     /**
      * http://www.w3.org/TR/json-ld-api/#widl-JsonLdOptions-expandContext
      */
-    json expandContext_;
+    nlohmann::json expandContext_;
     /**
      * http://www.w3.org/TR/json-ld-api/#widl-JsonLdOptions-processingMode
      */
@@ -214,11 +212,11 @@ public:
         this->compactArrays_ = compactArrays;
     }
 
-    json getExpandContext() {
+    nlohmann::json getExpandContext() {
         return expandContext_;
     }
 
-    void setExpandContext(json expandContext) {
+    void setExpandContext(nlohmann::json expandContext) {
         this->expandContext_ = std::move(expandContext);
     }
 
@@ -274,12 +272,6 @@ public:
     void setDocumentLoader(DocumentLoader documentLoader) {
         this->documentLoader_ = std::move(documentLoader);
     }
-
-//    // TODO: THE FOLLOWING ONLY EXIST SO I DON'T HAVE TO DELETE A LOT OF CODE,
-//    // REMOVE IT WHEN DONE
-//    std::string format;
-//    bool useNamespaces = false;
-//    std::string outputForm;
 
 };
 
