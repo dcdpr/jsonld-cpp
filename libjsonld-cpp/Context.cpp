@@ -221,6 +221,8 @@ std::string Context::getContainer(std::string property) {
     if (property != JsonLdConsts::TYPE && JsonLdUtils::isKeyword(property)) {
         return property;
     }
+    if(!termDefinitions.contains(property))
+        return "";
     auto td = termDefinitions[property];
 //        if (td == null) {
 //            return null;
@@ -266,6 +268,12 @@ std::string Context::expandIri(
             createTermDefinition(context, value, defined);
         }
         // 3)
+    std::cout << "at 3 for value:" << value << std::endl;
+    for(auto d : termDefinitions.items()) {
+        std::cout << d.key() << " = " << d.value() << std::endl;
+    }
+    std::cout << "at 3: end" << std::endl;
+
         if (vocab && termDefinitions.find(value) != termDefinitions.end()) {
             auto td = termDefinitions.at(value);
             if (!td.is_null()) {

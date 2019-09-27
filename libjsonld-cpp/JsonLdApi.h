@@ -12,7 +12,7 @@ class JsonLdApi {
 private:
     nlohmann::json value;
     JsonLdOptions options;
-    BlankNodeIdentifierGenerator blankNodeIdGenerator;
+    UniqueIdentifierGenerator blankNodeIdGenerator;
 
 public:
 
@@ -66,8 +66,19 @@ public:
  */
     RDF::RDFDataset toRDF();
 
+    /**
+ * Performs RDF normalization on the given JSON-LD input.
+ *
+ * @param dataset
+ *            the expanded JSON-LD object to normalize.
+ * @return The normalized JSON-LD object
+ * @throws JsonLdError
+ *             If there was an error while normalizing.
+ */
+    std::string normalize(RDF::RDFDataset dataset);
 
-private:
+
+            private:
 
     nlohmann::json expandArrayElement(Context activeCtx, std::string *activeProperty, nlohmann::json element);
 

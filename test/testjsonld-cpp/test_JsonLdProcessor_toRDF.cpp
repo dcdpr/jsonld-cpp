@@ -515,3 +515,18 @@ TEST(JsonLdProcessorTest, toRdf_0119) {
 //    }
 //}
 
+TEST(JsonLdProcessorTest, toRdf_0300) {
+    // this is an extra test Dan added while trying to debug issues with normalize test 0008
+    performToRDFTest(300);
+}
+
+TEST(JsonLdProcessorTest, toRdf_0301) {
+    // this is an extra test Dan added while trying to debug issues with normalize test 0020
+    performToRDFTest(301);
+}
+
+TEST(JsonLdProcessorTest, toRdf_0302) {
+    // this is an extra test Dan added while trying to debug issues with normalize test 0044
+    performToRDFTest(302);
+}
+

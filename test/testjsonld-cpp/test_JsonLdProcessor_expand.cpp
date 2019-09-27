@@ -27,7 +27,7 @@ void performExpandTest(int testNumber) {
     opts.setDocumentLoader(dl);
 
     json expanded = JsonLdProcessor::expand(baseUri, opts);
-
+std::cout << expanded << std::endl;
     EXPECT_TRUE(JsonLdUtils::deepCompare(expected, expanded));
 }
 
@@ -342,4 +342,19 @@ TEST(JsonLdProcessorTest, expand_0075) {
 //TEST(JsonLdProcessorTest, expand_0077) {
 //    performExpandTest(77);
 //}
+
+TEST(JsonLdProcessorTest, expand_0300) {
+    // this is an extra test Dan added while trying to debug issues with normalize test 0008
+    performExpandTest(300);
+}
+
+TEST(JsonLdProcessorTest, expand_0301) {
+    // this is an extra test Dan added while trying to debug issues with normalize test 0020
+    performExpandTest(301);
+}
+
+TEST(JsonLdProcessorTest, expand_0302) {
+    // this is an extra test Dan added while trying to debug issues with normalize test 0044
+    performExpandTest(302);
+}
 

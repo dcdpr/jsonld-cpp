@@ -1,5 +1,6 @@
 #include "JsonLdApi.h"
 #include "ObjUtils.h"
+#include "NormalizeUtils.h"
 
 #include <utility>
 #include <iostream>
@@ -588,7 +589,7 @@ void JsonLdApi::generateNodeMap(json & element, json &nodeMap, std::string *acti
     }
     json & graph = nodeMap[*activeGraph];
     std::cout << "nodeMap: " << nodeMap << std::endl;
-    std::cout << "graph: " << graph << std::endl;
+    std::cout << "graph1: " << graph << std::endl;
 
     json * node = nullptr;
     if (activeSubject != nullptr && activeSubject->is_string() &&
@@ -661,11 +662,12 @@ void JsonLdApi::generateNodeMap(json & element, json &nodeMap, std::string *acti
             id = blankNodeIdGenerator.generate();
         }
         // 6.3)
-        std::cout << "graph: " << graph << std::endl;
+        std::cout << "graph2: " << graph << std::endl;
         if (!graph.contains(id)) {
             json tmp = ObjUtils::newMap(JsonLdConsts::ID, id);
             graph[id] = tmp;
-            std::cout << "graph: " << graph << std::endl;
+            graph["key_insertion_order"].push_back(id);
+            std::cout << "graph3: " << graph << std::endl;
         }
         // 6.4) removed for now
         // 6.5)
@@ -755,12 +757,12 @@ void JsonLdApi::generateNodeMap(json & element, json &nodeMap, std::string *acti
             // 6.11.2)
             if (node != nullptr && !node->contains(property)) {
                 std::cout << graph << std::endl;
-                std::cout << "node: " << (node == nullptr ? "null" : *node) << std::endl;
+                std::cout << "node1: " << (node == nullptr ? "null" : *node) << std::endl;
                 std::cout << nodeMap << std::endl;
                 (*node)[property] = json::array();
                 std::cout << (*node)[property] << std::endl;
                 std::cout << graph << std::endl;
-                std::cout << "node: " << (node == nullptr ? "null" : *node) << std::endl;
+                std::cout << "node2: " << (node == nullptr ? "null" : *node) << std::endl;
                 std::cout << nodeMap << std::endl;
             }
             // 6.11.3)
@@ -776,5 +778,80 @@ void JsonLdApi::generateNodeMap(json & element, json & nodeMap)
 {
     std::string defaultGraph(JsonLdConsts::DEFAULT);
     generateNodeMap(element, nodeMap, &defaultGraph, nullptr, nullptr, nullptr);
+}
+
+std::string JsonLdApi::normalize(RDF::RDFDataset dataset) {
+    // create quads and map bnodes to their associated quads
+    std::vector<RDF::Quad> quads;
+    std::map<std::string, std::map<std::string, std::vector<RDF::Quad>>> bnodes; //todo: this is a crazy data type
+    std::vector<std::string> bnodes_insertion_order_keys;
+    for (auto graphName : dataset.graphNames()) {
+        std::cout << "normalize, graphName: " << graphName << std::endl;
+        std::vector<RDF::Quad> triples = dataset.getQuads(graphName);
+        std::string *graphNamePtr = &graphName;
+        if (graphName == "@default") {
+            graphNamePtr = nullptr;
+        }
+        for (auto quad : triples) {
+            if(graphNamePtr != nullptr) {
+               quad.setGraph(graphNamePtr);
+            }
+
+            quads.push_back(quad);
+
+            // todo: replace this with an iteration over function pointers
+            auto n = quad.getSubject();
+            if(n != nullptr) {
+                if(n->isBlankNode()) {
+                    std::cout << "quad subject id: " << n->getValue() << std::endl;
+                    std::string id = n->getValue();
+                    if(!bnodes.count(id)) {
+                        std::vector<RDF::Quad> tmp;
+                        bnodes[id]["quads"] = tmp;
+                        bnodes_insertion_order_keys.push_back(id);
+                        std::cout << "bnodes_insertion_order_keys1: " << id << std::endl;
+                    }
+                    bnodes[id]["quads"].push_back(quad);
+                }
+            }
+            n = quad.getObject();
+            if(n != nullptr) {
+                if(n->isBlankNode()) {
+                    std::cout << "quad object id: " << n->getValue() << std::endl;
+                    std::string id = n->getValue();
+                    if(!bnodes.count(id)) {
+                        std::vector<RDF::Quad> tmp;
+                        bnodes[id]["quads"] = tmp;
+                        bnodes_insertion_order_keys.push_back(id);
+                        std::cout << "bnodes_insertion_order_keys2: " << id << std::endl;
+                    }
+                    bnodes[id]["quads"].push_back(quad);
+                }
+            }
+            n = quad.getGraph();
+            if(n != nullptr) {
+                if(n->isBlankNode()) {
+                    std::cout << "quad graph id: " << n->getValue() << std::endl;
+                    std::string id = n->getValue();
+                    if(!bnodes.count(id)) {
+                        std::vector<RDF::Quad> tmp;
+                        bnodes[id]["quads"] = tmp;
+                        bnodes_insertion_order_keys.push_back(id);
+                        std::cout << "bnodes_insertion_order_keys3: " << id << std::endl;
+                    }
+                    bnodes[id]["quads"].push_back(quad);
+                }
+            }
+        }
+    }
+
+    // mapping complete, start canonical naming
+    NormalizeUtils normalizeUtils(quads, bnodes, UniqueIdentifierGenerator("_:c14n"), options);
+    std::vector<std::string> ids;
+    ids.reserve(bnodes.size()); // todo: need to make a keySet() function...
+    for(auto const & i : bnodes) {
+        ids.push_back(i.first);
+    }
+    return normalizeUtils.hashBlankNodes(bnodes_insertion_order_keys); // todo: this is the only call to hashblanknodes. that method should just always use all the ids so I don't have to pass them in?
 }
 

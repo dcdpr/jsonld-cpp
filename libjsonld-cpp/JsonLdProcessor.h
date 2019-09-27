@@ -62,6 +62,8 @@ namespace JsonLdProcessor {
     static RDF::RDFDataset toRDF(std::string input, JsonLdOptions options);
     // todo: this second method is needed in c++
     static std::string toRDFString(std::string input, JsonLdOptions options);
+
+    static std::string normalize(std::string input, JsonLdOptions options);
 }
 
 #endif //LIBJSONLD_CPP_JSONLDPROCESSOR_H

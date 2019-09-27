@@ -327,3 +327,27 @@ TEST(JsonLdUtilsTest, deepCompare_complexTopAndMidLevelElementsOutOfOrder_true) 
     EXPECT_TRUE(JsonLdUtils::deepCompare(j1, j2));
 }
 
+TEST(JsonLdUtilsTest, test_iteration_order) {
+
+    json j = json::object();
+
+    j["b"] = "b"; j["key_insertion_order"].push_back("b");
+    j["c"] = "c"; j["key_insertion_order"].push_back("c");
+    j["a"] = "a"; j["key_insertion_order"].push_back("a");
+    j["d"] = "d"; j["key_insertion_order"].push_back("d");
+
+    // test that regular order is sorted
+    json::const_iterator it = j.begin();
+    EXPECT_EQ("a", *it++);
+    EXPECT_EQ("b", *it++);
+    EXPECT_EQ("c", *it++);
+    EXPECT_EQ("d", *it);
+
+    // test manual recording of insertion order
+    it = j["key_insertion_order"].begin();
+    EXPECT_EQ("b", *it++);
+    EXPECT_EQ("c", *it++);
+    EXPECT_EQ("a", *it++);
+    EXPECT_EQ("d", *it);
+
+}

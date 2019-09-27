@@ -8,7 +8,7 @@
 #include "json.hpp"
 #include "JsonLdConsts.h"
 #include "JsonLdOptions.h"
-#include "BlankNodeIdentifierGenerator.h"
+#include "UniqueIdentifierGenerator.h"
 
 namespace RDF {
 
@@ -34,6 +34,10 @@ namespace RDF {
 
         std::string getValue() const {
             return map["value"];
+        }
+
+        void setValue(const std::string & s) {
+            map["value"] = s;
         }
 
         std::string getDatatype() const {
@@ -226,6 +230,17 @@ namespace RDF {
         friend bool operator<=(const Quad &lhs, const Quad &rhs);
         friend bool operator>=(const Quad &lhs, const Quad &rhs);
 
+        void setGraph(const std::string *graph)  { // todo: maybe make this private? friends needed?
+            if (graph != nullptr && *graph != "@default") {
+                std::shared_ptr<Node> n;
+                graph->find_first_of("_:") == 0 ?
+                        n = std::make_shared<BlankNode>(*graph) :
+                        n = std::make_shared<IRI>(*graph);
+                map["name"] = n;
+                printMap();
+            }
+        }
+
     private:
         std::map<std::string, std::shared_ptr<Node>> map;
 
@@ -239,18 +254,7 @@ namespace RDF {
         void setPredicate(std::shared_ptr<Node> predicate)  { map["predicate"] = predicate; printMap(); }
         void setObject(std::shared_ptr<Node> object)  { map["object"] = object; printMap(); }
 
-        void setGraph(const std::string *graph)  {
-            if (graph != nullptr && *graph != "@default") {
-                std::shared_ptr<Node> n;
-                graph->find_first_of("_:") == 0 ?
-                        n = std::make_shared<BlankNode>(*graph) :
-                        n = std::make_shared<IRI>(*graph);
-                map["name"] = n;
-                printMap();
-            }
-        }
-
-public:
+    public:
 
         Quad(std::shared_ptr<Node> subject, std::shared_ptr<Node> predicate, std::shared_ptr<Node> object,
              std::string * graph) {
@@ -302,7 +306,16 @@ public:
                 return nullptr;
         }
 
-private:
+//        void setSubject(std::string s) {
+//            s.find_first_of("_:") == 0 ?
+//            setSubject(std::make_shared<BlankNode>(s)) :
+//            setSubject(std::make_shared<IRI>(s));
+//        }
+        //void setPredicate(std::shared_ptr<Node> predicate)  { map["predicate"] = predicate; printMap(); }
+        //void setObject(std::shared_ptr<Node> object)  { map["object"] = object; printMap(); }
+
+
+    private:
 
         void init( std::string subject,  std::string predicate,  std::shared_ptr<Node> object,
                    std::string * graph) {
@@ -352,10 +365,10 @@ private:
     public:
         //JsonLdApi api;
         JsonLdOptions options;
-        BlankNodeIdentifierGenerator *blankNodeIdGenerator;
+        UniqueIdentifierGenerator *blankNodeIdGenerator;
 
         RDFDataset();
-        RDFDataset(JsonLdOptions options, BlankNodeIdentifierGenerator *blankNodeIdGenerator);
+        RDFDataset(JsonLdOptions options, UniqueIdentifierGenerator *blankNodeIdGenerator);
 
         VectorMap::mapped_type & at(const VectorMap::key_type& s);
         size_t erase( const std::string& key );

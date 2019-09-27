@@ -80,8 +80,6 @@ RDFDataset JsonLdProcessor::toRDF(std::string input, JsonLdOptions options) {
     JsonLdApi api(expandedInput, options);
     RDFDataset dataset = api.toRDF();
 
-    // need to get all of the following working before we can return the actual dataset
-    throw JsonLdError(JsonLdError::NotImplemented, "JsonLdProcessor::toRDF() not implemented: ");
 //
 //    // generate namespaces from context
 //    if (options.useNamespaces) {
@@ -135,4 +133,11 @@ std::string JsonLdProcessor::toRDFString(std::string input, JsonLdOptions option
 //    }
 //
     return RDFDatasetUtils::toNQuads(dataset);
+}
+
+std::string JsonLdProcessor::normalize(std::string input, JsonLdOptions options) {
+
+    RDFDataset dataset = toRDF(input, options);
+    JsonLdApi api(options);
+    return api.normalize(dataset);
 }

@@ -1,4 +1,3 @@
-#include <MacTypes.h>
 #include "RDFDataset.h"
 #include "JsonLdOptions.h"
 #include "JsonLdUtils.h"
@@ -13,7 +12,7 @@ namespace RDF {
         insert(std::make_pair("@default", std::vector<Quad>()));
     }
 
-    RDF::RDFDataset::RDFDataset(JsonLdOptions options, BlankNodeIdentifierGenerator *blankNodeIdGenerator)
+    RDF::RDFDataset::RDFDataset(JsonLdOptions options, UniqueIdentifierGenerator *blankNodeIdGenerator)
             : options(std::move(options)), blankNodeIdGenerator(blankNodeIdGenerator) {
 
     }
@@ -60,9 +59,13 @@ namespace RDF {
 
         // 4.3)
         std::vector<std::string> subjects;
-        for (json::const_iterator it = graph.begin(); it != graph.end(); ++it) {
-            subjects.push_back(it.key());
+        if(graph.contains("key_insertion_order")) {
+            for (json::const_iterator it = graph["key_insertion_order"].begin();
+                 it != graph["key_insertion_order"].end(); ++it) {
+                subjects.push_back(*it);
+            }
         }
+        // else?
 
         for (auto id : subjects) {
             if (JsonLdUtils::isRelativeIri(id)) {
