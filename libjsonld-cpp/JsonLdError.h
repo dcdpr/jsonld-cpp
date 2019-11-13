@@ -1,90 +1,61 @@
 #ifndef LIBJSONLD_CPP_JSONLDERROR_H
 #define LIBJSONLD_CPP_JSONLDERROR_H
 
-#include <utility>
-#include "json.hpp"
+#include "jsoninc.h"
 
-class JsonLdError {
+class JsonLdError : public std::runtime_error {
 public:
 
-    class Error {
-    private:
-        std::string error;
-
-    public:
-        Error()
-                : error("")
-        {}
-
-        explicit Error(std::string error)
-                : error(std::move(error))
-        {}
-
-        std::string toString() const
-        {
-            return error;
-        }
-
-    };
-
-    const static Error LoadingDocumentFailed;
-        const static Error ListOfLists;
-        const static Error InvalidIndexValue;
-        const static Error ConflictingIndexes;
-        const static Error InvalidIdValue;
-        const static Error InvalidLocalContext;
-        const static Error MultipleContextLinkHeaders;
-        const static Error LoadingRemoteContextFailed;
-        const static Error InvalidRemoteContext;
-        const static Error RecursiveContextInclusion;
-        const static Error InvalidBaseIri;
-        const static Error InvalidVocabMapping;
-        const static Error InvalidDefaultLanguage;
-        const static Error KeywordRedefinition;
-        const static Error InvalidTermDefinition;
-        const static Error InvalidReverseProperty;
-        const static Error InvalidIriMapping;
-        const static Error CyclicIriMapping;
-        const static Error InvalidKeywordAlias;
-        const static Error InvalidTypeMapping;
-        const static Error InvalidLanguageMapping;
-        const static Error CollidingKeywords;
-        const static Error InvalidContainerMapping;
-        const static Error InvalidTypeValue;
-        const static Error InvalidValueObject;
-        const static Error InvalidValueObjectValue;
-        const static Error InvalidLanguageTaggedString;
-        const static Error InvalidLanguageTaggedValue;
-        const static Error InvalidTypedValue;
-        const static Error InvalidSetOrListObject;
-        const static Error InvalidLanguageMapValue;
-        const static Error CompactionToListOfLists;
-        const static Error InvalidReversePropertyMap;
-        const static Error InvalidReverseValue;
-        const static Error InvalidReversePropertyValue;
-        const static Error SyntaxError;
-        const static Error NotImplemented;
-        const static Error UnknownFormat;
-        const static Error InvalidInput;
-        const static Error ParseError;
-        const static Error UnknownError;
+    static const char LoadingDocumentFailed[];
+    static const char ListOfLists[];
+    static const char InvalidIndexValue[];
+    static const char ConflictingIndexes[];
+    static const char InvalidIdValue[];
+    static const char InvalidLocalContext[];
+    static const char MultipleContextLinkHeaders[];
+    static const char LoadingRemoteContextFailed[];
+    static const char InvalidRemoteContext[];
+    static const char RecursiveContextInclusion[];
+    static const char InvalidBaseIri[];
+    static const char InvalidVocabMapping[];
+    static const char InvalidDefaultLanguage[];
+    static const char KeywordRedefinition[];
+    static const char InvalidTermDefinition[];
+    static const char InvalidReverseProperty[];
+    static const char InvalidIriMapping[];
+    static const char CyclicIriMapping[];
+    static const char InvalidKeywordAlias[];
+    static const char InvalidTypeMapping[];
+    static const char InvalidLanguageMapping[];
+    static const char CollidingKeywords[];
+    static const char InvalidContainerMapping[];
+    static const char InvalidTypeValue[];
+    static const char InvalidValueObject[];
+    static const char InvalidValueObjectValue[];
+    static const char InvalidLanguageTaggedString[];
+    static const char InvalidLanguageTaggedValue[];
+    static const char InvalidTypedValue[];
+    static const char InvalidSetOrListObject[];
+    static const char InvalidLanguageMapValue[];
+    static const char CompactionToListOfLists[];
+    static const char InvalidReversePropertyMap[];
+    static const char InvalidReverseValue[];
+    static const char InvalidReversePropertyValue[];
+    static const char SyntaxError[];
+    static const char NotImplemented[];
+    static const char UnknownFormat[];
+    static const char InvalidInput[];
+    static const char ParseError[];
+    static const char UnknownError[];
 
 private:
-    Error type;
     nlohmann::json detail;
 
 public:
-    JsonLdError(JsonLdError::Error type, nlohmann::json detail) {
-        detail = (detail == nullptr ? "" : detail);
-        this->type = std::move(type);
-    }
+    JsonLdError(const std::string& itype, const nlohmann::json& idetail);
+    explicit JsonLdError(const std::string& itype);
 
-    explicit JsonLdError(JsonLdError::Error type) {
-        detail = "";
-        this->type = std::move(type);
-    }
-
-    const Error &getType() const;
+    const char* what() const noexcept override;
 
 };
 

@@ -26,10 +26,8 @@ std::string resolvePath(const std::string &relPath) {
 
 std::string getTestNumberStr(int i) {
     std::stringstream ss;
-    ss << std::setw(4) << std::setfill('0');
-    ss << i;
-    std::string testNumber = ss.str();
-    return testNumber;
+    ss << std::setw(4) << std::setfill('0') << i;
+    return ss.str();
 }
 
 std::string getBaseUri(const std::string& testName, const std::string& testNumber) {

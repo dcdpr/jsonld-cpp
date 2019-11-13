@@ -1,23 +1,21 @@
-#include <MacTypes.h>
-#include <iostream>
 #include "Context.h"
 #include "JsonLdUrl.h"
 #include "ObjUtils.h"
+#include <iostream>
+#include <utility>
 
 using nlohmann::json;
 
-void Context::checkEmptyKey(json map) {
-    auto it = map.find("");
-    if (it != map.end()) {
+void Context::checkEmptyKey(const json& map) {
+    if(map.count("")) {
         // the term MUST NOT be an empty string ("")
         // https://www.w3.org/TR/json-ld/#h3_terms
         throw JsonLdError(JsonLdError::InvalidTermDefinition, "empty key for value");
     }
 }
 
-void Context::checkEmptyKey(std::map<std::string, std::string> map) {
-    auto it = map.find("");
-    if (it != map.end()) {
+void Context::checkEmptyKey(const std::map<std::string, std::string>& map) {
+    if(map.count("")) {
         // the term MUST NOT be an empty string ("")
         // https://www.w3.org/TR/json-ld/#h3_terms
         throw JsonLdError(JsonLdError::InvalidTermDefinition, "empty key for value");
@@ -40,7 +38,7 @@ void Context::init() {
  * @throws JsonLdError
  *             If there is an error parsing the contexts.
  */
-Context Context::parse(json localContext)  {
+Context Context::parse(const json & localContext)  {
     return parse(localContext, std::vector<std::string>(), false);
 }
 
@@ -57,7 +55,7 @@ Context Context::parse(json localContext)  {
  * @throws JsonLdError
  *             If there is an error parsing the contexts.
  */
-Context Context::parse(json localContext, std::vector<std::string> remoteContexts)  {
+Context Context::parse(const json & localContext, const std::vector<std::string> & remoteContexts)  {
     return parse(localContext, remoteContexts, false);
 }
 
@@ -78,7 +76,7 @@ Context Context::parse(json localContext, std::vector<std::string> remoteContext
  * @throws JsonLdError
  *             If there is an error parsing the contexts.
  */
- Context Context::parse(json localContext, std::vector<std::string> remoteContexts,
+ Context Context::parse(const json & localContext, const std::vector<std::string> & remoteContexts,
                       bool parsingARemoteContext) {
 
 //    if (remoteContexts == null) {
@@ -132,8 +130,8 @@ Context Context::parse(json localContext, std::vector<std::string> remoteContext
 //
 //            // 3.2.4
 //            result = result.parse(tempContext, remoteContexts, true);
-            // 3.2.5
-            continue;
+//            // 3.2.5
+//            continue;
         } else if (!(context.is_object())) {
             // 3.3
             throw JsonLdError(JsonLdError::InvalidLocalContext, context);
@@ -206,8 +204,6 @@ Context Context::parse(json localContext, std::vector<std::string> remoteContext
         }
     }
 
-    std::cout << "before returning from parse" << std::endl;
-    result->printInternalMap();
     return *result;
 }
 
@@ -247,17 +243,17 @@ std::string Context::getContainer(std::string property) {
   * If context is_null(), then we don't bother creating term definitions
   * We don't want to bother with a nullable 'defined' so it can just be empty if context is_null()
   *
-  * @param value
-  * @param relative
-  * @param vocab
-  * @param context
-  * @param defined
-  * @return
+  * @param value the Iri to expand
+  * @param relative flag
+  * @param vocab flag
+  * @param context the context map
+  * @param defined map of defined values
+  * @return the expanded Iri
   * @throws JsonLdError
   */
 std::string Context::expandIri(
         std::string value, bool relative, bool vocab,
-        json context, std::map<std::string, bool> & defined) {
+        const json& context, std::map<std::string, bool> & defined) {
         // 1)
         if (JsonLdUtils::isKeyword(value)) { // todo: also checked for if value was null
             return value;
@@ -268,12 +264,6 @@ std::string Context::expandIri(
             createTermDefinition(context, value, defined);
         }
         // 3)
-    std::cout << "at 3 for value:" << value << std::endl;
-    for(auto d : termDefinitions.items()) {
-        std::cout << d.key() << " = " << d.value() << std::endl;
-    }
-    std::cout << "at 3: end" << std::endl;
-
         if (vocab && termDefinitions.find(value) != termDefinitions.end()) {
             auto td = termDefinitions.at(value);
             if (!td.is_null()) {
@@ -331,7 +321,7 @@ std::string Context::expandIri(
     // dummy objects
     json j;
     std::map<std::string, bool> m;
-    return expandIri(value, relative, vocab, j, m);
+    return expandIri(std::move(value), relative, vocab, j, m);
 }
 
 /**
@@ -340,17 +330,14 @@ std::string Context::expandIri(
  * http://json-ld.org/spec/latest/json-ld-api/#create-term-definition
  * https://w3c.github.io/json-ld-api/#create-term-definition
  *
- * @param result
- * @param context
- * @param key
- * @param defined
+ * @param context the context
+ * @param term the term to define
+ * @param defined map of defined values
  * @throws JsonLdError
  */
-void Context::createTermDefinition(json context, std::string term,
-                                  std::map<std::string, bool> & defined)  {
-
-    std::cout << "createTermDefinition: " << term << std::endl;
-
+void Context::createTermDefinition(json context, const std::string& term,
+                                   std::map<std::string, bool> & defined)
+{
     // 1) has term been defined already?
     if (defined.find(term) != defined.end()) {
         if (defined.at(term)) {
@@ -385,14 +372,10 @@ void Context::createTermDefinition(json context, std::string term,
 
     // 8) If value is null, create a single member whose key is @id and whose value is null.
 
-    // todo: can these ever really be nullptr?
-
     if (value == nullptr ||
         (value.contains(JsonLdConsts::ID) && value.at(JsonLdConsts::ID) == nullptr)) {
         termDefinitions[term] = nullptr;
         defined[term] = true;
-        std::cout << "createTermDefinition: def: null" << std::endl;
-        std::cout << "createTermDefinition: " << term << " created." << std::endl;
         return;
     }
 
@@ -424,10 +407,9 @@ void Context::createTermDefinition(json context, std::string term,
         // 13.2)
         try {
             typeStr = expandIri(typeStr, false, true, context, defined);
-//        } catch (JsonLdError::InvalidIriMapping &error) { // todo, what to do about the type?
-//            throw error;
         } catch (JsonLdError &error) {
-            if(typeid(error.getType()) == typeid(JsonLdError::InvalidIriMapping)) {
+            std::string msg = error.what();
+            if(msg.find(JsonLdError::InvalidIriMapping) != std::string::npos) {
                 throw error;
             }
             throw JsonLdError(JsonLdError::InvalidTypeMapping, type);
@@ -475,8 +457,6 @@ void Context::createTermDefinition(json context, std::string term,
             definition[JsonLdConsts::REVERSE] = true;
             termDefinitions[term] = definition;
             defined[term] = true;
-            std::cout << "createTermDefinition: def: " << definition << std::endl;
-            std::cout << "createTermDefinition: " << term << " created." << std::endl;
             return;
         }
 
@@ -514,8 +494,7 @@ void Context::createTermDefinition(json context, std::string term,
             }
             if (termDefinitions.find(prefix) != termDefinitions.end()) {
                 auto id = termDefinitions.at(prefix).at(JsonLdConsts::ID);
-                //id += suffix;
-                id = id.get<std::string>() + suffix; // todo: can we assume string?
+                id = id.get<std::string>() + suffix;
                 definition[JsonLdConsts::ID] = id;
             } else {
                 definition[JsonLdConsts::ID] = term;
@@ -559,9 +538,6 @@ void Context::createTermDefinition(json context, std::string term,
         termDefinitions[term] = definition;
         defined[term] = true;
 
-    std::cout << "createTermDefinition: def: " << definition << std::endl;
-    std::cout << "createTermDefinition: " << term << " created." << std::endl;
-
 }
 
 std::string & Context::at(const std::string &s) {
@@ -593,11 +569,10 @@ bool Context::isReverseProperty(const std::string &property) {
     if (td.is_null()) {
         return false;
     }
-    std::cout << "isReverseProperty: td: " << td << std::endl;
     return td.contains(JsonLdConsts::REVERSE) && td.at(JsonLdConsts::REVERSE);
 }
 
-nlohmann::json Context::getTermDefinition(std::string key) {
+nlohmann::json Context::getTermDefinition(const std::string & key) {
     if(termDefinitions.count(key)) {
         return termDefinitions.at(key);
     }
@@ -606,7 +581,7 @@ nlohmann::json Context::getTermDefinition(std::string key) {
 }
 
 
-json Context::expandValue(std::string activeProperty, json value)  {
+json Context::expandValue(const std::string & activeProperty, const json& value)  {
     auto rval = ObjUtils::newMap();
     json td = getTermDefinition(activeProperty);
     // 1)
@@ -644,12 +619,21 @@ json Context::expandValue(std::string activeProperty, json value)  {
     return rval;
 }
 
-void Context::printInternalMap() {
+Context::Context(JsonLdOptions ioptions)
+        : options(std::move(ioptions))
+{
+    init();
+}
 
-    std::cout << "Size of context map: " << contextMap.size() << std::endl;
-    int i=0;
-    for(const auto& el : contextMap) {
-        std::cout << i++ << ": " << el.first << " -> " << el.second << std::endl;
-    }
+Context::Context(std::map<std::string, std::string> map, JsonLdOptions ioptions)
+        : options(std::move(ioptions)), contextMap(std::move(map)) {
+    checkEmptyKey(contextMap);
+    init();
+}
+
+Context::Context(std::map<std::string, std::string> map)
+        : contextMap(std::move(map)) {
+    checkEmptyKey(contextMap);
+    init();
 }
 

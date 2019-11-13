@@ -8,8 +8,8 @@
 class Permutator {
 private:
     std::vector<std::string> strings;
-    bool done;
     std::map<std::string, bool> left;
+    bool done;
 
 public:
     explicit Permutator(std::vector <std::string> strings);

@@ -45,20 +45,20 @@ nlohmann::json JsonLdProcessor::expand(nlohmann::json input, JsonLdOptions opts)
     return expanded;
 }
 
-nlohmann::json JsonLdProcessor::expand(std::string input, JsonLdOptions opts) {
+nlohmann::json JsonLdProcessor::expand(const std::string& input, JsonLdOptions opts) {
 
     // 2) TODO: better verification of DOMString IRI
     if (input.find(':') != std::string::npos) {
         try {
             RemoteDocument tmp = opts.getDocumentLoader().loadDocument(input);
-            json json_input = tmp.getDocument();
+            const json& json_input = tmp.getDocument();
             // TODO: figure out how to deal with remote context
 
             // if set the base in options should override the base iri in the
             // active context
             // thus only set this as the base iri if it's not already set in
             // options
-            if (opts.getBase() == "") {
+            if (opts.getBase().empty()) {
                 opts.setBase(input);
             }
 
@@ -70,15 +70,17 @@ nlohmann::json JsonLdProcessor::expand(std::string input, JsonLdOptions opts) {
         }
 
     }
+    else
+        return json::array(); // todo: what else should happen?
 }
 
 
-RDFDataset JsonLdProcessor::toRDF(std::string input, JsonLdOptions options) {
+RDFDataset JsonLdProcessor::toRDF(const std::string& input, const JsonLdOptions& options) {
 
     nlohmann::json expandedInput = expand(input, options);
 
-    JsonLdApi api(expandedInput, options);
-    RDFDataset dataset = api.toRDF();
+    JsonLdApi api(options);
+    RDFDataset dataset = api.toRDF(expandedInput);
 
 //
 //    // generate namespaces from context
@@ -104,12 +106,12 @@ RDFDataset JsonLdProcessor::toRDF(std::string input, JsonLdOptions options) {
     return dataset;
 }
 
-std::string JsonLdProcessor::toRDFString(std::string input, JsonLdOptions options) {
+std::string JsonLdProcessor::toRDFString(const std::string& input, const JsonLdOptions& options) {
 
     nlohmann::json expandedInput = expand(input, options);
 
-    JsonLdApi api(expandedInput, options);
-    RDFDataset dataset = api.toRDF();
+    JsonLdApi api(options);
+    RDFDataset dataset = api.toRDF(expandedInput);
     // todo: while present in the java version, none of the toRdf() tests needed this namespace
     // stuff, so come back to it
 //    // generate namespaces from context
@@ -135,7 +137,7 @@ std::string JsonLdProcessor::toRDFString(std::string input, JsonLdOptions option
     return RDFDatasetUtils::toNQuads(dataset);
 }
 
-std::string JsonLdProcessor::normalize(std::string input, JsonLdOptions options) {
+std::string JsonLdProcessor::normalize(const std::string& input, const JsonLdOptions& options) {
 
     RDFDataset dataset = toRDF(input, options);
     JsonLdApi api(options);

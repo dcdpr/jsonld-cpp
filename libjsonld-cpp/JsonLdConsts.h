@@ -2,7 +2,7 @@
 #define LIBJSONLD_CPP_JSONLDCONSTS_H
 
 /**
- * URI Constants used in the JSON-LD parser.
+ * Constants used in the JSON-LD parser.
  */
 
 namespace JsonLdConsts {
@@ -66,6 +66,5 @@ namespace JsonLdConsts {
     };
 
 }
-
 
 #endif //LIBJSONLD_CPP_JSONLDCONSTS_H

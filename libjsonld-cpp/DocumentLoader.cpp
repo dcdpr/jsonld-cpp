@@ -1,5 +1,4 @@
 #include "DocumentLoader.h"
-#include "json.hpp"
 #include <iostream>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
@@ -22,8 +21,6 @@ namespace {
 
 
 RemoteDocument DocumentLoader::loadDocument(const std::string &url) {
-
-    std::cout << "load: " << cache.size() << std::endl;
 
     // first check the cache
     auto it = cache.find(url);

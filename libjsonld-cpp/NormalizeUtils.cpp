@@ -2,14 +2,20 @@
 #include "RDFDatasetUtils.h"
 #include "sha1.h"
 #include "Permutator.h"
+#include <utility>
 
 using nlohmann::json;
 
 
-NormalizeUtils::NormalizeUtils(const std::vector<RDF::Quad> &quads,
-                               const std::map<std::string, std::map<std::string, std::vector<RDF::Quad>>> &bnodes,
-                               const UniqueIdentifierGenerator &uniqueIdentifierGenerator, const JsonLdOptions &opts)
-        : quads(quads), bnodes(bnodes), uniqueIdentifierGenerator(uniqueIdentifierGenerator), opts(opts)
+NormalizeUtils::NormalizeUtils(
+        std::vector<RDF::Quad> iquads,
+        std::map<std::string, std::map<std::string, std::vector<RDF::Quad>>> ibnodes,
+        UniqueNamer iuniqueNamer,
+        JsonLdOptions iopts)
+        : quads(std::move(iquads)),
+          bnodes(std::move(ibnodes)),
+          uniqueNamer(std::move(iuniqueNamer)),
+          opts(std::move(iopts))
 {}
 
 
@@ -20,8 +26,12 @@ std::string NormalizeUtils::hashBlankNodes(const std::vector<std::string> & unna
     std::map<std::string, std::vector<std::string>> duplicates;
     std::map<std::string, std::string> unique;
 
-        for (int hui = 0;; hui++) {
-            if (hui == unnamed.size()) {
+    // rather than initialize hui to 0, which would make sense, we are going to initialize to 1
+    // and refer to hui as (hui-1) in most instances. This allows us to declare hui a size_t rather
+    // than an int, which would necessitate a static_cast it every time we need to compare it with
+    // something else.
+        for (size_t hui = 1;; hui++) {
+            if ((hui-1) == unnamed.size()) {
                 // we are done iterating over unnamed, now name blank nodes
                 bool named = false;
                 std::vector<std::string> hashes;
@@ -34,7 +44,7 @@ std::string NormalizeUtils::hashBlankNodes(const std::vector<std::string> & unna
 
                 for (const auto & hash : hashes) {
                     std::string bnode = unique.at(hash);
-                    uniqueIdentifierGenerator.generate(bnode);
+                    uniqueNamer.get(bnode);
                     named = true;
                 }
 
@@ -45,7 +55,7 @@ std::string NormalizeUtils::hashBlankNodes(const std::vector<std::string> & unna
                     // but since this is the end of the function either way, it
                     // might not have to
                     // hashBlankNodes(unnamed);
-                    hui = -1;
+                    hui = 0;
                     unnamed = nextUnnamed;
                     nextUnnamed.clear();
                     duplicates.clear();
@@ -65,7 +75,7 @@ std::string NormalizeUtils::hashBlankNodes(const std::vector<std::string> & unna
                     std::sort(hashes.begin(), hashes.end());
 
                     // process each group (iterate over 'hashes', use hash to get group from 'duplicates')
-                    for (int pgi = 0;; pgi++) {
+                    for (size_t pgi = 0;; pgi++) {
                         if (pgi == hashes.size()) {
                             // done, create JSON-LD array
                             std::vector<std::string> normalized;
@@ -73,22 +83,20 @@ std::string NormalizeUtils::hashBlankNodes(const std::vector<std::string> & unna
                             // Note: At this point all bnodes in the set of RDF
                             // quads have been
                             // assigned canonical names, which have been stored
-                            // in the 'uniqueIdentifierGenerator' object.
+                            // in the 'uniqueNamer' object.
                             // Here each quad is updated by assigning each of
                             // its bnodes its new name
-                            // via the 'uniqueIdentifierGenerator' object
+                            // via the 'uniqueNamer' object.
 
                             // update bnode names in each quad and serialize
-                            for (int cai = 0; cai < quads.size(); ++cai) {
-                                RDF::Quad quad = quads.at(cai);
-
+                            for (const auto& quad : quads) {
                                 // todo: replace this with an iteration over function pointers
                                 auto n = quad.getSubject();
                                 if(n != nullptr) {
                                     if(n->isBlankNode()) {
                                         std::string id = n->getValue();
                                         if(id.find("_:c14n") != 0){
-                                            n->setValue(uniqueIdentifierGenerator.generate(id));
+                                            n->setValue(uniqueNamer.get(id));
                                         }
                                     }
                                 }
@@ -97,7 +105,7 @@ std::string NormalizeUtils::hashBlankNodes(const std::vector<std::string> & unna
                                     if(n->isBlankNode()) {
                                         std::string id = n->getValue();
                                         if(id.find("_:c14n") != 0){
-                                            n->setValue(uniqueIdentifierGenerator.generate(id));
+                                            n->setValue(uniqueNamer.get(id));
                                         }
                                     }
                                 }
@@ -106,7 +114,7 @@ std::string NormalizeUtils::hashBlankNodes(const std::vector<std::string> & unna
                                     if(n->isBlankNode()) {
                                         std::string id = n->getValue();
                                         if(id.find("_:c14n") != 0){
-                                            n->setValue(uniqueIdentifierGenerator.generate(id));
+                                            n->setValue(uniqueNamer.get(id));
                                         }
                                     }
                                 }
@@ -148,7 +156,7 @@ std::string NormalizeUtils::hashBlankNodes(const std::vector<std::string> & unna
                         // name each group member
                         std::vector<std::string> group = duplicates.at(hashes.at(pgi));
                         std::vector<HashResult> results;
-                        for (int n = 0;; n++) {
+                        for (size_t n = 0;; n++) {
                             if (n == group.size()) {
                                 // name bnodes in hash order
 
@@ -158,21 +166,21 @@ std::string NormalizeUtils::hashBlankNodes(const std::vector<std::string> & unna
                                 });
                                 for (auto r : results) {
                                     // name all bnodes in path namer in key-entry order
-                                    for (auto key : r.pathNamer.getIdentifiersInsertionOrder()) {
-                                        auto s = uniqueIdentifierGenerator.generate(key);
+                                    for (const auto& key : r.pathNamer.getKeys()) {
+                                        auto s = uniqueNamer.get(key);
                                     }
                                 }
                                 break;
                             } else {
                                 // skip already-named bnodes
                                 std::string bnode = group.at(n);
-                                if (uniqueIdentifierGenerator.exists(bnode)) {
+                                if (uniqueNamer.exists(bnode)) {
                                     continue;
                                 }
 
                                 // hash bnode paths
-                                UniqueIdentifierGenerator pathNamer;
-                                pathNamer.generate(bnode);
+                                UniqueNamer pathNamer;
+                                pathNamer.get(bnode);
                                 HashResult result = hashPaths(bnode, pathNamer);
                                 results.push_back(result);
                             }
@@ -182,7 +190,7 @@ std::string NormalizeUtils::hashBlankNodes(const std::vector<std::string> & unna
             }
 
             // hash unnamed bnode
-            std::string bnode = unnamed.at(hui);
+            std::string bnode = unnamed.at(hui-1);
             std::string hash = hashQuads(bnode);
 
             // store hash as unique or a duplicate
@@ -203,14 +211,14 @@ std::string NormalizeUtils::hashBlankNodes(const std::vector<std::string> & unna
         }
 }
 
-NormalizeUtils::HashResult NormalizeUtils::hashPaths(std::string id, UniqueIdentifierGenerator pathNameGenerator) {
+NormalizeUtils::HashResult NormalizeUtils::hashPaths(const std::string& id, UniqueNamer pathUniqueNamer) {
 
     std::map<std::string, std::vector<std::string>> groups;
-    std::vector<RDF::Quad> quads = bnodes.at(id).at("quads");
+    std::vector<RDF::Quad> bnode_quads = bnodes.at(id).at("quads");
     SHA1 md;
 
-    for (int hpi = 0;; hpi++) {
-        if (hpi == quads.size()) {
+    for (size_t hpi = 0;; hpi++) {
+        if (hpi == bnode_quads.size()) {
             // done , hash groups
             std::vector<std::string> groupHashes;
             groupHashes.reserve(groups.size()); // todo: need to make a keySet() function...
@@ -220,11 +228,11 @@ NormalizeUtils::HashResult NormalizeUtils::hashPaths(std::string id, UniqueIdent
 
             std::sort(groupHashes.begin(), groupHashes.end());
 
-            for (int hgi = 0;; hgi++) {
+            for (size_t hgi = 0;; hgi++) {
                 if (hgi == groupHashes.size()) {
                     HashResult res;
                     res.hash = md.digest();
-                    res.pathNamer = pathNameGenerator;
+                    res.pathNamer = pathUniqueNamer;
                     return res;
                 }
                 // digest group hash
@@ -233,42 +241,38 @@ NormalizeUtils::HashResult NormalizeUtils::hashPaths(std::string id, UniqueIdent
 
                 // choose a path and namer from the permutations
                 std::shared_ptr<std::string> chosenPath = nullptr;
-                UniqueIdentifierGenerator chosenNamer;
+                UniqueNamer chosenNamer;
                 Permutator permutator(groups.at(groupHash));
-
-//                std::vector<std::string> permutation_of_blankNodes = groups.at(groupHash); // todo: rename blankNodes?
-//                std::sort(permutation_of_blankNodes.begin(), permutation_of_blankNodes.end());
 
                 while (true) {
                     bool contPermutation = false;
                     bool breakOut = false;
                     std::vector<std::string> permutation = permutator.next();
-                    UniqueIdentifierGenerator pathNameGeneratorCopy = pathNameGenerator;
+                    UniqueNamer pathUniqueNamerCopy = pathUniqueNamer;
 
                     // build adjacent path
-                    std::string path = "";
+                    std::string path;
                     std::vector<std::string> recurse;
-                    for (auto bnode : permutation) {
+                    for (const auto& bnode : permutation) {
                         // use canonical name if available
-                        if (uniqueIdentifierGenerator.exists(bnode)) {
-                            path += uniqueIdentifierGenerator.generate(bnode);
+                        if (uniqueNamer.exists(bnode)) {
+                            path += uniqueNamer.get(bnode);
                         } else {
                             // recurse if bnode isn't named in the path yet
-                            if (!pathNameGeneratorCopy.exists(bnode)) {
+                            if (!pathUniqueNamerCopy.exists(bnode)) {
                                 recurse.push_back(bnode);
                             }
-                            path += pathNameGeneratorCopy.generate(bnode);
+                            path += pathUniqueNamerCopy.get(bnode);
                         }
 
                         // skip permutation if path is already >= chosen path
                         if (chosenPath != nullptr && path.length() >= chosenPath->length() && path > *chosenPath) {
-//                            if(std::next_permutation(permutation_of_blankNodes.begin(), permutation_of_blankNodes.end())) {
                             if(permutator.hasNext()) {
                                 contPermutation = true;
                             } else {
                                 // digest chosen path and update namer
                                 md.update(*chosenPath);
-                                pathNameGenerator = chosenNamer;
+                                pathUniqueNamer = chosenNamer;
                                 // hash the nextGroup
                                 breakOut = true;
                             }
@@ -286,16 +290,16 @@ NormalizeUtils::HashResult NormalizeUtils::hashPaths(std::string id, UniqueIdent
                     }
 
                     // does the next recursion
-                    for (int nrn = 0;; nrn++) {
+                    for (size_t nrn = 0;; nrn++) {
                         if (nrn == recurse.size()) {
                             if (chosenPath == nullptr || path < *chosenPath) {
                                 chosenPath = std::make_shared<std::string>(path);
-                                chosenNamer = pathNameGeneratorCopy;
+                                chosenNamer = pathUniqueNamerCopy;
                             }
                             if (!permutator.hasNext()) {
                                 // digest chosen path and update namer
                                 md.update(*chosenPath);
-                                pathNameGenerator = chosenNamer;
+                                pathUniqueNamer = chosenNamer;
                                 // hash the nextGroup
                                 breakOut = true;
                             }
@@ -304,16 +308,16 @@ NormalizeUtils::HashResult NormalizeUtils::hashPaths(std::string id, UniqueIdent
 
                         // do recursion
                         std::string bnode = recurse.at(nrn);
-                        HashResult result = hashPaths(bnode, pathNameGeneratorCopy);
-                        path += pathNameGeneratorCopy.generate(bnode) + "<" + result.hash + ">";
-                        pathNameGeneratorCopy = result.pathNamer;
+                        HashResult result = hashPaths(bnode, pathUniqueNamerCopy);
+                        path += pathUniqueNamerCopy.get(bnode) + "<" + result.hash + ">";
+                        pathUniqueNamerCopy = result.pathNamer;
 
                         // skip permutation if path is already >= chosen path
                         if (chosenPath != nullptr && path.length() >= chosenPath->length() && path > *chosenPath) {
                             if (!permutator.hasNext()) {
                                 // digest chosen path and update namer
                                 md.update(*chosenPath);
-                                pathNameGenerator = chosenNamer;
+                                pathUniqueNamer = chosenNamer;
                                 // hash the nextGroup
                                 breakOut = true;
                             }
@@ -330,7 +334,7 @@ NormalizeUtils::HashResult NormalizeUtils::hashPaths(std::string id, UniqueIdent
             }
         }
         // get adjacent bnode
-        RDF::Quad quad = quads.at(hpi);
+        RDF::Quad quad = bnode_quads.at(hpi);
         std::shared_ptr<std::string> bnode = getAdjacentBlankNodeName(quad.getSubject(), id);
         std::string direction;
         if (bnode != nullptr) {
@@ -347,10 +351,10 @@ NormalizeUtils::HashResult NormalizeUtils::hashPaths(std::string id, UniqueIdent
         if (bnode != nullptr) {
             // get bnode name (try canonical, path, then hash)
             std::string name;
-            if (uniqueIdentifierGenerator.exists(*bnode)) {
-                name = uniqueIdentifierGenerator.generate(*bnode);
-            } else if (pathNameGenerator.exists(*bnode)) {
-                name = pathNameGenerator.generate(*bnode);
+            if (uniqueNamer.exists(*bnode)) {
+                name = uniqueNamer.get(*bnode);
+            } else if (pathUniqueNamer.exists(*bnode)) {
+                name = pathUniqueNamer.get(*bnode);
             } else {
                 name = hashQuads(*bnode);
             }
@@ -378,9 +382,9 @@ std::string NormalizeUtils::hashQuads(std::string id) {
         return cachedHashes[id];
 
     // serialize all of bnode's quads
-    std::vector<RDF::Quad> quads = bnodes.at(id).at("quads");
+    std::vector<RDF::Quad> bnode_quads = bnodes.at(id).at("quads");
     std::vector<std::string> nquads;
-    for (auto & quad : quads) {
+    for (const auto & quad : bnode_quads) {
         std::string graphName;
         auto name = quad.getGraph();
         if(name != nullptr)

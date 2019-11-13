@@ -20,21 +20,21 @@
 */
 
 #include "sha1.h"
+#include <cassert>
 #include <sstream>
 #include <iomanip>
-#include <fstream>
 #include <vector>
 
 /* Help macros */
-#define SHA1_ROL(value, bits) (((value) << (bits)) | (((value) & 0xffffffff) >> (32 - (bits))))
-#define SHA1_BLK(i) (block[i&15] = SHA1_ROL(block[(i+13)&15] ^ block[(i+8)&15] ^ block[(i+2)&15] ^ block[i&15],1))
+#define SHA1_ROL(value, bits) (((value) << (bits)) | (((value) & 0xffffffffu) >> (32u - (bits))))
+#define SHA1_BLK(i) (block[i&15u] = SHA1_ROL(block[(i+13u)&15u] ^ block[(i+8u)&15u] ^ block[(i+2u)&15u] ^ block[i&15u],1u))
 
 /* (R0+R1), R2, R3, R4 are the different operations used in SHA1 */
-#define SHA1_R0(v,w,x,y,z,i) z += ((w&(x^y))^y)     + block[i]    + 0x5a827999 + SHA1_ROL(v,5); w=SHA1_ROL(w,30);
-#define SHA1_R1(v,w,x,y,z,i) z += ((w&(x^y))^y)     + SHA1_BLK(i) + 0x5a827999 + SHA1_ROL(v,5); w=SHA1_ROL(w,30);
-#define SHA1_R2(v,w,x,y,z,i) z += (w^x^y)           + SHA1_BLK(i) + 0x6ed9eba1 + SHA1_ROL(v,5); w=SHA1_ROL(w,30);
-#define SHA1_R3(v,w,x,y,z,i) z += (((w|x)&y)|(w&x)) + SHA1_BLK(i) + 0x8f1bbcdc + SHA1_ROL(v,5); w=SHA1_ROL(w,30);
-#define SHA1_R4(v,w,x,y,z,i) z += (w^x^y)           + SHA1_BLK(i) + 0xca62c1d6 + SHA1_ROL(v,5); w=SHA1_ROL(w,30);
+#define SHA1_R0(v,w,x,y,z,i) z += ((w&(x^y))^y)     + block[i]    + 0x5a827999 + SHA1_ROL(v,5u); w=SHA1_ROL(w,30u);
+#define SHA1_R1(v,w,x,y,z,i) z += ((w&(x^y))^y)     + SHA1_BLK(i) + 0x5a827999 + SHA1_ROL(v,5u); w=SHA1_ROL(w,30u);
+#define SHA1_R2(v,w,x,y,z,i) z += (w^x^y)           + SHA1_BLK(i) + 0x6ed9eba1 + SHA1_ROL(v,5u); w=SHA1_ROL(w,30u);
+#define SHA1_R3(v,w,x,y,z,i) z += (((w|x)&y)|(w&x)) + SHA1_BLK(i) + 0x8f1bbcdc + SHA1_ROL(v,5u); w=SHA1_ROL(w,30u);
+#define SHA1_R4(v,w,x,y,z,i) z += (w^x^y)           + SHA1_BLK(i) + 0xca62c1d6 + SHA1_ROL(v,5u); w=SHA1_ROL(w,30u);
 
 SHA1::SHA1()
 {
@@ -52,7 +52,9 @@ void SHA1::update(const std::string &s)
 void SHA1::update(std::istream &is)
 {
     std::string rest_of_buffer;
-    read(is, rest_of_buffer, BLOCK_BYTES - buffer.size());
+    assert(buffer.size() <= BLOCK_BYTES);
+    size_t bytesToRead = BLOCK_BYTES - buffer.size();
+    read(is, rest_of_buffer, bytesToRead);// run some tests and step through this
     buffer += rest_of_buffer;
 
     while (is)
@@ -75,11 +77,11 @@ std::string SHA1::final()
     uint64 total_bits = (transforms*BLOCK_BYTES + buffer.size()) * 8;
 
     /* Padding */
-    buffer += 0x80;
-    unsigned int orig_size = buffer.size();
+    buffer += static_cast<char>(0x80);
+    size_t orig_size = buffer.size();
     while (buffer.size() < BLOCK_BYTES)
     {
-        buffer += (char)0x00;
+        buffer += static_cast<char>(0x00);
     }
 
     uint32 block[BLOCK_INTS];
@@ -96,15 +98,15 @@ std::string SHA1::final()
 
     /* Append total_bits, split this uint64 into two uint32 */
     block[BLOCK_INTS - 1] = total_bits;
-    block[BLOCK_INTS - 2] = (total_bits >> 32);
+    block[BLOCK_INTS - 2] = (total_bits >> 32u);
     transform(block);
 
     /* Hex std::string */
     std::ostringstream result;
-    for (unsigned int i = 0; i < DIGEST_INTS; i++)
+    for (unsigned long i : digestbuf)
     {
         result << std::hex << std::setfill('0') << std::setw(8);
-        result << (digestbuf[i] & 0xffffffff);
+        result << (i & 0xffffffff);
     }
 
     /* Reset for next run */
@@ -143,86 +145,86 @@ void SHA1::transform(uint32 block[BLOCK_BYTES])
 
 
     /* 4 rounds of 20 operations each. Loop unrolled. */
-    SHA1_R0(a,b,c,d,e, 0);
-    SHA1_R0(e,a,b,c,d, 1);
-    SHA1_R0(d,e,a,b,c, 2);
-    SHA1_R0(c,d,e,a,b, 3);
-    SHA1_R0(b,c,d,e,a, 4);
-    SHA1_R0(a,b,c,d,e, 5);
-    SHA1_R0(e,a,b,c,d, 6);
-    SHA1_R0(d,e,a,b,c, 7);
-    SHA1_R0(c,d,e,a,b, 8);
-    SHA1_R0(b,c,d,e,a, 9);
-    SHA1_R0(a,b,c,d,e,10);
-    SHA1_R0(e,a,b,c,d,11);
-    SHA1_R0(d,e,a,b,c,12);
-    SHA1_R0(c,d,e,a,b,13);
-    SHA1_R0(b,c,d,e,a,14);
-    SHA1_R0(a,b,c,d,e,15);
-    SHA1_R1(e,a,b,c,d,16);
-    SHA1_R1(d,e,a,b,c,17);
-    SHA1_R1(c,d,e,a,b,18);
-    SHA1_R1(b,c,d,e,a,19);
-    SHA1_R2(a,b,c,d,e,20);
-    SHA1_R2(e,a,b,c,d,21);
-    SHA1_R2(d,e,a,b,c,22);
-    SHA1_R2(c,d,e,a,b,23);
-    SHA1_R2(b,c,d,e,a,24);
-    SHA1_R2(a,b,c,d,e,25);
-    SHA1_R2(e,a,b,c,d,26);
-    SHA1_R2(d,e,a,b,c,27);
-    SHA1_R2(c,d,e,a,b,28);
-    SHA1_R2(b,c,d,e,a,29);
-    SHA1_R2(a,b,c,d,e,30);
-    SHA1_R2(e,a,b,c,d,31);
-    SHA1_R2(d,e,a,b,c,32);
-    SHA1_R2(c,d,e,a,b,33);
-    SHA1_R2(b,c,d,e,a,34);
-    SHA1_R2(a,b,c,d,e,35);
-    SHA1_R2(e,a,b,c,d,36);
-    SHA1_R2(d,e,a,b,c,37);
-    SHA1_R2(c,d,e,a,b,38);
-    SHA1_R2(b,c,d,e,a,39);
-    SHA1_R3(a,b,c,d,e,40);
-    SHA1_R3(e,a,b,c,d,41);
-    SHA1_R3(d,e,a,b,c,42);
-    SHA1_R3(c,d,e,a,b,43);
-    SHA1_R3(b,c,d,e,a,44);
-    SHA1_R3(a,b,c,d,e,45);
-    SHA1_R3(e,a,b,c,d,46);
-    SHA1_R3(d,e,a,b,c,47);
-    SHA1_R3(c,d,e,a,b,48);
-    SHA1_R3(b,c,d,e,a,49);
-    SHA1_R3(a,b,c,d,e,50);
-    SHA1_R3(e,a,b,c,d,51);
-    SHA1_R3(d,e,a,b,c,52);
-    SHA1_R3(c,d,e,a,b,53);
-    SHA1_R3(b,c,d,e,a,54);
-    SHA1_R3(a,b,c,d,e,55);
-    SHA1_R3(e,a,b,c,d,56);
-    SHA1_R3(d,e,a,b,c,57);
-    SHA1_R3(c,d,e,a,b,58);
-    SHA1_R3(b,c,d,e,a,59);
-    SHA1_R4(a,b,c,d,e,60);
-    SHA1_R4(e,a,b,c,d,61);
-    SHA1_R4(d,e,a,b,c,62);
-    SHA1_R4(c,d,e,a,b,63);
-    SHA1_R4(b,c,d,e,a,64);
-    SHA1_R4(a,b,c,d,e,65);
-    SHA1_R4(e,a,b,c,d,66);
-    SHA1_R4(d,e,a,b,c,67);
-    SHA1_R4(c,d,e,a,b,68);
-    SHA1_R4(b,c,d,e,a,69);
-    SHA1_R4(a,b,c,d,e,70);
-    SHA1_R4(e,a,b,c,d,71);
-    SHA1_R4(d,e,a,b,c,72);
-    SHA1_R4(c,d,e,a,b,73);
-    SHA1_R4(b,c,d,e,a,74);
-    SHA1_R4(a,b,c,d,e,75);
-    SHA1_R4(e,a,b,c,d,76);
-    SHA1_R4(d,e,a,b,c,77);
-    SHA1_R4(c,d,e,a,b,78);
-    SHA1_R4(b,c,d,e,a,79);
+    SHA1_R0(a,b,c,d,e, 0u)
+    SHA1_R0(e,a,b,c,d, 1u)
+    SHA1_R0(d,e,a,b,c, 2u)
+    SHA1_R0(c,d,e,a,b, 3u)
+    SHA1_R0(b,c,d,e,a, 4u)
+    SHA1_R0(a,b,c,d,e, 5u)
+    SHA1_R0(e,a,b,c,d, 6u)
+    SHA1_R0(d,e,a,b,c, 7u)
+    SHA1_R0(c,d,e,a,b, 8u)
+    SHA1_R0(b,c,d,e,a, 9u)
+    SHA1_R0(a,b,c,d,e,10u)
+    SHA1_R0(e,a,b,c,d,11u)
+    SHA1_R0(d,e,a,b,c,12u)
+    SHA1_R0(c,d,e,a,b,13u)
+    SHA1_R0(b,c,d,e,a,14u)
+    SHA1_R0(a,b,c,d,e,15u)
+    SHA1_R1(e,a,b,c,d,16u)
+    SHA1_R1(d,e,a,b,c,17u)
+    SHA1_R1(c,d,e,a,b,18u)
+    SHA1_R1(b,c,d,e,a,19u)
+    SHA1_R2(a,b,c,d,e,20u)
+    SHA1_R2(e,a,b,c,d,21u)
+    SHA1_R2(d,e,a,b,c,22u)
+    SHA1_R2(c,d,e,a,b,23u)
+    SHA1_R2(b,c,d,e,a,24u)
+    SHA1_R2(a,b,c,d,e,25u)
+    SHA1_R2(e,a,b,c,d,26u)
+    SHA1_R2(d,e,a,b,c,27u)
+    SHA1_R2(c,d,e,a,b,28u)
+    SHA1_R2(b,c,d,e,a,29u)
+    SHA1_R2(a,b,c,d,e,30u)
+    SHA1_R2(e,a,b,c,d,31u)
+    SHA1_R2(d,e,a,b,c,32u)
+    SHA1_R2(c,d,e,a,b,33u)
+    SHA1_R2(b,c,d,e,a,34u)
+    SHA1_R2(a,b,c,d,e,35u)
+    SHA1_R2(e,a,b,c,d,36u)
+    SHA1_R2(d,e,a,b,c,37u)
+    SHA1_R2(c,d,e,a,b,38u)
+    SHA1_R2(b,c,d,e,a,39u)
+    SHA1_R3(a,b,c,d,e,40u)
+    SHA1_R3(e,a,b,c,d,41u)
+    SHA1_R3(d,e,a,b,c,42u)
+    SHA1_R3(c,d,e,a,b,43u)
+    SHA1_R3(b,c,d,e,a,44u)
+    SHA1_R3(a,b,c,d,e,45u)
+    SHA1_R3(e,a,b,c,d,46u)
+    SHA1_R3(d,e,a,b,c,47u)
+    SHA1_R3(c,d,e,a,b,48u)
+    SHA1_R3(b,c,d,e,a,49u)
+    SHA1_R3(a,b,c,d,e,50u)
+    SHA1_R3(e,a,b,c,d,51u)
+    SHA1_R3(d,e,a,b,c,52u)
+    SHA1_R3(c,d,e,a,b,53u)
+    SHA1_R3(b,c,d,e,a,54u)
+    SHA1_R3(a,b,c,d,e,55u)
+    SHA1_R3(e,a,b,c,d,56u)
+    SHA1_R3(d,e,a,b,c,57u)
+    SHA1_R3(c,d,e,a,b,58u)
+    SHA1_R3(b,c,d,e,a,59u)
+    SHA1_R4(a,b,c,d,e,60u)
+    SHA1_R4(e,a,b,c,d,61u)
+    SHA1_R4(d,e,a,b,c,62u)
+    SHA1_R4(c,d,e,a,b,63u)
+    SHA1_R4(b,c,d,e,a,64u)
+    SHA1_R4(a,b,c,d,e,65u)
+    SHA1_R4(e,a,b,c,d,66u)
+    SHA1_R4(d,e,a,b,c,67u)
+    SHA1_R4(c,d,e,a,b,68u)
+    SHA1_R4(b,c,d,e,a,69u)
+    SHA1_R4(a,b,c,d,e,70u)
+    SHA1_R4(e,a,b,c,d,71u)
+    SHA1_R4(d,e,a,b,c,72u)
+    SHA1_R4(c,d,e,a,b,73u)
+    SHA1_R4(b,c,d,e,a,74u)
+    SHA1_R4(a,b,c,d,e,75u)
+    SHA1_R4(e,a,b,c,d,76u)
+    SHA1_R4(d,e,a,b,c,77u)
+    SHA1_R4(c,d,e,a,b,78u)
+    SHA1_R4(b,c,d,e,a,79u)
 
     /* Add the working vars back into digest[] */
     digestbuf[0] += a;
@@ -241,19 +243,19 @@ void SHA1::buffer_to_block(const std::string &buffer, uint32 block[BLOCK_BYTES])
     /* Convert the std::string (byte buffer) to a uint32 array (MSB) */
     for (unsigned int i = 0; i < BLOCK_INTS; i++)
     {
-        block[i] = (buffer[4*i+3] & 0xff)
-                   | (buffer[4*i+2] & 0xff)<<8
-                   | (buffer[4*i+1] & 0xff)<<16
-                   | (buffer[4*i+0] & 0xff)<<24;
+        block[i] = (static_cast<unsigned int>(buffer[4*i+3]) & 0xffu)
+                   | (static_cast<unsigned int>(buffer[4*i+2]) & 0xffu)<<8u
+                   | (static_cast<unsigned int>(buffer[4*i+1]) & 0xffu)<<16u
+                   | (static_cast<unsigned int>(buffer[4*i+0]) & 0xffu)<<24u;
     }
 }
 
 
-void SHA1::read(std::istream &is, std::string &s, int max)
+void SHA1::read(std::istream &is, std::string &s, size_t max)
 {
-    char sbuf[max];
-    is.read(sbuf, max);
-    s.assign(sbuf, is.gcount());
+    std::vector<char> sbuf(max);
+    is.read(sbuf.data(), static_cast<std::streamsize>(max));
+    s.assign(sbuf.data(), static_cast<size_t>(is.gcount()));
 }
 
 std::string SHA1::digest() {

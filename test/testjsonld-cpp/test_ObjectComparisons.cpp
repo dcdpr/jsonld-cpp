@@ -1,4 +1,3 @@
-#include "testHelpers.h"
 
 #include <gtest/gtest.h>
 #pragma clang diagnostic push
@@ -275,10 +274,4 @@ TEST(ObjectComparisonsTest, APointers_callOperator) {
     delete l1;
     delete l2;
 }
-
-//TEST(ObjectComparisonsTest, ASmartPointers_callOperator) {
-//    std::shared_ptr<A> l1 = std::shared_ptr<A>(new A("Same"));
-//    std::shared_ptr<A> l2 = std::shared_ptr<A>(new A("Same"));
-//    EXPECT_EQ(l1, l2); // going to have to do this with std::equal and a new comparator
-//}
 

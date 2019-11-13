@@ -2,14 +2,13 @@
 
 #include <utility>
 #include <algorithm>
-#include <iostream>
 
 using std::vector;
 using std::map;
 using std::string;
 
-Permutator::Permutator(vector<string> instrings)
-        : strings(std::move(instrings)), done(false)
+Permutator::Permutator(vector<string> istrings)
+        : strings(std::move(istrings)), done(false)
 {
     std::sort(strings.begin(), strings.end());
     for(const auto& s : strings) {
@@ -25,7 +24,7 @@ vector<string> Permutator::next() {
     vector<string> rval = strings;
 
     // Calculate the next permutation using Steinhaus-Johnson-Trotter
-    // permutation algoritm
+    // permutation algorithm
 
     // get largest mobile element k
     // (mobile: element is greater than the one it is looking at)
@@ -66,10 +65,6 @@ vector<string> Permutator::next() {
         }
     }
 
-    std::cout << "returning from permutator::next(): " << std::endl;
-    for(auto s: rval)
-        std::cout << s << " ";
-    std::cout <<  std::endl;
     return rval;
 
 }

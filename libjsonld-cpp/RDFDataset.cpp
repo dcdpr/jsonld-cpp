@@ -8,26 +8,13 @@ using nlohmann::json;
 
 namespace RDF {
 
-    RDF::RDFDataset::RDFDataset() {
-        insert(std::make_pair("@default", std::vector<Quad>()));
-    }
-
-    RDF::RDFDataset::RDFDataset(JsonLdOptions options, UniqueIdentifierGenerator *blankNodeIdGenerator)
-            : options(std::move(options)), blankNodeIdGenerator(blankNodeIdGenerator) {
+    RDF::RDFDataset::RDFDataset(JsonLdOptions ioptions, UniqueNamer *iblankNodeUniqueNamer)
+            : options(std::move(ioptions)), blankNodeUniqueNamer(iblankNodeUniqueNamer) {
 
     }
-
 
     VectorMap::mapped_type &RDF::RDFDataset::at(const VectorMap::key_type &s) {
         return vectorMap.at(s);
-    }
-
-    size_t RDF::RDFDataset::erase(const std::string &key) {
-        return 0;
-    }
-
-    size_t RDF::RDFDataset::count(const std::string &key) const {
-        return 0;
     }
 
     std::pair<VectorMap::iterator, bool>
@@ -55,14 +42,13 @@ namespace RDF {
 
         //todo: so, wait! ... will rdfdataset ever needs to store shared_ptr to quads, or just quads? If
         // just quads, did I have to go through all that bother with shared_ptr comparisons? probably need to see
-        // what java does with the list of quads later. maybe they sort when printing or comparing?
+        // what java does with the list of quads later.
 
         // 4.3)
         std::vector<std::string> subjects;
         if(graph.contains("key_insertion_order")) {
-            for (json::const_iterator it = graph["key_insertion_order"].begin();
-                 it != graph["key_insertion_order"].end(); ++it) {
-                subjects.push_back(*it);
+            for (const auto & it : graph["key_insertion_order"]) {
+                subjects.push_back(it);
             }
         }
         // else?
@@ -126,21 +112,22 @@ namespace RDF {
                         std::shared_ptr<Node> firstBNode = rdf_nil;
                         if (!list.empty()) {
                             last = objectToRDF(list.back());
-                            firstBNode = std::make_shared<BlankNode>(blankNodeIdGenerator->generate());
+                            firstBNode = std::make_shared<BlankNode>(blankNodeUniqueNamer->get());
                         }
-                        triples.push_back(Quad(subject, predicate, firstBNode, &graphName));
+                        triples.emplace_back(subject, predicate, firstBNode, &graphName);
                         if (!list.empty()) {
                             for (json::size_type i = 0; i < list.size() - 1; i++) {
                                 std::shared_ptr<Node> object = objectToRDF(list.at(i));
-                                triples.push_back(Quad(firstBNode, rdf_first, object, &graphName));
-                                std::shared_ptr<Node> restBNode = std::make_shared<BlankNode>(blankNodeIdGenerator->generate());
-                                triples.push_back(Quad(firstBNode, rdf_rest, restBNode, &graphName));
+                                triples.emplace_back(firstBNode, rdf_first, object, &graphName);
+                                std::shared_ptr<Node> restBNode = std::make_shared<BlankNode>(
+                                        blankNodeUniqueNamer->get());
+                                triples.emplace_back(firstBNode, rdf_rest, restBNode, &graphName);
                                 firstBNode = restBNode;
                             }
                         }
                         if (last != nullptr) {
-                            triples.push_back(Quad(firstBNode, rdf_first, last, &graphName));
-                            triples.push_back(Quad(firstBNode, rdf_rest, rdf_nil, &graphName));
+                            triples.emplace_back(firstBNode, rdf_first, last, &graphName);
+                            triples.emplace_back(firstBNode, rdf_rest, rdf_nil, &graphName);
                         }
                     }
                         // convert value or node object to triple
@@ -259,6 +246,31 @@ namespace RDF {
         return !(lhs < rhs);
     }
 
+    std::string Node::getValue() const {
+        return map["value"];
+    }
+
+    void Node::setValue(const std::string &s) {
+        map["value"] = s;
+    }
+
+    std::string Node::getDatatype() const {
+        if(map.count("datatype") > 0)
+            return map["datatype"];
+        else
+            return "";
+    }
+
+    std::string Node::getLanguage() const {
+        if(map.count("language") > 0)
+            return map["language"];
+        else
+            return "";
+    }
+
+    Node::Node() = default;
+    Node::~Node() = default;
+
     bool operator==(const RDF::Quad &lhs, const RDF::Quad &rhs) {
 
         // there is no easy way to check that two maps of shared_ptrs are equal, so we will do it
@@ -304,10 +316,81 @@ namespace RDF {
         return !(lhs < rhs);
     }
 
+    void Quad::init(std::string subject, std::string predicate, std::shared_ptr<Node> object, std::string *graph) {
+        subject.find_first_of("_:") == 0 ?
+        setSubject(std::make_shared<BlankNode>(subject)) :
+        setSubject(std::make_shared<IRI>(subject));
+
+        setPredicate(std::make_shared<IRI>(predicate));
+
+        setObject(std::move(object));
+        setGraph(graph);
+    }
+
+    Quad::Quad(std::shared_ptr<Node> subject, std::shared_ptr<Node> predicate, std::shared_ptr<Node> object,
+               std::string *graph) {
+        setSubject(std::move(subject));
+        setPredicate(std::move(predicate));
+        setObject(std::move(object));
+        setGraph(graph);
+    }
+
+    Quad::Quad(std::string subject, std::string predicate, std::string object, std::string *graph) {
+        std::shared_ptr<Node> o;
+        object.find_first_of("_:") == 0 ?
+                o = std::make_shared<BlankNode>(object) :
+                o = std::make_shared<IRI>(object);
+
+        init(std::move(subject), std::move(predicate), o, graph);
+    }
+
+    Quad::Quad(std::string subject, std::string predicate, const std::string &value, std::string datatype,
+               std::string language, std::string *graph) {
+        init(std::move(subject), std::move(predicate), std::make_shared<Literal>(value, &datatype, &language), graph);
+    }
+
+    std::shared_ptr<Node> Quad::getPredicate() const {
+        if(map.count("predicate"))
+            return map.at("predicate");
+        else
+            return nullptr;
+    }
+
+    std::shared_ptr<Node> Quad::getObject() const {
+        if(map.count("object"))
+            return map.at("object");
+        else
+            return nullptr;
+    }
+
+    std::shared_ptr<Node> Quad::getGraph() const {
+        if(map.count("name"))
+            return map.at("name");
+        else
+            return nullptr;
+    }
+
+    std::shared_ptr<Node> Quad::getSubject() const {
+        if(map.count("subject"))
+            return map.at("subject");
+        else
+            return nullptr;
+    }
+
+    void Quad::setGraph(const std::string *graph) { // todo: maybe make this private? friends needed?
+        if (graph != nullptr && *graph != "@default") {
+            std::shared_ptr<Node> n;
+            graph->find_first_of("_:") == 0 ?
+                    n = std::make_shared<BlankNode>(*graph) :
+                    n = std::make_shared<IRI>(*graph);
+            map["name"] = n;
+        }
+    }
+
     std::set<std::string> RDFDataset::graphNames() const {
         std::set<std::string> names;
-        for (auto it = vectorMap.begin(); it != vectorMap.end(); ++it) {
-            names.insert(it->first);
+        for (const auto & it : vectorMap) {
+            names.insert(it.first);
         }
         return names;
     }
@@ -318,4 +401,124 @@ namespace RDF {
         return std::vector<Quad>();
     }
 
+    bool Literal::isLiteral() const {
+        return true;
+    }
+
+    bool Literal::isIRI() const {
+        return false;
+    }
+
+    bool Literal::isBlankNode() const {
+        return false;
+    }
+
+    Literal::Literal(const std::string &value, std::string *datatype, std::string *language) {
+        map["type"] = "literal";
+        map["value"] = value;
+        map["datatype"] = datatype != nullptr ? *datatype : JsonLdConsts::XSD_STRING;
+        if (language != nullptr) {
+            map["language"] = *language;
+        }
+    }
+
+    bool IRI::isLiteral() const {
+        return false;
+    }
+
+    bool IRI::isIRI() const {
+        return true;
+    }
+
+    bool IRI::isBlankNode() const {
+        return false;
+    }
+
+    IRI::IRI(const std::string &iri) {
+        map["type"] = "IRI";
+        map["value"] = iri;
+    }
+
+    bool BlankNode::isBlankNode() const {
+        return true;
+    }
+
+    bool BlankNode::isIRI() const {
+        return false;
+    }
+
+    bool BlankNode::isLiteral() const {
+        return false;
+    }
+
+    BlankNode::BlankNode(const std::string &attribute) {
+        map["type"] = "blank node";
+        map["value"] = attribute;
+    }
+
+    bool NodeLess::operator()(const Node &lhs, const Node &rhs) const {
+        if(lhs.isIRI()) {
+            if(!rhs.isIRI())
+                return false;
+        }
+        else if (lhs.isBlankNode()) {
+            if(rhs.isIRI())
+                return true;
+            else if(rhs.isLiteral())
+                return false;
+        }
+        else if(lhs.isLiteral()) {
+            if(rhs.isIRI() || rhs.isBlankNode())
+                return true;
+            else {
+                // lhs and rhs are literals
+                if(lhs.getValue() != rhs.getValue()) {
+                    return lhs.getValue() < rhs.getValue();
+                }
+                else {
+                    if (!lhs.getLanguage().empty() || !rhs.getLanguage().empty())
+                        return lhs.getLanguage() < rhs.getLanguage();
+                    else
+                        return lhs.getDatatype() < rhs.getDatatype();
+                }
+            }
+        }
+        return lhs.getValue() < rhs.getValue();
+    }
+
+    bool NodePtrLess::operator()(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) const {
+        if(lhs->isIRI()) {
+            if(!rhs->isIRI())
+                return false;
+        }
+        else if (lhs->isBlankNode()) {
+            if(rhs->isIRI())
+                return true;
+            else if(rhs->isLiteral())
+                return false;
+        }
+        else if(lhs->isLiteral()) {
+            if(rhs->isIRI() || rhs->isBlankNode())
+                return true;
+            else {
+                // lhs and rhs are literals
+                if(lhs->getValue() != rhs->getValue()) {
+                    return lhs->getValue() < rhs->getValue();
+                }
+                else {
+                    if (!lhs->getLanguage().empty() || !rhs->getLanguage().empty())
+                        return lhs->getLanguage() < rhs->getLanguage();
+                    else
+                        return lhs->getDatatype() < rhs->getDatatype();
+                }
+            }
+        }
+        return lhs->getValue() < rhs->getValue();
+    }
+
+    bool NodePtrEquals::operator()(const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) const {
+        if(lhs == rhs) return true;
+        if(lhs && rhs) return *lhs == *rhs;
+        return false;
+    }
 }

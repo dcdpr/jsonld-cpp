@@ -1,10 +1,8 @@
 #ifndef LIBJSONLD_CPP_TESTHELPERS_H
 #define LIBJSONLD_CPP_TESTHELPERS_H
 
-
+#include "jsoninc.h"
 #include <string>
-#include "json.hpp"
-
 
 std::string resolvePath(const std::string &relPath);
 

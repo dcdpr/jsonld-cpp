@@ -1,6 +1,13 @@
-#include <vector>
 #include "IriUtils.h"
+
+#pragma clang diagnostic push
+#pragma GCC diagnostic push
+#pragma clang diagnostic ignored "-Wunused-parameter"
 #include "uri.hpp"
+#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
+
+#include <vector>
 
 namespace {
 
@@ -33,7 +40,7 @@ namespace {
 
 }
 
-std::string IriUtils::removeDotSegments(std::string path, bool hasAuthority) {
+std::string IriUtils::removeDotSegments(const std::string& path, bool hasAuthority) {
 
     std::vector<std::string> segments = split(path, '/');
     std::vector<std::string> result;

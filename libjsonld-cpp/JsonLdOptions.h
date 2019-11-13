@@ -4,10 +4,10 @@
 // The JsonLdOptions type as specified in "JSON-LD-API specification":
 // http://www.w3.org/TR/json-ld-api/#the-jsonldoptions-type
 
-#include <string>
-#include <sstream>
 #include "DocumentLoader.h"
 #include "JsonLdConsts.h"
+#include <string>
+#include <sstream>
 
 class JsonLdOptions {
 private:
@@ -71,40 +71,6 @@ public:
     explicit JsonLdOptions(std::string base = "")
     : base_(std::move(base)) {
     }
-
-    /**
-     * Creates a shallow copy of this JsonLdOptions object.
-     *
-     * It will share the same DocumentLoader unless that is overridden, and
-     * other mutable objects, so it isn't immutable.
-     *
-     * @return A copy of this JsonLdOptions object.
-     */
-// JsonLdOptions copy() {
-//        final JsonLdOptions copy = new JsonLdOptions(base);
-//
-//        copy.setCompactArrays(compactArrays);
-//        copy.setExpandContext(expandContext);
-//        copy.setProcessingMode(processingMode);
-//        copy.setDocumentLoader(documentLoader);
-//        copy.setEmbed(embed);
-//        copy.setExplicit(explicit);
-//        copy.setOmitDefault(omitDefault);
-//        copy.setOmitGraph(omitGraph);
-//        copy.setFrameExpansion(frameExpansion);
-//        copy.setPruneBlankNodeIdentifiers(pruneBlankNodeIdentifiers);
-//        copy.setRequireAll(requireAll);
-//        copy.setAllowContainerSetOnType(allowContainerSetOnType);
-//        copy.setUseRdfType(useRdfType);
-//        copy.setUseNativeTypes(useNativeTypes);
-//        copy.setProduceGeneralizedRdf(produceGeneralizedRdf);
-//        copy.format = format;
-//        copy.useNamespaces = useNamespaces;
-//        copy.outputForm = outputForm;
-//
-//        return copy;
-//    }
-
 
     std::string getEmbed() {
         switch (embed_) {

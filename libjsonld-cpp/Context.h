@@ -1,13 +1,13 @@
 #ifndef LIBJSONLD_CPP_CONTEXT_H
 #define LIBJSONLD_CPP_CONTEXT_H
 
-#include <utility>
-#include <memory>
+#include "jsoninc.h"
 #include "JsonLdConsts.h"
 #include "JsonLdUtils.h"
 #include "JsonLdOptions.h"
-#include "json.hpp"
 #include "JsonLdError.h"
+#include <utility>
+#include <memory>
 
 class Context {
 public:
@@ -20,72 +20,43 @@ private:
     nlohmann::json inverse;
     StringMap contextMap;
 
-    void checkEmptyKey(nlohmann::json map);
-    void checkEmptyKey(std::map<std::string, std::string> map);
-    void createTermDefinition(nlohmann::json context, std::string term, std::map<std::string, bool> & defined);
-    nlohmann::json getTermDefinition(std::string key);
-
+    static void checkEmptyKey(const nlohmann::json& map);
+    static void checkEmptyKey(const StringMap& map);
+    void createTermDefinition(nlohmann::json context, const std::string& term, std::map<std::string, bool> & defined);
+    nlohmann::json getTermDefinition(const std::string & key);
 
     void init();
 
-
 public:
 
-    Context() {
-    }
-
-    explicit Context(JsonLdOptions options)
-            : options(std::move(options))
-    {
-        init();
-    }
-
-    Context(std::map<std::string, std::string> map, JsonLdOptions options)
-            : options(std::move(options)), contextMap(std::move(map)) {
-        checkEmptyKey(contextMap); // todo: move this to init?
-        init();
-    }
-
-    Context(std::map<std::string, std::string> map)
-            : contextMap(std::move(map)) {
-        checkEmptyKey(contextMap);
-        init();
-    }
+    Context() = default;
+    explicit Context(JsonLdOptions options);
+    Context(std::map<std::string, std::string> map, JsonLdOptions options);
+    explicit Context(std::map<std::string, std::string> map);
 
 // todo: should these be static constructors?
-    Context parse(nlohmann::json localContext, std::vector<std::string> remoteContexts, bool parsingARemoteContext);
-
-    Context parse(nlohmann::json localContext, std::vector<std::string> remoteContexts);
-
-    Context parse(nlohmann::json localContext);
-
+    Context parse(const nlohmann::json & localContext, const std::vector<std::string> & remoteContexts, bool parsingARemoteContext);
+    Context parse(const nlohmann::json & localContext, const std::vector<std::string> & remoteContexts);
+    Context parse(const nlohmann::json & localContext);
 
     /**
- * Retrieve container mapping.
- *
- * @param property
- *            The Property to get a container mapping for.
- * @return The container mapping if any, else null
- */
+     * Retrieve container mapping.
+     *
+     * @param property
+     *            The Property to get a container mapping for.
+     * @return The container mapping if any, else null
+     */
     std::string getContainer(std::string property);
 
-
     std::string expandIri(std::string value, bool relative, bool vocab);
-    std::string expandIri(std::string value, bool relative, bool vocab, nlohmann::json context, std::map<std::string, bool> & defined);
-    nlohmann::json expandValue(std::string activeProperty, nlohmann::json value);
-
-
-
-
+    std::string expandIri(std::string value, bool relative, bool vocab, const nlohmann::json& context, std::map<std::string, bool> & defined);
+    nlohmann::json expandValue(const std::string & activeProperty, const nlohmann::json& value);
     bool isReverseProperty(const std::string& property);
 
     std::string & at(const std::string& s);
     size_t erase( const std::string& key );
     std::pair<StringMap::iterator,bool> insert( const StringMap::value_type& value );
     size_t count( const std::string& key ) const;
-    void printInternalMap();
-
 };
-
 
 #endif //LIBJSONLD_CPP_CONTEXT_H

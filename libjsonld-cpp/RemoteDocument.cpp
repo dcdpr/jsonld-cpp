@@ -1,7 +1,9 @@
 #include "RemoteDocument.h"
 
-RemoteDocument::RemoteDocument(const std::string &url, const nlohmann::json &document)
-: url(url), document(document)
+#include <utility>
+
+RemoteDocument::RemoteDocument(std::string iurl, nlohmann::json idocument)
+: url(std::move(iurl)), document(std::move(idocument))
 {}
 
 const std::string &RemoteDocument::getUrl() const {

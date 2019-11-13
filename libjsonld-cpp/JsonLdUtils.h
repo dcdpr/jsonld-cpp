@@ -1,8 +1,7 @@
 #ifndef LIBJSONLD_CPP_JSONLDUTILS_H
 #define LIBJSONLD_CPP_JSONLDUTILS_H
 
-#include "json.hpp"
-
+#include "jsoninc.h"
 
 namespace JsonLdUtils {
 
@@ -17,23 +16,21 @@ namespace JsonLdUtils {
      *            the value to check.
      * @return true if the value is a keyword, false if not.
      */
-    bool isKeyword(std::string property);
+    bool isKeyword(const std::string& property);
 
     bool isAbsoluteIri(const std::string& value);
 
     bool isRelativeIri(const std::string& value);
 
-    bool isList(json j);
+    bool isList(const json& j);
 
-    bool isValue(json j);
+    bool isValue(const json& j);
 
-    bool isObject(json j);
+    bool isObject(const json& j);
 
-    bool deepContains(json values, json value);
+    bool deepContains(const json& values, const json& value);
 
-    void mergeValue(json & obj, std::string key, json value);
-
-
+    void mergeValue(json & obj, const std::string& key, const json& value);
 }
 
 #endif //LIBJSONLD_CPP_JSONLDUTILS_H

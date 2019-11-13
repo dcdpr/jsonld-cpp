@@ -13,6 +13,9 @@
         -- Bruce Guenter <bruce@untroubled.org>
     Translation to simpler C++ Code
         -- Volker Grabsch <vog@notjusthosting.com>
+    Changed some names and added some extra functionality to
+    more closely match how Java's MessageDigest works
+        -- Dan Pape <dpape@dpape.com>, Oct 2019
 */
 #ifndef LIBJSONLD_CPP_SHA1_H
 #define LIBJSONLD_CPP_SHA1_H
@@ -39,15 +42,15 @@ private:
     static const unsigned int BLOCK_INTS = 16;  /* number of 32bit integers per SHA1 block */
     static const unsigned int BLOCK_BYTES = BLOCK_INTS * 4;
 
-    uint32 digestbuf[DIGEST_INTS];
+    uint32 digestbuf[DIGEST_INTS]{};
     std::string buffer;
-    uint64 transforms;
+    uint64 transforms{};
 
     void reset();
     void transform(uint32 block[BLOCK_BYTES]);
 
     static void buffer_to_block(const std::string &buffer, uint32 block[BLOCK_BYTES]);
-    static void read(std::istream &is, std::string &s, int max);
+    static void read(std::istream &is, std::string &s, size_t max);
 };
 
 /**

@@ -1,9 +1,6 @@
 #ifndef LIBBECH32_DOCUMENTLOADER_H
 #define LIBBECH32_DOCUMENTLOADER_H
 
-
-#include <boost/filesystem/path.hpp>
-#include "json.hpp"
 #include "RemoteDocument.h"
 
 class DocumentLoader {

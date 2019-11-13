@@ -1,7 +1,7 @@
+#include "DoubleFormatter.h"
 #include <sstream>
 #include <regex>
 #include <iomanip>
-#include "DoubleFormatter.h"
 
 std::string DoubleFormatter::format(double d) {
     std::stringstream ss;
@@ -11,11 +11,11 @@ std::string DoubleFormatter::format(double d) {
 
     // todo: this is a pretty annoying back-and-forth dance with all these
     // regexes. There must be a nicer way to do this.
-    std::regex preceeding_zeros("(\\.[1-9]+)0+E");
-    std::string s2 = std::regex_replace(s, preceeding_zeros, "$1E");
+    std::regex preceding_zeros("(\\.[1-9]+)0+E");
+    std::string s2 = std::regex_replace(s, preceding_zeros, "$1E");
 
-    std::regex preceeding_only_zeros("\\.0+E");
-    s = std::regex_replace(s2, preceeding_only_zeros, ".0E");
+    std::regex preceding_only_zeros("\\.0+E");
+    s = std::regex_replace(s2, preceding_only_zeros, ".0E");
 
     std::regex exponent_plus_sign("(E\\+)");
     s2 = std::regex_replace(s, exponent_plus_sign, "E");

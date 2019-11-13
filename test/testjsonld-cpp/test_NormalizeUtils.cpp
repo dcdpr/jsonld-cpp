@@ -1,6 +1,5 @@
 #include "NormalizeUtils.cpp"
 #include "RDFDataset.h"
-#include "testHelpers.h"
 
 #include <gtest/gtest.h>
 #pragma clang diagnostic push

@@ -54,30 +54,30 @@ public:
   uri(char const *uri_text, scheme_category category = scheme_category::Hierarchical,
       query_argument_separator separator = query_argument_separator::ampersand) :
     m_category(category),
-    m_path_is_rooted(false),
     m_port(0),
+    m_path_is_rooted(false),
     m_separator(separator)
   {
     setup(std::string(uri_text), category);
-  };
+  }
 
   uri(std::string const &uri_text, scheme_category category = scheme_category::Hierarchical,
       query_argument_separator separator = query_argument_separator::ampersand) :
     m_category(category),
-    m_path_is_rooted(false),
     m_port(0),
+    m_path_is_rooted(false),
     m_separator(separator)
   {
     setup(uri_text, category);
-  };
+  }
 
   uri(std::map<component, std::string> const &components,
       scheme_category category,
       bool rooted_path,
       query_argument_separator separator = query_argument_separator::ampersand) :
     m_category(category),
-    m_path_is_rooted(rooted_path),
     m_port(0),
+    m_path_is_rooted(rooted_path),
     m_separator(separator)
   {
     if (components.count(component::Scheme))
@@ -205,7 +205,7 @@ public:
   uri(uri const &other)
   {
     *this = other;
-  };
+  }
 
   // Copy assignment operator
   uri &operator=(uri const &other)
@@ -229,17 +229,17 @@ public:
     return *this;
   }
 
-  ~uri() { };
+  ~uri() { }
 
   std::string const &get_scheme() const
   {
     return m_scheme;
-  };
+  }
 
   scheme_category get_scheme_category() const
   {
     return m_category;
-  };
+  }
 
   std::string const &get_content() const
   {
@@ -248,7 +248,7 @@ public:
       throw std::domain_error("The content component is only valid for non-hierarchical URIs.");
     }
     return m_content;
-  };
+  }
 
   std::string const &get_username() const
   {
@@ -257,7 +257,7 @@ public:
       throw std::domain_error("The username component is only valid for hierarchical URIs.");
     }
     return m_username;
-  };
+  }
 
   std::string const &get_password() const
   {
@@ -266,7 +266,7 @@ public:
       throw std::domain_error("The password component is only valid for hierarchical URIs.");
     }
     return m_password;
-  };
+  }
 
   std::string const &get_host() const
   {
@@ -275,7 +275,7 @@ public:
       throw std::domain_error("The host component is only valid for hierarchical URIs.");
     }
     return m_host;
-  };
+  }
 
   unsigned long get_port() const
   {
@@ -284,7 +284,7 @@ public:
       throw std::domain_error("The port component is only valid for hierarchical URIs.");
     }
     return m_port;
-  };
+  }
 
   std::string const &get_path() const
   {
@@ -293,7 +293,7 @@ public:
       throw std::domain_error("The path component is only valid for hierarchical URIs.");
     }
     return m_path;
-  };
+  }
 
     bool get_path_is_rooted() const
     {
@@ -302,22 +302,22 @@ public:
             throw std::domain_error("The path component is only valid for hierarchical URIs.");
         }
         return m_path_is_rooted;
-    };
+    }
 
     std::string const &get_query() const
   {
     return m_query;
-  };
+  }
 
   std::map<std::string, std::string> const &get_query_dictionary() const
   {
     return m_query_dict;
-  };
+  }
 
   std::string const &get_fragment() const
   {
     return m_fragment;
-  };
+  }
 
   std::string to_string() const
   {
@@ -364,7 +364,7 @@ public:
     }
 
     return full_uri;
-  };
+  }
 
 private:
 
@@ -397,7 +397,7 @@ private:
 
     init_query_dictionary(); // If the query string is empty, this will be empty too.
 
-  };
+  }
 
   std::string::const_iterator parse_scheme(std::string const &uri_text,
 					   std::string::const_iterator scheme_start)
@@ -434,9 +434,9 @@ private:
           ++scheme_end;
       }
 
-    m_scheme = std::move(std::string(scheme_start, scheme_end));
+    m_scheme = std::string(scheme_start, scheme_end);
     return scheme_end;
-  };
+  }
 
   std::string::const_iterator parse_content(std::string const &uri_text,
 					    std::string::const_iterator content_start)
@@ -447,7 +447,7 @@ private:
       ++content_end;
     }
 
-    m_content = std::move(std::string(content_start, content_end));
+    m_content = std::string(content_start, content_end);
       std::string::const_iterator authority_cursor;
     if ((m_category == scheme_category::Hierarchical) && (m_content.length() > 0))
     {
@@ -496,10 +496,10 @@ private:
       // We can now build the path based on what remains in the content string,
       // since that's all that exists after the host and optional port component. Unless
       // all there was was an authority.
-        m_path = std::move(std::string(path_start, path_end));
+        m_path = std::string(path_start, path_end);
     }
     return content_end;
-  };
+  }
 
   std::string::const_iterator parse_username(std::string const &uri_text,
 					     std::string const &content,
@@ -517,9 +517,9 @@ private:
       }
       ++username_end;
     }
-    m_username = std::move(std::string(username_start, username_end));
+    m_username = std::string(username_start, username_end);
     return username_end;
-  };
+  }
 
   std::string::const_iterator parse_password(std::string const &uri_text,
 					     std::string const &content,
@@ -531,9 +531,9 @@ private:
       ++password_end;
     }
 
-    m_password = std::move(std::string(password_start, password_end));
+    m_password = std::string(password_start, password_end);
     return password_end;
-  };
+  }
 
   std::string::const_iterator parse_host(std::string const &uri_text,
 					 std::string const &content,
@@ -578,9 +578,9 @@ private:
       }
     }
 
-    m_host = std::move(std::string(host_start, host_end));
+    m_host = std::string(host_start, host_end);
     return host_end;
-  };
+  }
 
   std::string::const_iterator parse_port(std::string const &uri_text,
 					std::string const &content,
@@ -600,7 +600,7 @@ private:
 
     m_port = std::stoul(std::string(port_start, port_end));
     return port_end;
-  };
+  }
 
   std::string::const_iterator parse_query(std::string const &uri_text,
                                           std::string::const_iterator query_start)
@@ -612,16 +612,16 @@ private:
       // for the start of the fragment.
       ++query_end;
     }
-    m_query = std::move(std::string(query_start, query_end));
+    m_query = std::string(query_start, query_end);
     return query_end;
-  };
+  }
 
   std::string::const_iterator parse_fragment(std::string const &uri_text,
                                              std::string::const_iterator fragment_start)
   {
-    m_fragment = std::move(std::string(fragment_start, uri_text.end()));
+    m_fragment = std::string(fragment_start, uri_text.end());
     return uri_text.end();
-  };
+  }
 
   void init_query_dictionary()
   {

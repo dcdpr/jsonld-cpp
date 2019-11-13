@@ -16,23 +16,23 @@ std::string RDFDatasetUtils::toNQuads(const RDF::RDFDataset &dataset) {
         if (graphName == "@default") {
             graphNamePtr = nullptr;
         }
-        for (auto triple : triples) {
+        for (const auto& triple : triples) {
             quads.push_back(toNQuad(triple, graphNamePtr));
         }
     }
     std::sort(quads.begin(), quads.end());
-    for (auto quad : quads) {
+    for (const auto& quad : quads) {
         ss << quad;
     }
 
     return ss.str();
 }
 
-std::string RDFDatasetUtils::toNQuad(RDF::Quad quad, std::string *graphName) {
-    return toNQuad(quad, graphName, nullptr);
+std::string RDFDatasetUtils::toNQuad(const RDF::Quad& triple, std::string *graphName) {
+    return toNQuad(triple, graphName, nullptr);
 }
 
-std::string RDFDatasetUtils::toNQuad(RDF::Quad triple, std::string *graphName, std::string *bnode) {
+std::string RDFDatasetUtils::toNQuad(const RDF::Quad& triple, std::string *graphName, std::string *bnode) {
     std::stringstream ss;
 
     std::shared_ptr<RDF::Node> s = triple.getSubject();
@@ -122,12 +122,11 @@ bool RDFDatasetUtils::isHighSurrogate(char c) {
  *
  * @param str
  *            The string to escape
- * @param rval
- *            The {@link StringBuilder} to append to.
+ * @param ss
+ *            The stringstream to append to.
  */
-void RDFDatasetUtils::escape(std::string str, std::stringstream & ss) {
-    for (std::string::size_type i = 0; i < str.size(); i++) {
-        char hi = str[i];
+void RDFDatasetUtils::escape(const std::string& str, std::stringstream & ss) {
+    for (char hi : str) {
         if (hi <= 0x8 || hi == 0xB || hi == 0xC ||
             (hi >= 0xE && hi <= 0x1F) ||
             (hi >= 0x7F && hi <= 0xA0) // 0xA0 is end of non-printable latin-1 supplement characters

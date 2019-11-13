@@ -8,13 +8,19 @@
 
 using nlohmann::json;
 
+JsonLdApi::JsonLdApi(JsonLdOptions ioptions)
+        : options(std::move(ioptions)) {
+}
+
+JsonLdOptions JsonLdApi::getOptions() const {
+    return options;
+}
+
 json JsonLdApi::expand(Context activeCtx, json element) {
     return expand(std::move(activeCtx), nullptr, std::move(element));
 }
 
 json JsonLdApi::expand(Context activeCtx, std::string * activeProperty, json element) {
-
-    std::cout << "JsonLdApi::expand: " << element << std::endl;
 
     // 1)
     if (element.empty()) {
@@ -35,7 +41,7 @@ json JsonLdApi::expand(Context activeCtx, std::string * activeProperty, json ele
     }
 }
 
-json JsonLdApi::expandArrayElement(Context activeCtx, std::string * activeProperty, json element) {
+json JsonLdApi::expandArrayElement(Context activeCtx, std::string * activeProperty, const json& element) {
     // 3.1)
     json result = json::array();
     // 3.2)
@@ -69,19 +75,17 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
     // 5)
     if (element.contains(JsonLdConsts::CONTEXT)) {
         activeCtx = activeCtx.parse(element[JsonLdConsts::CONTEXT]);
-        std::cout << "after parsing1:" << std::endl;
-        activeCtx.printInternalMap();
     }
     // 6)
     json result = ObjUtils::newMap();
     // 7)
-    std::vector<std::string> keys;
+    std::vector<std::string> element_keys;
     for (json::iterator it = element.begin(); it != element.end(); ++it) {
-        keys.push_back(it.key());
+        element_keys.push_back(it.key());
     }
-    std::sort(keys.begin(), keys.end());
-    for (auto & key : keys) {
-        auto value = element[key];
+    std::sort(element_keys.begin(), element_keys.end());
+    for (auto & key : element_keys) {
+        auto element_value = element[key];
         // 7.1)
         if (key == JsonLdConsts::CONTEXT) {
             continue;
@@ -92,7 +96,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
         // 7.3)
         if (
                 // expandedProperty == nullptr ||
-                expandedProperty == "" ||
+                expandedProperty.empty() ||
                 (expandedProperty.find(':') == std::string::npos && !JsonLdUtils::isKeyword(expandedProperty))) {
             continue;
         }
@@ -110,18 +114,17 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
             }
             // 7.4.3)
             if (expandedProperty == JsonLdConsts::ID) {
-                if (value.is_string()) {
-                    expandedValue = activeCtx.expandIri(value.get<std::string>(), true, false);
+                if (element_value.is_string()) {
+                    expandedValue = activeCtx.expandIri(element_value.get<std::string>(), true, false);
                 } else if (options.getFrameExpansion()) {
-                    if (value.is_object()) {
-                        if (value.size() != 0) {
+                    if (element_value.is_object()) {
+                        if (!element_value.empty()) {
                             throw JsonLdError(JsonLdError::InvalidIdValue,
                                               "@id value must be a an empty object for framing");
                         }
-                        expandedValue = value;
-                    } else if (value.is_array()) {
-                        //expandedValue = new std::vector<std::std::string>();
-                        for ( auto v : value) {
+                        expandedValue = element_value;
+                    } else if (element_value.is_array()) {
+                        for ( const auto& v : element_value) {
                             if (!(v.is_string())) {
                                 throw JsonLdError(JsonLdError::InvalidIdValue,
                                                   "@id value must be a string, an array of strings or an empty dictionary");
@@ -139,9 +142,8 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
             }
                 // 7.4.4)
             else if (expandedProperty == JsonLdConsts::TYPE) {
-                if (value.is_array()) {
-                    //expandedValue = new std::vector<std::string>();
-                    for ( auto v : value) {
+                if (element_value.is_array()) {
+                    for ( const auto& v : element_value) {
                         if (!(v.is_string())) {
                             throw JsonLdError(JsonLdError::InvalidTypeValue,
                                               "@type value must be a string or array of strings");
@@ -149,16 +151,16 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                         expandedValue.push_back(
                                 activeCtx.expandIri(v.get<std::string>(), true, true));
                     }
-                } else if (value.is_string()) {
-                    expandedValue = activeCtx.expandIri(value.get<std::string>(), true, true);
+                } else if (element_value.is_string()) {
+                    expandedValue = activeCtx.expandIri(element_value.get<std::string>(), true, true);
                 }
                 // TODO: SPEC: no mention of empty map check
-                else if (options.getFrameExpansion() && value.is_object()) {
-                    if (value.size() != 0) {
+                else if (options.getFrameExpansion() && element_value.is_object()) {
+                    if (!element_value.empty()) {
                         throw JsonLdError(JsonLdError::InvalidTypeValue,
                                           "@type value must be a an empty object for framing");
                     }
-                    expandedValue = value;
+                    expandedValue = element_value;
                 } else {
                     throw JsonLdError(JsonLdError::InvalidTypeValue,
                                           "@type value must be a string or array of strings");
@@ -167,15 +169,15 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                 // 7.4.5)
             else if (expandedProperty == JsonLdConsts::GRAPH) {
                 std::string currentProperty = JsonLdConsts::GRAPH;
-                expandedValue = expand(activeCtx, &currentProperty, value);
+                expandedValue = expand(activeCtx, &currentProperty, element_value);
             }
                 // 7.4.6)
             else if (expandedProperty == JsonLdConsts::VALUE) {
-                if (!value.is_null() && (value.is_object() || value.is_array())) {
+                if (!element_value.is_null() && (element_value.is_object() || element_value.is_array())) {
                     throw JsonLdError(JsonLdError::InvalidValueObjectValue,
                                           "value of " + expandedProperty + " must be a scalar or null");
                 }
-                expandedValue = value;
+                expandedValue = element_value;
                 if (expandedValue.is_null()) {
                     result[JsonLdConsts::VALUE] = expandedValue; // was null
                     continue;
@@ -183,21 +185,21 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
             }
                 // 7.4.7)
             else if (expandedProperty == JsonLdConsts::LANGUAGE) {
-                if (!(value.is_string())) {
+                if (!(element_value.is_string())) {
                     throw JsonLdError(JsonLdError::InvalidLanguageTaggedString,
                                           "Value of " + expandedProperty + " must be a string");
                 }
-                std::string v = value.get<std::string>();
+                std::string v = element_value.get<std::string>();
                 std::transform(v.begin(), v.end(), v.begin(), &::tolower);
                 expandedValue = v;
             }
                 // 7.4.8)
             else if (expandedProperty == JsonLdConsts::INDEX) {
-                if (!(value.is_string())) {
+                if (!(element_value.is_string())) {
                     throw JsonLdError(JsonLdError::InvalidIndexValue,
                                           "Value of " + expandedProperty + " must be a string");
                 }
-                expandedValue = value;
+                expandedValue = element_value;
             }
                 // 7.4.9)
             else if (expandedProperty == JsonLdConsts::LIST) {
@@ -206,7 +208,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                     continue;
                 }
                 // 7.4.9.2)
-                expandedValue = expand(activeCtx, activeProperty, value);
+                expandedValue = expand(activeCtx, activeProperty, element_value);
 
                 // NOTE: step not in the spec yet
                 if (!(expandedValue.is_array())) {
@@ -216,7 +218,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                 }
 
                 // 7.4.9.3)
-                for ( auto v : expandedValue) {
+                for ( const auto& v : expandedValue) {
                     if (v.is_object() && v.contains(JsonLdConsts::LIST)) {
                         throw JsonLdError(JsonLdError::ListOfLists,
                                               "A list may not contain another list");
@@ -225,28 +227,28 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
             }
                 // 7.4.10)
             else if (expandedProperty == JsonLdConsts::SET) {
-                expandedValue = expand(activeCtx, activeProperty, value);
+                expandedValue = expand(activeCtx, activeProperty, element_value);
             }
                 // 7.4.11)
             else if (expandedProperty == JsonLdConsts::REVERSE) {
-                if (!(value.is_object())) {
+                if (!(element_value.is_object())) {
                     throw JsonLdError(JsonLdError::InvalidReverseValue,
                                           "@reverse value must be an object");
                 }
                 // 7.4.11.1)
                 {
                     std::string currentProperty = JsonLdConsts::REVERSE;
-                    expandedValue = expand(activeCtx, &currentProperty, value);
+                    expandedValue = expand(activeCtx, &currentProperty, element_value);
                 }
                 // NOTE: algorithm assumes the result is a map
                 // 7.4.11.2)
                 if (expandedValue.contains(JsonLdConsts::REVERSE)) {
                     auto reverse = expandedValue[JsonLdConsts::REVERSE];
-                    std::vector<std::string> keys;
+                    std::vector<std::string> reverse_keys;
                     for (json::iterator it = reverse.begin(); it != reverse.end(); ++it) {
-                        keys.push_back(it.key());
+                        reverse_keys.push_back(it.key());
                     }
-                    for ( auto property : keys) {
+                    for (const auto &property : reverse_keys) {
                         auto item = reverse[property];
                         // 7.4.11.2.1)
                         if (!result.contains(property)) {
@@ -261,7 +263,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                     }
                 }
                 // 7.4.11.3)
-                if (expandedValue.size() > expandedValue.contains(JsonLdConsts::REVERSE) ? 1 : 0) {
+                if (expandedValue.size() > (expandedValue.contains(JsonLdConsts::REVERSE) ? 1 : 0)) {
                     // 7.4.11.3.1)
                     if (!result.contains(JsonLdConsts::REVERSE)) {
                         result[JsonLdConsts::REVERSE] = json::object();
@@ -269,17 +271,17 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                     // 7.4.11.3.2)
                     auto & reverseMap = result[JsonLdConsts::REVERSE];
                     // 7.4.11.3.3)
-                    std::vector<std::string> keys;
+                    std::vector<std::string> expandedValue_keys;
                     for (json::iterator it = expandedValue.begin(); it != expandedValue.end(); ++it) {
-                        keys.push_back(it.key());
+                        expandedValue_keys.push_back(it.key());
                     }
-                    for ( auto property : keys) {
+                    for ( const auto& property : expandedValue_keys) {
                         if (property == JsonLdConsts::REVERSE) {
                             continue;
                         }
                         // 7.4.11.3.3.1)
                         auto items = expandedValue[property];
-                        for ( auto item : items) {
+                        for ( const auto& item : items) {
                             // 7.4.11.3.3.1.1)
                             if (item.is_object() && (item.contains(JsonLdConsts::VALUE)
                                 || item.contains(JsonLdConsts::LIST))) {
@@ -304,7 +306,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                                         || expandedProperty == JsonLdConsts::REQUIRE_ALL
                                         || expandedProperty == JsonLdConsts::EMBED_CHILDREN
                                         || expandedProperty == JsonLdConsts::OMIT_DEFAULT)) {
-                expandedValue = expand(activeCtx, &expandedProperty, value);
+                expandedValue = expand(activeCtx, &expandedProperty, element_value);
             }
             // 7.4.12)
             if (!expandedValue.is_null()) {
@@ -314,13 +316,10 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
             continue;
         }
             // 7.5
-        else if (activeCtx.getContainer(key) == JsonLdConsts::LANGUAGE && value.is_object()) {
+        else if (activeCtx.getContainer(key) == JsonLdConsts::LANGUAGE && element_value.is_object()) {
             // 7.5.1)
-//            expandedValue = new ArrayList<Object>();
             // 7.5.2)
-//             for ( std::string language : ((Map<std::string, Object>) value).keySet()) {
-//                 Object languageValue = ((Map<std::string, Object>) value).get(language);
-            for(auto& el : value.items()) {
+            for(auto& el : element_value.items()) {
                 std::string language = el.key();
                 json languageValue = el.value();
 
@@ -331,7 +330,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                     languageValue = j;
                 }
                 // 7.5.2.2)
-                for ( auto item : languageValue) {
+                for ( const auto& item : languageValue) {
                     // 7.5.2.2.1)
                     if (!(item.is_string())) {
                         std::stringstream ss;
@@ -349,17 +348,16 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
         }
         // 7.6)
         else if (activeCtx.getContainer(key) == JsonLdConsts::INDEX
-                 && value.is_object()) {
+                 && element_value.is_object()) {
             // 7.6.1)
-//            expandedValue = new ArrayList<Object>();
             // 7.6.2)
             std::vector<std::string> indexKeys;
-            for(auto& el : value.items()) {
+            for(auto& el : element_value.items()) {
                 indexKeys.push_back(el.key());
             }
             std::sort(indexKeys.begin(), indexKeys.end());
-            for ( auto index : indexKeys) {
-                json indexValue = value[index];
+            for ( const auto& index : indexKeys) {
+                json indexValue = element_value[index];
                 // 7.6.2.1)
                 if (!(indexValue.is_array())) {
                     json j;
@@ -381,7 +379,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
         }
         // 7.7)
         else {
-            expandedValue = expand(activeCtx, &key, value);
+            expandedValue = expand(activeCtx, &key, element_value);
         }
         // 7.8)
         if (expandedValue.is_null()) {
@@ -483,7 +481,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                                   "value of @type must be an IRI");
             }
             std::string jStr = j.get<std::string>();
-            if( jStr.find("_:") == 0 || jStr.find(":") == std::string::npos) {
+            if(jStr.find("_:") == 0 || jStr.find(':') == std::string::npos) {
                 throw JsonLdError(JsonLdError::InvalidTypedValue,
                                       "value of @type must be an IRI");
             }
@@ -538,13 +536,11 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
     return result;
 }
 
-RDF::RDFDataset JsonLdApi::toRDF() {
+RDF::RDFDataset JsonLdApi::toRDF(nlohmann::json element) {
     auto nodeMap = ObjUtils::newMap();
     nodeMap[JsonLdConsts::DEFAULT] = ObjUtils::newMap();
-    std::cout << nodeMap << std::endl;
-    generateNodeMap(this->value, nodeMap);
-    std::cout << nodeMap << std::endl;
-    RDF::RDFDataset dataset(options, &blankNodeIdGenerator);
+    generateNodeMap(element, nodeMap);
+    RDF::RDFDataset dataset(options, &blankNodeUniqueNamer);
 
     std::vector<std::string> keys;
     for (json::iterator it = nodeMap.begin(); it != nodeMap.end(); ++it) {
@@ -566,18 +562,10 @@ RDF::RDFDataset JsonLdApi::toRDF() {
 void JsonLdApi::generateNodeMap(json & element, json &nodeMap, std::string *activeGraph, nlohmann::json *activeSubject,
                                 std::string *activeProperty, json *list)
 {
-    std::cout << "enter generateNodeMap: element: " << element << std::endl;
-    std::cout << "enter generateNodeMap: nodeMap: " << nodeMap << std::endl;
-    std::cout << "enter generateNodeMap: activeGraph: " << (activeGraph == nullptr ? "null" : *activeGraph) << std::endl;
-    std::cout << "enter generateNodeMap: activeSubject: " << (activeSubject == nullptr ? "null" : *activeSubject) << std::endl;
-    std::cout << "enter generateNodeMap: activeProperty: " << (activeProperty == nullptr ? "null" : *activeProperty) << std::endl;
-    std::cout << "enter generateNodeMap: list: " << (list == nullptr ? "null" : *list) << std::endl;
-
     // 1)
     if (element.is_array()) {
         // 1.1)
         for (auto item : element) {
-            std::cout << "item: " << item << std::endl;
             generateNodeMap(item, nodeMap, activeGraph, activeSubject, activeProperty, list);
         }
         return;
@@ -588,15 +576,12 @@ void JsonLdApi::generateNodeMap(json & element, json &nodeMap, std::string *acti
         nodeMap[*activeGraph] = ObjUtils::newMap();
     }
     json & graph = nodeMap[*activeGraph];
-    std::cout << "nodeMap: " << nodeMap << std::endl;
-    std::cout << "graph1: " << graph << std::endl;
 
     json * node = nullptr;
     if (activeSubject != nullptr && activeSubject->is_string() &&
         graph.contains(activeSubject->get<std::string>())) {
         node = &graph[activeSubject->get<std::string>()];
     }
-    std::cout << "node: " << (node == nullptr ? "null" : *node) << std::endl;
 
     // 3)
     if (element.contains(JsonLdConsts::TYPE)) {
@@ -604,15 +589,15 @@ void JsonLdApi::generateNodeMap(json & element, json &nodeMap, std::string *acti
         json oldTypes;
         json newTypes;
         oldTypes = element[JsonLdConsts::TYPE];
-        for (auto item : oldTypes) {
+        for (const auto& item : oldTypes) {
             std::string s = item.get<std::string>();
             if (s.find_first_of("_:") == 0) {
-                newTypes.push_back(blankNodeIdGenerator.generate(item));
+                newTypes.push_back(blankNodeUniqueNamer.get(item));
             } else {
                 newTypes.push_back(item);
             }
         }
-        if(newTypes.size() > 0) {
+        if(!newTypes.empty()) {
             if (element[JsonLdConsts::TYPE].is_array())
                 element[JsonLdConsts::TYPE] = newTypes;
             else
@@ -654,20 +639,18 @@ void JsonLdApi::generateNodeMap(json & element, json &nodeMap, std::string *acti
             id = element[JsonLdConsts::ID];
             element.erase(JsonLdConsts::ID);
             if (id.find_first_of("_:") == 0) {
-                id = blankNodeIdGenerator.generate(id);
+                id = blankNodeUniqueNamer.get(id);
             }
         }
         // 6.2)
         else {
-            id = blankNodeIdGenerator.generate();
+            id = blankNodeUniqueNamer.get();
         }
         // 6.3)
-        std::cout << "graph2: " << graph << std::endl;
         if (!graph.contains(id)) {
             json tmp = ObjUtils::newMap(JsonLdConsts::ID, id);
             graph[id] = tmp;
             graph["key_insertion_order"].push_back(id);
-            std::cout << "graph3: " << graph << std::endl;
         }
         // 6.4) removed for now
         // 6.5)
@@ -690,16 +673,12 @@ void JsonLdApi::generateNodeMap(json & element, json &nodeMap, std::string *acti
         }
         // TODO: SPEC this is removed in the spec now, but it's still needed
         // (see 6.4)
-        std::cout << "node: " << (node == nullptr ? "null" : *node) << std::endl;
-        std::cout << graph << std::endl;
         node = &graph[id];
-        std::cout << "node: " << (node == nullptr ? "null" : *node) << std::endl;
-        std::cout << graph << std::endl;
         // 6.7)
         if (element.contains(JsonLdConsts::TYPE)) {
             json types = element[JsonLdConsts::TYPE];
             element.erase(JsonLdConsts::TYPE);
-            for (auto type : types) {
+            for (const auto& type : types) {
                 JsonLdUtils::mergeValue(*node, JsonLdConsts::TYPE, type);
             }
         }
@@ -723,16 +702,16 @@ void JsonLdApi::generateNodeMap(json & element, json &nodeMap, std::string *acti
             json reverseMap = element[JsonLdConsts::REVERSE];
             element.erase(JsonLdConsts::REVERSE);
             // 6.9.3)
-            std::vector<std::string> keys;
+            std::vector<std::string> reverseMap_keys;
             for (json::iterator it = reverseMap.begin(); it != reverseMap.end(); ++it) {
-                keys.push_back(it.key());
+                reverseMap_keys.push_back(it.key());
             }
-            for (auto property : keys) {
+            for (auto property : reverseMap_keys) {
                 json values = reverseMap[property];
                 // 6.9.3.1)
-                for (auto value : values) {
+                for (auto reverseMap_value : values) {
                     // 6.9.3.1.1)
-                    generateNodeMap(value, nodeMap, activeGraph, &referencedNode, &property, nullptr);
+                    generateNodeMap(reverseMap_value, nodeMap, activeGraph, &referencedNode, &property, nullptr);
                 }
             }
         }
@@ -752,18 +731,11 @@ void JsonLdApi::generateNodeMap(json & element, json &nodeMap, std::string *acti
             json & propertyValue = element[property];
             // 6.11.1)
             if (property.find_first_of("_:") == 0) {
-                property = blankNodeIdGenerator.generate(property);
+                property = blankNodeUniqueNamer.get(property);
             }
             // 6.11.2)
             if (node != nullptr && !node->contains(property)) {
-                std::cout << graph << std::endl;
-                std::cout << "node1: " << (node == nullptr ? "null" : *node) << std::endl;
-                std::cout << nodeMap << std::endl;
                 (*node)[property] = json::array();
-                std::cout << (*node)[property] << std::endl;
-                std::cout << graph << std::endl;
-                std::cout << "node2: " << (node == nullptr ? "null" : *node) << std::endl;
-                std::cout << nodeMap << std::endl;
             }
             // 6.11.3)
             json jid = id;
@@ -780,13 +752,12 @@ void JsonLdApi::generateNodeMap(json & element, json & nodeMap)
     generateNodeMap(element, nodeMap, &defaultGraph, nullptr, nullptr, nullptr);
 }
 
-std::string JsonLdApi::normalize(RDF::RDFDataset dataset) {
+std::string JsonLdApi::normalize(const RDF::RDFDataset& dataset) {
     // create quads and map bnodes to their associated quads
     std::vector<RDF::Quad> quads;
     std::map<std::string, std::map<std::string, std::vector<RDF::Quad>>> bnodes; //todo: this is a crazy data type
     std::vector<std::string> bnodes_insertion_order_keys;
     for (auto graphName : dataset.graphNames()) {
-        std::cout << "normalize, graphName: " << graphName << std::endl;
         std::vector<RDF::Quad> triples = dataset.getQuads(graphName);
         std::string *graphNamePtr = &graphName;
         if (graphName == "@default") {
@@ -803,13 +774,11 @@ std::string JsonLdApi::normalize(RDF::RDFDataset dataset) {
             auto n = quad.getSubject();
             if(n != nullptr) {
                 if(n->isBlankNode()) {
-                    std::cout << "quad subject id: " << n->getValue() << std::endl;
                     std::string id = n->getValue();
                     if(!bnodes.count(id)) {
                         std::vector<RDF::Quad> tmp;
                         bnodes[id]["quads"] = tmp;
                         bnodes_insertion_order_keys.push_back(id);
-                        std::cout << "bnodes_insertion_order_keys1: " << id << std::endl;
                     }
                     bnodes[id]["quads"].push_back(quad);
                 }
@@ -817,13 +786,11 @@ std::string JsonLdApi::normalize(RDF::RDFDataset dataset) {
             n = quad.getObject();
             if(n != nullptr) {
                 if(n->isBlankNode()) {
-                    std::cout << "quad object id: " << n->getValue() << std::endl;
                     std::string id = n->getValue();
                     if(!bnodes.count(id)) {
                         std::vector<RDF::Quad> tmp;
                         bnodes[id]["quads"] = tmp;
                         bnodes_insertion_order_keys.push_back(id);
-                        std::cout << "bnodes_insertion_order_keys2: " << id << std::endl;
                     }
                     bnodes[id]["quads"].push_back(quad);
                 }
@@ -831,13 +798,11 @@ std::string JsonLdApi::normalize(RDF::RDFDataset dataset) {
             n = quad.getGraph();
             if(n != nullptr) {
                 if(n->isBlankNode()) {
-                    std::cout << "quad graph id: " << n->getValue() << std::endl;
                     std::string id = n->getValue();
                     if(!bnodes.count(id)) {
                         std::vector<RDF::Quad> tmp;
                         bnodes[id]["quads"] = tmp;
                         bnodes_insertion_order_keys.push_back(id);
-                        std::cout << "bnodes_insertion_order_keys3: " << id << std::endl;
                     }
                     bnodes[id]["quads"].push_back(quad);
                 }
@@ -846,7 +811,7 @@ std::string JsonLdApi::normalize(RDF::RDFDataset dataset) {
     }
 
     // mapping complete, start canonical naming
-    NormalizeUtils normalizeUtils(quads, bnodes, UniqueIdentifierGenerator("_:c14n"), options);
+    NormalizeUtils normalizeUtils(quads, bnodes, UniqueNamer("_:c14n"), options);
     std::vector<std::string> ids;
     ids.reserve(bnodes.size()); // todo: need to make a keySet() function...
     for(auto const & i : bnodes) {

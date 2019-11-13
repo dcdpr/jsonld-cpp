@@ -1,7 +1,7 @@
 #include "JsonLdUtils.h"
 #include "JsonLdConsts.h"
 
-bool JsonLdUtils::isKeyword(std::string property) {
+bool JsonLdUtils::isKeyword(const std::string& property) {
 
     return
             property == "@base" ||
@@ -27,7 +27,7 @@ bool JsonLdUtils::isKeyword(std::string property) {
 
 bool JsonLdUtils::isAbsoluteIri(const std::string &value) {
     // TODO: this is a bit simplistic!
-    return value.find(":") != std::string::npos;
+    return value.find(':') != std::string::npos;
 }
 
 bool JsonLdUtils::isRelativeIri(const std::string &value) {
@@ -55,11 +55,10 @@ bool JsonLdUtils::deepCompare(JsonLdUtils::json v1, JsonLdUtils::json v2) {
         // used to mark members of v2 that we have already matched to avoid
         // matching the same item twice for lists that have duplicates
         std::vector<bool> alreadyMatched(v2.size());
-        for (int i = 0; i < v1.size(); i++) {
-            json o1 = v1.at(i);
+        for (const auto& o1 : v1) {
             bool gotmatch = false;
 
-            for (int j = 0; j < v2.size(); j++) {
+            for (size_t j = 0; j < v2.size(); j++) {
                 if (!alreadyMatched[j] && deepCompare(o1, v2.at(j))) {
                     alreadyMatched[j] = true;
                     gotmatch = true;
@@ -77,20 +76,20 @@ bool JsonLdUtils::deepCompare(JsonLdUtils::json v1, JsonLdUtils::json v2) {
     }
 }
 
-bool JsonLdUtils::isList(JsonLdUtils::json j) {
+bool JsonLdUtils::isList(const JsonLdUtils::json& j) {
     return j.contains(JsonLdConsts::LIST);
 }
 
-bool JsonLdUtils::isValue(JsonLdUtils::json j) {
+bool JsonLdUtils::isValue(const JsonLdUtils::json& j) {
     return j.contains(JsonLdConsts::VALUE);
 }
 
-bool JsonLdUtils::isObject(JsonLdUtils::json j) {
+bool JsonLdUtils::isObject(const JsonLdUtils::json& j) {
     return j.is_object();
 }
 
-bool JsonLdUtils::deepContains(JsonLdUtils::json values, JsonLdUtils::json value) {
-    for (auto item : values) {
+bool JsonLdUtils::deepContains(const JsonLdUtils::json& values, const JsonLdUtils::json& value) {
+    for (const auto& item : values) {
         if (deepCompare(item, value)) {
             return true;
         }
@@ -99,7 +98,7 @@ bool JsonLdUtils::deepContains(JsonLdUtils::json values, JsonLdUtils::json value
 }
 
 
-void JsonLdUtils::mergeValue(json & obj, std::string key, json value) {
+void JsonLdUtils::mergeValue(json & obj, const std::string& key, const json& value) {
     if (obj.is_null()) {
         return;
     }

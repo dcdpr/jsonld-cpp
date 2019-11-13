@@ -27,7 +27,6 @@ void performExpandTest(int testNumber) {
     opts.setDocumentLoader(dl);
 
     json expanded = JsonLdProcessor::expand(baseUri, opts);
-std::cout << expanded << std::endl;
     EXPECT_TRUE(JsonLdUtils::deepCompare(expected, expanded));
 }
 

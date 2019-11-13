@@ -1,4 +1,5 @@
 #include "JsonLdProcessor.cpp"
+#include "IriUtils.h"
 #include "testHelpers.h"
 
 #include <gtest/gtest.h>
@@ -8,8 +9,6 @@
 #pragma GCC diagnostic ignored "-Wall"
 #pragma GCC diagnostic ignored "-Wextra"
 #include <rapidcheck/gtest.h>
-#include <IriUtils.h>
-
 #pragma clang diagnostic pop
 #pragma GCC diagnostic pop
 

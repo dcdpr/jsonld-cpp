@@ -17,22 +17,9 @@ TEST(JsonLdApiTest, construct_default) {
 }
 
 TEST(JsonLdApiTest, construct_with_options) {
-//    auto options = std::shared_ptr<JsonLdOptions>(new JsonLdOptions("foobar"));
     JsonLdOptions options("foobar");
     JsonLdApi api(options);
     EXPECT_EQ(api.getOptions().getBase(), "foobar");
-}
-
-
-
-TEST(JsonLdApiTest, json_string_test) {
-    json jstring = "http://www.example.com/somedata.json";
-    std::cout << jstring << std::endl;
-    json jobject = json::object();
-    std::cout << jobject << std::endl;
-    json jarray = json::array();
-    std::cout << jarray << std::endl;
-
 }
 
 
