@@ -28,44 +28,53 @@ TEST(NodeComparisonsTest, literals_withDifferentValue_areNotEqual) {
 }
 
 TEST(NodeComparisonsTest, literals_withSameValueSameLang_areEqual) {
-    Literal l1("Same", nullptr, new std::string("en"));
-    Literal l2("Same", nullptr, new std::string("en"));
+    std::string lang_en = "en";
+    Literal l1("Same", nullptr, &lang_en);
+    Literal l2("Same", nullptr, &lang_en);
     EXPECT_EQ(l1, l2);
 }
 
 TEST(NodeComparisonsTest, literals_withSameValueNullLang_areNotEqual) {
-    Literal l1("Same", nullptr, new std::string("en"));
+    std::string lang_en = "en";
+    Literal l1("Same", nullptr, &lang_en);
     Literal l2("Same", nullptr, nullptr);
     EXPECT_NE(l1, l2);
 }
 
 TEST(NodeComparisonsTest, literals_withSameValueDifferentLang_areNotEqual) {
-    Literal l1("Same", nullptr, new std::string("en"));
-    Literal l2("Same", nullptr, new std::string("no"));
+    std::string lang_en = "en";
+    std::string lang_no = "no";
+    Literal l1("Same", nullptr, &lang_en);
+    Literal l2("Same", nullptr, &lang_no);
     EXPECT_NE(l1, l2);
 }
 
 TEST(NodeComparisonsTest, literals_withDifferentValueSameLang_areNotEqual) {
-    Literal l1("Same", nullptr, new std::string("en"));
-    Literal l2("Not Same", nullptr, new std::string("en"));
+    std::string lang_en = "en";
+    Literal l1("Same", nullptr, &lang_en);
+    Literal l2("Not Same", nullptr, &lang_en);
     EXPECT_NE(l1, l2);
 }
 
 TEST(NodeComparisonsTest, literals_withSameValueSameType_areEqual) {
-    Literal l1("Same", new std::string(JsonLdConsts::XSD_INTEGER), nullptr);
-    Literal l2("Same", new std::string(JsonLdConsts::XSD_INTEGER), nullptr);
+    std::string dt_integer = JsonLdConsts::XSD_INTEGER;
+    Literal l1("Same", &dt_integer, nullptr);
+    Literal l2("Same", &dt_integer, nullptr);
     EXPECT_EQ(l1, l2);
 }
 
 TEST(NodeComparisonsTest, literals_withSameValueNullType_areNotEqual) {
-    Literal l1("Same", new std::string(JsonLdConsts::XSD_INTEGER), nullptr);
+    std::string dt_integer = JsonLdConsts::XSD_INTEGER;
+    Literal l1("Same", &dt_integer, nullptr);
     Literal l2("Same", nullptr, nullptr);
     EXPECT_NE(l1, l2);
 }
 
 TEST(NodeComparisonsTest, literals_withSameValueDifferentType_areNotEqual) {
-    Literal l1("Same", new std::string(JsonLdConsts::XSD_INTEGER), nullptr);
-    Literal l2("Same", new std::string(JsonLdConsts::XSD_STRING), nullptr);
+    std::string dt_integer = JsonLdConsts::XSD_INTEGER;
+    std::string dt_string = JsonLdConsts::XSD_STRING;
+    Literal l1("Same", &dt_integer, nullptr);
+    Literal l2("Same", &dt_string, nullptr);
     EXPECT_NE(l1, l2);
 }
 
@@ -82,14 +91,16 @@ TEST(NodeComparisonsTest, iris_withDifferentIri_areNotEqual) {
 }
 
 TEST(NodeComparisonsTest, literals_differentThanIris) {
+    std::string dt_string = JsonLdConsts::XSD_STRING;
     IRI i1("Same");
-    Literal l1("Same", new std::string(JsonLdConsts::XSD_STRING), nullptr);
+    Literal l1("Same", &dt_string, nullptr);
     EXPECT_NE(i1, l1);
 }
 
 TEST(NodeComparisonsTest, literals_differentThanBlankNodes) {
+    std::string dt_string = JsonLdConsts::XSD_STRING;
     BlankNode b1("Same");
-    Literal l1("Same", new std::string(JsonLdConsts::XSD_STRING), nullptr);
+    Literal l1("Same", &dt_string, nullptr);
     EXPECT_NE(b1, l1);
 }
 

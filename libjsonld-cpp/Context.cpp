@@ -83,7 +83,7 @@ Context Context::parse(const json & localContext, const std::vector<std::string>
 //        remoteContexts = new ArrayList<String>();
 //    }
     // 1. Initialize result to the result of cloning active context.
-    Context *result = new Context(*this); // todo: needs a smart pointer so we don't leak memory
+    Context result = *this;
     // 2)
 
     // set up an array for the loop in 3)
@@ -99,7 +99,8 @@ Context Context::parse(const json & localContext, const std::vector<std::string>
     for (auto context : myContext) {
         // 3.1)
         if (context.is_null()) {
-            result = new Context(options); // todo: needs a smart pointer so we don't leak memory
+            Context c(options);
+            result = c;
             continue;
         }
 //        else if (context instanceof Context) { // todo: will this happen in c++ version?
@@ -143,19 +144,19 @@ Context Context::parse(const json & localContext, const std::vector<std::string>
             auto value = context.at(JsonLdConsts::BASE);
             // 3.4.2
             if (value.is_null()) {
-                result->erase(JsonLdConsts::BASE);
+                result.erase(JsonLdConsts::BASE);
             } else if (value.is_string()) {
                 // 3.4.3
                 if (JsonLdUtils::isAbsoluteIri(value)) {
-                    result->insert(std::make_pair(JsonLdConsts::BASE, value.get<std::string>()));
+                    result.insert(std::make_pair(JsonLdConsts::BASE, value.get<std::string>()));
                 } else {
                     // 3.4.4
-                    std::string baseUri = result->at(JsonLdConsts::BASE);
+                    std::string baseUri = result.at(JsonLdConsts::BASE);
                     if (!JsonLdUtils::isAbsoluteIri(baseUri)) {
                         throw JsonLdError(JsonLdError::InvalidBaseIri, baseUri);
                     }
                     std::string tmpIri = value.get<std::string>();
-                    result->insert(std::make_pair(JsonLdConsts::BASE, JsonLdUrl::resolve(&baseUri, &tmpIri)));
+                    result.insert(std::make_pair(JsonLdConsts::BASE, JsonLdUrl::resolve(&baseUri, &tmpIri)));
                 }
             } else {
                 // 3.4.5
@@ -167,10 +168,10 @@ Context Context::parse(const json & localContext, const std::vector<std::string>
         if (context.contains(JsonLdConsts::VOCAB)) {
             auto value = context.at(JsonLdConsts::VOCAB);
             if (value.is_null()) {
-                result->erase(JsonLdConsts::VOCAB);
+                result.erase(JsonLdConsts::VOCAB);
             } else if (value.is_string()) {
                 if (JsonLdUtils::isAbsoluteIri(value)) {
-                    result->insert(std::make_pair(JsonLdConsts::VOCAB, value.get<std::string>()));
+                    result.insert(std::make_pair(JsonLdConsts::VOCAB, value.get<std::string>()));
                 } else {
                     throw JsonLdError(JsonLdError::InvalidVocabMapping,
                                       "@value must be an absolute IRI");
@@ -185,9 +186,9 @@ Context Context::parse(const json & localContext, const std::vector<std::string>
         if (context.contains(JsonLdConsts::LANGUAGE)) {
             auto value = context.at(JsonLdConsts::LANGUAGE);
             if (value.is_null()) {
-                result->erase(JsonLdConsts::LANGUAGE);
+                result.erase(JsonLdConsts::LANGUAGE);
             } else if (value.is_string()) {
-                result->insert(std::make_pair(JsonLdConsts::LANGUAGE, value.get<std::string>())); // todo: value to lowercase
+                result.insert(std::make_pair(JsonLdConsts::LANGUAGE, value.get<std::string>())); // todo: value to lowercase
             } else {
                 throw JsonLdError(JsonLdError::InvalidDefaultLanguage, value);
             }
@@ -200,11 +201,11 @@ Context Context::parse(const json & localContext, const std::vector<std::string>
             if (key == JsonLdConsts::BASE || key == JsonLdConsts::VOCAB || key == JsonLdConsts::LANGUAGE) {
                 continue;
             }
-            result->createTermDefinition(context, key, defined);
+            result.createTermDefinition(context, key, defined);
         }
     }
 
-    return *result;
+    return result;
 }
 
 std::string Context::getContainer(std::string property) {
