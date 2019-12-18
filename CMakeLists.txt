@@ -15,6 +15,7 @@ endif()
 find_package(Boost 1.70 REQUIRED COMPONENTS  filesystem)
 
 add_subdirectory(libjsonld-cpp)
+add_subdirectory(examples)
 
 enable_testing()
 

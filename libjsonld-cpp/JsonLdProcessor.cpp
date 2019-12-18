@@ -143,3 +143,13 @@ std::string JsonLdProcessor::normalize(const std::string& input, const JsonLdOpt
     JsonLdApi api(options);
     return api.normalize(dataset);
 }
+
+nlohmann::json JsonLdProcessor::expand(nlohmann::json input) {
+    JsonLdOptions opts;
+    return expand(std::move(input), opts);
+}
+
+nlohmann::json JsonLdProcessor::expand(std::string input) {
+    JsonLdOptions opts;
+    return expand(std::move(input), opts);
+}

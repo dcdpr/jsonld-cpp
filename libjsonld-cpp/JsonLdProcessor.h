@@ -30,8 +30,8 @@ namespace JsonLdProcessor {
      * @throws JsonLdError
      *             If there is an error while expanding.
      */
-    static nlohmann::json expand(nlohmann::json input, JsonLdOptions opts);
-    static nlohmann::json expand(const std::string& input, JsonLdOptions opts);
+    nlohmann::json expand(nlohmann::json input, JsonLdOptions opts);
+    nlohmann::json expand(const std::string& input, JsonLdOptions opts);
 
     /**
      * Expands the given input according to the steps in the
@@ -44,19 +44,13 @@ namespace JsonLdProcessor {
      * @throws JsonLdError
      *             If there is an error while expanding.
      */
-    static nlohmann::json expand(nlohmann::json input)  {
-        JsonLdOptions opts;
-        return expand(std::move(input), opts);
-    }
-    static nlohmann::json expand(std::string input)  {
-        JsonLdOptions opts;
-        return expand(std::move(input), opts);
-    }
+    nlohmann::json expand(nlohmann::json input);
+    nlohmann::json expand(std::string input);
 
-    static RDF::RDFDataset toRDF(const std::string& input, const JsonLdOptions& options);
-    static std::string toRDFString(const std::string& input, const JsonLdOptions& options);
+    RDF::RDFDataset toRDF(const std::string& input, const JsonLdOptions& options);
+    std::string toRDFString(const std::string& input, const JsonLdOptions& options);
 
-    static std::string normalize(const std::string& input, const JsonLdOptions& options);
+    std::string normalize(const std::string& input, const JsonLdOptions& options);
 }
 
 #endif //LIBJSONLD_CPP_JSONLDPROCESSOR_H

@@ -1,4 +1,4 @@
-#include "JsonLdProcessor.cpp"
+#include "JsonLdProcessor.h"
 #include "testHelpers.h"
 #include <fstream>
 

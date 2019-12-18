@@ -1,6 +1,8 @@
-#include "JsonLdProcessor.cpp"
+#include "JsonLdProcessor.h"
 #include "testHelpers.h"
 #include <fstream>
+
+using nlohmann::json;
 
 #include <gtest/gtest.h>
 #pragma clang diagnostic push
