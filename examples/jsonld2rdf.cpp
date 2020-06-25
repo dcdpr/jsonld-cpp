@@ -26,7 +26,18 @@ int main (int argc, char *argv[]) {
     }
 
     std::ifstream fsIn { inputFilename };
+
+    if(fsIn.fail()) {
+        std::cout << inputFilename << " not found." << std::endl;
+        return 2;
+    }
+
     std::string inputStr {std::istreambuf_iterator<char>(fsIn), std::istreambuf_iterator<char>() };
+
+    if(inputStr.empty()) {
+        std::cout << inputFilename << " is empty." << std::endl;
+        return 3;
+    }
 
     std::string fileUri = "file://" + inputFilename;
 

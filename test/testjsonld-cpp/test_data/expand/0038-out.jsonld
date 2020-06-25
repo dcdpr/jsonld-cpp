@@ -46,7 +46,7 @@
         "@id": "_:termAppendedToBlankNode"
       },
       {
-        "@id": "http://json-ld.org/test-suite/tests/relativeIri"
+        "@id": "https://w3c.github.io/json-ld-api/tests/expand/relativeIri"
       },
       {
         "@id": "_:term"

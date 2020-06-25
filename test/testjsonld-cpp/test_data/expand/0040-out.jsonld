@@ -16,7 +16,7 @@
         "@value": "indexes"
       },
       {
-        "@id": "http://json-ld.org/test-suite/tests/asTheValueIsntAnObject"
+        "@id": "https://w3c.github.io/json-ld-api/tests/expand/asTheValueIsntAnObject"
       }
     ]
   }

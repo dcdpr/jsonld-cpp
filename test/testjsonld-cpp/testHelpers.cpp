@@ -31,24 +31,24 @@ std::string getTestNumberStr(int i) {
 }
 
 std::string getBaseUri(const std::string& testName, const std::string& testNumber) {
-    return "http://json-ld.org/test-suite/tests/" + testName + "-" + testNumber + "-in.jsonld";
+    return "https://w3c.github.io/json-ld-api/tests/" + testName + "/" + testNumber + "-in.jsonld";
 }
 
 std::string getInputStr(const std::string& testName, const std::string& testNumber) {
-    std::ifstream fsIn {resolvePath("test/testjsonld-cpp/test_data/" + testName + "-" + testNumber + "-in.jsonld") };
+    std::ifstream fsIn {resolvePath("test/testjsonld-cpp/test_data/" + testName + "/" + testNumber + "-in.jsonld") };
     std::string inputStr {std::istreambuf_iterator<char>(fsIn), std::istreambuf_iterator<char>() };
     return inputStr;
 }
 
 nlohmann::json getExpectedJson(const std::string& testName, const std::string& testNumber) {
-    std::ifstream fsOut {resolvePath("test/testjsonld-cpp/test_data/" + testName + "-" + testNumber + "-out.jsonld") };
+    std::ifstream fsOut {resolvePath("test/testjsonld-cpp/test_data/" + testName + "/" + testNumber + "-out.jsonld") };
     std::string outputStr { std::istreambuf_iterator<char>(fsOut), std::istreambuf_iterator<char>() };
     nlohmann::json expected = nlohmann::json::parse(outputStr);
     return expected;
 }
 
 std::string getExpectedRDF(const std::string& testName, const std::string& testNumber) {
-    std::ifstream fsOut {resolvePath("test/testjsonld-cpp/test_data/" + testName + "-" + testNumber + "-out.nq") };
+    std::ifstream fsOut {resolvePath("test/testjsonld-cpp/test_data/" + testName + "/" + testNumber + "-out.nq") };
     std::string outputStr { std::istreambuf_iterator<char>(fsOut), std::istreambuf_iterator<char>() };
     return outputStr;
 }
