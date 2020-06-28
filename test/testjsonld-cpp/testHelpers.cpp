@@ -30,6 +30,12 @@ std::string getTestNumberStr(int i) {
     return ss.str();
 }
 
+std::string getTestNumberStr(const std::string& prefix, int i) {
+    std::stringstream ss;
+    ss << prefix << std::setw(3) << std::setfill('0') << i;
+    return ss.str();
+}
+
 std::string getBaseUri(const std::string& testName, const std::string& testNumber) {
     return "https://w3c.github.io/json-ld-api/tests/" + testName + "/" + testNumber + "-in.jsonld";
 }
