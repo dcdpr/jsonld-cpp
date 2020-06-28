@@ -195,7 +195,6 @@ TEST(JsonLdProcessorTest, toRDF_0036) {
 
 // cases 37-112 don't exist
 
-
 TEST(JsonLdProcessorTest, toRdf_0113) {
     performToRDFTest(113);
 }

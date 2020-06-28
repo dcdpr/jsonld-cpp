@@ -55,6 +55,14 @@ nlohmann::json getExpectedJson(const std::string& testName, const std::string& t
 
 std::string getExpectedRDF(const std::string& testName, const std::string& testNumber) {
     std::ifstream fsOut {resolvePath("test/testjsonld-cpp/test_data/" + testName + "/" + testNumber + "-out.nq") };
-    std::string outputStr { std::istreambuf_iterator<char>(fsOut), std::istreambuf_iterator<char>() };
-    return outputStr;
+    std::vector<std::string> lines;
+    std::string line;
+    while (std::getline(fsOut, line, '\n'))
+    {
+        lines.push_back(line);
+    }
+    std::sort(lines.begin(), lines.end());
+    std::stringstream result;
+    copy(lines.begin(), lines.end(), std::ostream_iterator<std::string>(result, "\n"));
+    return result.str();
 }
