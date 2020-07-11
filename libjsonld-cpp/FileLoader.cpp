@@ -1,13 +1,14 @@
-#include "DocumentLoader.h"
+#include "FileLoader.h"
 #include <iostream>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <sstream>
 
 using json = nlohmann::json;
-using namespace boost::filesystem;
 
 namespace {
+
+    using namespace boost::filesystem;
 
     std::string getFileContents(const path &p) {
         ifstream f{p};
@@ -20,7 +21,7 @@ namespace {
 }
 
 
-RemoteDocument DocumentLoader::loadDocument(const std::string &url) {
+RemoteDocument FileLoader::loadDocument(const std::string &url) {
 
     // first check the cache
     auto it = cache.find(url);
@@ -49,7 +50,11 @@ RemoteDocument DocumentLoader::loadDocument(const std::string &url) {
 
 }
 
-void DocumentLoader::addDocumentToCache(const std::string &url, const std::string &contents) {
+void FileLoader::addDocumentToCache(const std::string &url, const std::string &contents) {
     json j = json::parse(contents);
     cache.insert(std::make_pair(url, j));
+}
+
+FileLoader *FileLoader::clone() const {
+    return new FileLoader(*this);
 }

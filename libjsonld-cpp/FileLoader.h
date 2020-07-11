@@ -1,9 +1,10 @@
-#ifndef LIBBECH32_DOCUMENTLOADER_H
-#define LIBBECH32_DOCUMENTLOADER_H
+#ifndef LIBJSONLD_CPP_FILELOADER_H
+#define LIBJSONLD_CPP_FILELOADER_H
 
 #include "RemoteDocument.h"
+#include "DocumentLoader.h"
 
-class DocumentLoader {
+class FileLoader : public DocumentLoader {
 
     using json = nlohmann::json;
 
@@ -11,6 +12,8 @@ private:
     std::map<std::string, json> cache;
 
 public:
+
+    virtual FileLoader* clone() const;
 
     void addDocumentToCache(const std::string &url, const std::string &contents);
 
@@ -20,4 +23,4 @@ public:
 
 
 
-#endif //LIBBECH32_DOCUMENTLOADER_H
+#endif //LIBJSONLD_CPP_FILELOADER_H
