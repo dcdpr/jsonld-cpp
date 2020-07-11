@@ -4,7 +4,7 @@
 // The JsonLdOptions type as specified in "JSON-LD-API specification":
 // http://www.w3.org/TR/json-ld-api/#the-jsonldoptions-type
 
-#include "DocumentLoader.h"
+#include "FileLoader.h"
 #include "JsonLdConsts.h"
 #include <string>
 #include <sstream>
@@ -33,7 +33,7 @@ private:
     /**
      * http://www.w3.org/TR/json-ld-api/#widl-JsonLdOptions-documentLoader
      */
-    DocumentLoader documentLoader_;
+    std::unique_ptr<DocumentLoader> documentLoader_;
 
     // Frame options : https://w3c.github.io/json-ld-framing/
 
@@ -69,7 +69,38 @@ public:
      *            The base IRI for the document.
      */
     explicit JsonLdOptions(std::string base = "")
-    : base_(std::move(base)) {
+            : base_(std::move(base)) {
+    }
+
+    explicit JsonLdOptions(std::unique_ptr<DocumentLoader> documentLoader)
+            : documentLoader_(std::move(documentLoader)) {
+    }
+
+    JsonLdOptions(const JsonLdOptions& other) {
+        base_ = other.base_;
+        compactArrays_ = other.compactArrays_;
+        expandContext_ = other.expandContext_;
+        processingMode_ = other.processingMode_;
+        if(other.documentLoader_)
+            documentLoader_.reset( other.documentLoader_->clone() );
+
+        embed_ = other.embed_;
+        explicit_ = other.explicit_;
+        omitDefault_ = other.omitDefault_;
+        omitGraph_ = other.omitGraph_;
+        frameExpansion_ = other.frameExpansion_;
+        pruneBlankNodeIdentifiers_ = other.pruneBlankNodeIdentifiers_;
+        requireAll_ = other.requireAll_;
+        allowContainerSetOnType_ = other.allowContainerSetOnType_;
+
+        useRdfType_ = other.useRdfType_;
+        useNativeTypes_ = other.useNativeTypes_;
+        produceGeneralizedRdf_ = other.produceGeneralizedRdf_;
+    }
+
+    JsonLdOptions & operator=(const JsonLdOptions& other) {
+        documentLoader_.reset( other.documentLoader_->clone() );
+        return *this;
     }
 
     std::string getEmbed() {
@@ -231,11 +262,11 @@ public:
         this->produceGeneralizedRdf_ = produceGeneralizedRdf;
     }
 
-    DocumentLoader getDocumentLoader() {
-        return documentLoader_;
+    DocumentLoader * getDocumentLoader() {
+        return documentLoader_.get();
     }
 
-    void setDocumentLoader(DocumentLoader documentLoader) {
+    void setDocumentLoader(std::unique_ptr<DocumentLoader> documentLoader) {
         this->documentLoader_ = std::move(documentLoader);
     }
 

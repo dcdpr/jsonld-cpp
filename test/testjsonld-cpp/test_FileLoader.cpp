@@ -1,4 +1,4 @@
-#include "DocumentLoader.cpp"
+#include "FileLoader.cpp"
 #include "testHelpers.h"
 
 #include <gtest/gtest.h>
@@ -12,7 +12,7 @@
 #pragma GCC diagnostic pop
 
 TEST(DocumentLoaderTest, load_sample_document_from_filesystem) {
-    DocumentLoader dl;
+    FileLoader dl;
 
     std::string docPath = resolvePath("test/testjsonld-cpp/test_data/pi-is-four.json");
 
@@ -24,7 +24,7 @@ TEST(DocumentLoaderTest, load_sample_document_from_filesystem) {
 }
 
 TEST(DocumentLoaderTest, load_sample_document_from_cache) {
-    DocumentLoader dl;
+    FileLoader dl;
     dl.addDocumentToCache("foo.json", R"({ "pi": 3 })");
 
     RemoteDocument d = dl.loadDocument("foo.json");
@@ -32,7 +32,7 @@ TEST(DocumentLoaderTest, load_sample_document_from_cache) {
 }
 
 TEST(DocumentLoaderTest, load_document_from_cache_miss) {
-    DocumentLoader dl;
+    FileLoader dl;
     dl.addDocumentToCache("foo.json", R"({ "pi": 3 })");
 
     EXPECT_THROW(dl.loadDocument("bar.json"), std::runtime_error);

@@ -21,10 +21,10 @@ void performNormalizeTest(int testNumber) {
     std::string inputStr = getInputStr(testName, testNumberStr);
     std::string expected = getExpectedRDF(testName, testNumberStr);
 
-    DocumentLoader dl;
-    dl.addDocumentToCache(baseUri, inputStr);
+    std::unique_ptr<FileLoader> loader(new FileLoader);
+    loader->addDocumentToCache(baseUri, inputStr);
     JsonLdOptions opts(baseUri);
-    opts.setDocumentLoader(dl);
+    opts.setDocumentLoader(std::move(loader));
 
     std::string str = JsonLdProcessor::normalize(baseUri, opts);
 

@@ -1,5 +1,6 @@
 #include "JsonLdProcessor.h"
 #include "testHelpers.h"
+#include "ManifestLoader.h"
 #include <fstream>
 
 using nlohmann::json;
@@ -23,10 +24,10 @@ void performExpandTest(int testNumber) {
     std::string inputStr = getInputStr(testName, testNumberStr);
     json expected = getExpectedJson(testName, testNumberStr);
 
-    DocumentLoader dl;
-    dl.addDocumentToCache(baseUri, inputStr);
+    std::unique_ptr<FileLoader> loader(new FileLoader);
+    loader->addDocumentToCache(baseUri, inputStr);
     JsonLdOptions opts(baseUri);
-    opts.setDocumentLoader(dl);
+    opts.setDocumentLoader(std::move(loader));
 
     json expanded = JsonLdProcessor::expand(baseUri, opts);
     EXPECT_TRUE(JsonLdUtils::deepCompare(expected, expanded));
@@ -357,5 +358,18 @@ TEST(JsonLdProcessorTest, expand_0301) {
 TEST(JsonLdProcessorTest, expand_0302) {
     // this is an extra test Dan added while trying to debug issues with normalize test 0044
     performExpandTest(302);
+}
+
+TEST(JsonLdProcessorTest, expand_with_manifest) {
+
+    ManifestLoader manifestLoader(resolvePath("test/testjsonld-cpp/test_data/"), "expand-manifest.jsonld");
+    std::map<std::string, TestCase> testCases = manifestLoader.load();
+
+    for(auto & testCaseEntry : testCases) {
+        std::cout << testCaseEntry.first << std::endl;
+
+    }
+
+    // todo ...
 }
 

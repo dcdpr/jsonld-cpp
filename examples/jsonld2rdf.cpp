@@ -41,10 +41,10 @@ int main (int argc, char *argv[]) {
 
     std::string fileUri = "file://" + inputFilename;
 
-    DocumentLoader dl;
-    dl.addDocumentToCache(fileUri, inputStr);
+    std::unique_ptr<FileLoader> loader(new FileLoader);
+    loader->addDocumentToCache(fileUri, inputStr);
     JsonLdOptions opts(fileUri);
-    opts.setDocumentLoader(dl);
+    opts.setDocumentLoader(std::move(loader));
 
     std::string nquads = JsonLdProcessor::normalize(fileUri, opts);
 

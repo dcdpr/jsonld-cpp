@@ -1,7 +1,7 @@
 ############################################################
 # Target: libjsonld-cpp
 
-add_library(jsonld-cpp STATIC RemoteDocument.cpp RemoteDocument.h DocumentLoader.cpp DocumentLoader.h JsonLdOptions.h JsonLdConsts.h JsonLdUtils.cpp JsonLdUtils.h JsonLdApi.cpp JsonLdApi.h JsonLdOptions.cpp Context.cpp Context.h JsonLdError.cpp JsonLdError.h JsonLdProcessor.cpp JsonLdProcessor.h ObjUtils.cpp ObjUtils.h JsonLdUrl.cpp JsonLdUrl.h IriUtils.cpp IriUtils.h RDFDataset.cpp RDFDataset.h UniqueNamer.cpp UniqueNamer.h RDFDatasetUtils.cpp RDFDatasetUtils.h DoubleFormatter.cpp DoubleFormatter.h NormalizeUtils.cpp NormalizeUtils.h sha1.cpp sha1.h Permutator.cpp Permutator.h ../include/jsoninc.h)
+add_library(jsonld-cpp STATIC RemoteDocument.cpp RemoteDocument.h FileLoader.cpp FileLoader.h JsonLdOptions.h JsonLdConsts.h JsonLdUtils.cpp JsonLdUtils.h JsonLdApi.cpp JsonLdApi.h JsonLdOptions.cpp Context.cpp Context.h JsonLdError.cpp JsonLdError.h JsonLdProcessor.cpp JsonLdProcessor.h ObjUtils.cpp ObjUtils.h JsonLdUrl.cpp JsonLdUrl.h IriUtils.cpp IriUtils.h RDFDataset.cpp RDFDataset.h UniqueNamer.cpp UniqueNamer.h RDFDatasetUtils.cpp RDFDatasetUtils.h DoubleFormatter.cpp DoubleFormatter.h NormalizeUtils.cpp NormalizeUtils.h sha1.cpp sha1.h Permutator.cpp Permutator.h ../include/jsoninc.h DocumentLoader.cpp)
 
 target_include_directories(jsonld-cpp
     PUBLIC

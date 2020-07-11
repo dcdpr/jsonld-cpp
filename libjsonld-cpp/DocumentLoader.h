@@ -1,23 +1,20 @@
-#ifndef LIBBECH32_DOCUMENTLOADER_H
-#define LIBBECH32_DOCUMENTLOADER_H
+#ifndef LIBJSONLD_CPP_DOCUMENTLOADER_H
+#define LIBJSONLD_CPP_DOCUMENTLOADER_H
 
 #include "RemoteDocument.h"
+#include <string>
 
 class DocumentLoader {
-
-    using json = nlohmann::json;
-
-private:
-    std::map<std::string, json> cache;
-
 public:
+    // virtual destructor needed as this is an abstract base class
+    virtual ~DocumentLoader();
+    // virtual clone function needed so that classes holding unique_ptrs to
+    // DocumentLoader can be copied
+    virtual DocumentLoader* clone() const = 0;
 
-    void addDocumentToCache(const std::string &url, const std::string &contents);
+    // loads the document referred to by the url
+    virtual RemoteDocument loadDocument(const std::string &url) = 0;
 
-    // load url and return a RemoteDocument
-    RemoteDocument loadDocument(const std::string &url);
 };
 
-
-
-#endif //LIBBECH32_DOCUMENTLOADER_H
+#endif //LIBJSONLD_CPP_DOCUMENTLOADER_H

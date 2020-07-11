@@ -1,7 +1,7 @@
 #ifndef LIBJSONLD_CPP_MANIFESTLOADER_H
 #define LIBJSONLD_CPP_MANIFESTLOADER_H
 
-#include "DocumentLoader.h"
+#include "FileLoader.h"
 #include "TestCase.h"
 #include <string>
 #include <map>
@@ -12,12 +12,12 @@
 class ManifestLoader {
 public:
 
-    ManifestLoader(const std::string &manifestBase, const std::string &manifestName);
+    ManifestLoader(const std::string &imanifestBase, const std::string &imanifestName);
 
     std::map<std::string, TestCase> load();
 
 private:
-    DocumentLoader documentLoader;
+    FileLoader documentLoader;
     std::string manifestBase;
     std::string manifestName;
 };

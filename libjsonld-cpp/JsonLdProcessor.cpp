@@ -50,7 +50,7 @@ nlohmann::json JsonLdProcessor::expand(const std::string& input, JsonLdOptions o
     // 2) TODO: better verification of DOMString IRI
     if (input.find(':') != std::string::npos) {
         try {
-            RemoteDocument tmp = opts.getDocumentLoader().loadDocument(input);
+            RemoteDocument tmp = opts.getDocumentLoader()->loadDocument(input);
             const json& json_input = tmp.getDocument();
             // TODO: figure out how to deal with remote context
 
