@@ -6,8 +6,13 @@
 
 class DocumentLoader {
 public:
+    DocumentLoader() = default;                                  // constructor
+    DocumentLoader(const DocumentLoader&) = default;             // copy constructor
+    DocumentLoader& operator=(const DocumentLoader&) = default;  // copy assignment
+
     // virtual destructor needed as this is an abstract base class
     virtual ~DocumentLoader();
+
     // virtual clone function needed so that classes holding unique_ptrs to
     // DocumentLoader can be copied
     virtual DocumentLoader* clone() const = 0;
