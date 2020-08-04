@@ -2,13 +2,19 @@
 #define LIBJSONLD_CPP_TESTCASE_H
 
 #include "jsoninc.h"
+#include "TestCaseOptions.h"
 
 #include <string>
 #include <set>
+#include <JsonLdOptions.h>
 
-struct TestCase {
+class TestCase {
+public:
+    explicit TestCase(const std::string &testsBase);
 
     static TestCase create(nlohmann::json o, const std::string& manifestUri, const std::string& manifestBase, const std::string& baseUri);
+
+
 
     std::string id;
 
@@ -30,7 +36,11 @@ struct TestCase {
 
     std::set<std::string> type;
 
-//public JsonLdTestCaseOptions options;
+    std::string testsBase;
+
+    TestCaseOptions options;
+
+    JsonLdOptions getOptions();
 
 };
 

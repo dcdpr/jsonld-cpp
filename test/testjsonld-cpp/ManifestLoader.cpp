@@ -18,7 +18,7 @@ std::map<std::string, TestCase> ManifestLoader::load() {
 
     for (auto& element : manifest["sequence"]) {
         TestCase tc = TestCase::create(element, manifestName, manifestBase, baseUri);
-        result[tc.id] = tc;
+        result.insert({tc.id, tc});
     }
 
     return result;

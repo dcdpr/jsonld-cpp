@@ -33,316 +33,335 @@ void performExpandTest(int testNumber) {
     EXPECT_TRUE(JsonLdUtils::deepCompare(expected, expanded));
 }
 
+void performExpandTestFromManifest(std::string testName) {
+
+    ManifestLoader manifestLoader(
+            resolvePath("test/testjsonld-cpp/test_data/"),
+            "expand-manifest.jsonld");
+    std::map<std::string, TestCase> testCases = manifestLoader.load();
+
+    auto testCase = testCases.at(testName);
+
+    JsonLdOptions options = testCase.getOptions();
+
+    json expanded = JsonLdProcessor::expand(testCase.input, options);
+
+    RemoteDocument expectedDocument =
+            options.getDocumentLoader()->loadDocument(testCase.expect);
+
+    const json& expected = expectedDocument.getDocument();
+
+    EXPECT_TRUE(JsonLdUtils::deepCompare(expected, expanded));
+
+}
+
 TEST(JsonLdProcessorTest, expand_0001) {
-    performExpandTest(1);
+    performExpandTestFromManifest("#t0001");
 }
 
 TEST(JsonLdProcessorTest, expand_0002) {
-    performExpandTest(2);
+    performExpandTestFromManifest("#t0002");
 }
 
 TEST(JsonLdProcessorTest, expand_0003) {
-    performExpandTest(3);
+    performExpandTestFromManifest("#t0003");
 }
 
 TEST(JsonLdProcessorTest, expand_0004) {
-    performExpandTest(4);
+    performExpandTestFromManifest("#t0004");
 }
 
 TEST(JsonLdProcessorTest, expand_0005) {
-    performExpandTest(5);
+    performExpandTestFromManifest("#t0005");
 }
 
 TEST(JsonLdProcessorTest, expand_0006) {
-    performExpandTest(6);
+    performExpandTestFromManifest("#t0006");
 }
 
 TEST(JsonLdProcessorTest, expand_0007) {
-    performExpandTest(7);
+    performExpandTestFromManifest("#t0007");
 }
 
 TEST(JsonLdProcessorTest, expand_0008) {
-    performExpandTest(8);
+    performExpandTestFromManifest("#t0008");
 }
 
 TEST(JsonLdProcessorTest, expand_0009) {
-    performExpandTest(9);
+    performExpandTestFromManifest("#t0009");
 }
 
 TEST(JsonLdProcessorTest, expand_0010) {
-    performExpandTest(10);
+    performExpandTestFromManifest("#t0010");
 }
 
 TEST(JsonLdProcessorTest, expand_0011) {
-    performExpandTest(11);
+    performExpandTestFromManifest("#t0011");
 }
 
 TEST(JsonLdProcessorTest, expand_0012) {
-    performExpandTest(12);
+    performExpandTestFromManifest("#t0012");
 }
 
 TEST(JsonLdProcessorTest, expand_0013) {
-    performExpandTest(13);
+    performExpandTestFromManifest("#t0013");
 }
 
 TEST(JsonLdProcessorTest, expand_0014) {
-    performExpandTest(14);
+    performExpandTestFromManifest("#t0014");
 }
 
 TEST(JsonLdProcessorTest, expand_0015) {
-    performExpandTest(15);
+    performExpandTestFromManifest("#t0015");
 }
 
 TEST(JsonLdProcessorTest, expand_0016) {
-    performExpandTest(16);
+    performExpandTestFromManifest("#t0016");
 }
 
 TEST(JsonLdProcessorTest, expand_0017) {
-    performExpandTest(17);
+    performExpandTestFromManifest("#t0017");
 }
 
 TEST(JsonLdProcessorTest, expand_0018) {
-    performExpandTest(18);
+    performExpandTestFromManifest("#t0018");
 }
 
 TEST(JsonLdProcessorTest, expand_0019) {
-    performExpandTest(19);
+    performExpandTestFromManifest("#t0019");
 }
 
 TEST(JsonLdProcessorTest, expand_0020) {
-    performExpandTest(20);
+    performExpandTestFromManifest("#t0020");
 }
 
 TEST(JsonLdProcessorTest, expand_0021) {
-    performExpandTest(21);
+    performExpandTestFromManifest("#t0021");
 }
 
 TEST(JsonLdProcessorTest, expand_0022) {
-    performExpandTest(22);
+    performExpandTestFromManifest("#t0022");
 }
 
 TEST(JsonLdProcessorTest, expand_0023) {
-    performExpandTest(23);
+    performExpandTestFromManifest("#t0023");
 }
 
 TEST(JsonLdProcessorTest, expand_0024) {
-    performExpandTest(24);
+    performExpandTestFromManifest("#t0024");
 }
 
 TEST(JsonLdProcessorTest, expand_0025) {
-    performExpandTest(25);
+    performExpandTestFromManifest("#t0025");
 }
 
 TEST(JsonLdProcessorTest, expand_0026) {
-    performExpandTest(26);
+    performExpandTestFromManifest("#t0026");
 }
 
 TEST(JsonLdProcessorTest, expand_0027) {
-    performExpandTest(27);
+    performExpandTestFromManifest("#t0027");
 }
 
 TEST(JsonLdProcessorTest, expand_0028) {
-    performExpandTest(28);
+    performExpandTestFromManifest("#t0028");
 }
 
 TEST(JsonLdProcessorTest, expand_0029) {
-    performExpandTest(29);
+    performExpandTestFromManifest("#t0029");
 }
 
 TEST(JsonLdProcessorTest, expand_0030) {
-    performExpandTest(30);
+    performExpandTestFromManifest("#t0030");
 }
 
 TEST(JsonLdProcessorTest, expand_0031) {
-    performExpandTest(31);
+    performExpandTestFromManifest("#t0031");
 }
 
 TEST(JsonLdProcessorTest, expand_0032) {
-    performExpandTest(32);
+    performExpandTestFromManifest("#t0032");
 }
 
 TEST(JsonLdProcessorTest, expand_0033) {
-    performExpandTest(33);
+    performExpandTestFromManifest("#t0033");
 }
 
 TEST(JsonLdProcessorTest, expand_0034) {
-    performExpandTest(34);
+    performExpandTestFromManifest("#t0034");
 }
 
 TEST(JsonLdProcessorTest, expand_0035) {
-    performExpandTest(35);
+    performExpandTestFromManifest("#t0035");
 }
 
 TEST(JsonLdProcessorTest, expand_0036) {
-    performExpandTest(36);
+    performExpandTestFromManifest("#t0036");
 }
 
 TEST(JsonLdProcessorTest, expand_0037) {
-    performExpandTest(37);
+    performExpandTestFromManifest("#t0037");
 }
 
 TEST(JsonLdProcessorTest, expand_0038) {
-    performExpandTest(38);
+    performExpandTestFromManifest("#t0038");
 }
 
 TEST(JsonLdProcessorTest, expand_0039) {
-    performExpandTest(39);
+    performExpandTestFromManifest("#t0039");
 }
 
 TEST(JsonLdProcessorTest, expand_0040) {
-    performExpandTest(40);
+    performExpandTestFromManifest("#t0040");
 }
 
 TEST(JsonLdProcessorTest, expand_0041) {
-    performExpandTest(41);
+    performExpandTestFromManifest("#t0041");
 }
 
 TEST(JsonLdProcessorTest, expand_0042) {
-    performExpandTest(42);
+    performExpandTestFromManifest("#t0042");
 }
 
 TEST(JsonLdProcessorTest, expand_0043) {
-    performExpandTest(43);
+    performExpandTestFromManifest("#t0043");
 }
 
 TEST(JsonLdProcessorTest, expand_0044) {
-    performExpandTest(44);
+    performExpandTestFromManifest("#t0044");
 }
 
 TEST(JsonLdProcessorTest, expand_0045) {
-    performExpandTest(45);
+    performExpandTestFromManifest("#t0045");
 }
 
 TEST(JsonLdProcessorTest, expand_0046) {
-    performExpandTest(46);
+    performExpandTestFromManifest("#t0046");
 }
 
 TEST(JsonLdProcessorTest, expand_0047) {
-    performExpandTest(47);
+    performExpandTestFromManifest("#t0047");
 }
 
 TEST(JsonLdProcessorTest, expand_0048) {
-    performExpandTest(48);
+    performExpandTestFromManifest("#t0048");
 }
 
 TEST(JsonLdProcessorTest, expand_0049) {
-    performExpandTest(49);
+    performExpandTestFromManifest("#t0049");
 }
 
 TEST(JsonLdProcessorTest, expand_0050) {
-    performExpandTest(50);
+    performExpandTestFromManifest("#t0050");
 }
 
 TEST(JsonLdProcessorTest, expand_0051) {
-    performExpandTest(51);
+    performExpandTestFromManifest("#t0051");
 }
 
 TEST(JsonLdProcessorTest, expand_0052) {
-    performExpandTest(52);
+    performExpandTestFromManifest("#t0052");
 }
 
 TEST(JsonLdProcessorTest, expand_0053) {
-    performExpandTest(53);
+    performExpandTestFromManifest("#t0053");
 }
 
 TEST(JsonLdProcessorTest, expand_0054) {
-    performExpandTest(54);
+    performExpandTestFromManifest("#t0054");
 }
 
 TEST(JsonLdProcessorTest, expand_0055) {
-    performExpandTest(55);
+    performExpandTestFromManifest("#t0055");
 }
 
 TEST(JsonLdProcessorTest, expand_0056) {
-    performExpandTest(56);
+    performExpandTestFromManifest("#t0056");
 }
 
 TEST(JsonLdProcessorTest, expand_0057) {
-    performExpandTest(57);
+    performExpandTestFromManifest("#t0057");
 }
 
 TEST(JsonLdProcessorTest, expand_0058) {
-    performExpandTest(58);
+    performExpandTestFromManifest("#t0058");
 }
 
 TEST(JsonLdProcessorTest, expand_0059) {
-    performExpandTest(59);
+    performExpandTestFromManifest("#t0059");
 }
 
 TEST(JsonLdProcessorTest, expand_0060) {
-    performExpandTest(60);
+    performExpandTestFromManifest("#t0060");
 }
 
 TEST(JsonLdProcessorTest, expand_0061) {
-    performExpandTest(61);
+    performExpandTestFromManifest("#t0061");
 }
 
 TEST(JsonLdProcessorTest, expand_0062) {
-    performExpandTest(62);
+    performExpandTestFromManifest("#t0062");
 }
 
 TEST(JsonLdProcessorTest, expand_0063) {
-    performExpandTest(63);
+    performExpandTestFromManifest("#t0063");
 }
 
 TEST(JsonLdProcessorTest, expand_0064) {
-    performExpandTest(64);
+    performExpandTestFromManifest("#t0064");
 }
 
 TEST(JsonLdProcessorTest, expand_0065) {
-    performExpandTest(65);
+    performExpandTestFromManifest("#t0065");
 }
 
 TEST(JsonLdProcessorTest, expand_0066) {
-    performExpandTest(66);
+    performExpandTestFromManifest("#t0066");
 }
 
 TEST(JsonLdProcessorTest, expand_0067) {
-    performExpandTest(67);
+    performExpandTestFromManifest("#t0067");
 }
 
 TEST(JsonLdProcessorTest, expand_0068) {
-    performExpandTest(68);
+    performExpandTestFromManifest("#t0068");
 }
 
 TEST(JsonLdProcessorTest, expand_0069) {
-    performExpandTest(69);
+    performExpandTestFromManifest("#t0069");
 }
 
 TEST(JsonLdProcessorTest, expand_0070) {
-    performExpandTest(70);
+    performExpandTestFromManifest("#t0070");
 }
 
 TEST(JsonLdProcessorTest, expand_0071) {
-    performExpandTest(71);
+    performExpandTestFromManifest("#t0071");
 }
 
 TEST(JsonLdProcessorTest, expand_0072) {
-    performExpandTest(72);
+    performExpandTestFromManifest("#t0072");
 }
 
 TEST(JsonLdProcessorTest, expand_0073) {
-    performExpandTest(73);
+    performExpandTestFromManifest("#t0073");
 }
 
 TEST(JsonLdProcessorTest, expand_0074) {
-    performExpandTest(74);
+    performExpandTestFromManifest("#t0074");
 }
 
 TEST(JsonLdProcessorTest, expand_0075) {
-    performExpandTest(75);
+    performExpandTestFromManifest("#t0075");
 }
 
-// Disabled this test because we need to implement the standard testing scaffold to pass in an
-// extra @base option at the last minute
-//TEST(JsonLdProcessorTest, expand_0076) {
-//    performExpandTest(76);
-//}
+TEST(JsonLdProcessorTest, expand_0076) {
+    performExpandTestFromManifest("#t0076");
+}
 
-// Disabled this test because we need to implement standard testing scaffold and the
-// expandContext option
+// Disabled this test because we need to implement expandContext option
 //TEST(JsonLdProcessorTest, expand_0077) {
-//    performExpandTest(77);
+//    performExpandTestFromManifest("#t0077");
 //}
 
 TEST(JsonLdProcessorTest, expand_0300) {
@@ -361,12 +380,22 @@ TEST(JsonLdProcessorTest, expand_0302) {
 }
 
 TEST(JsonLdProcessorTest, expand_with_manifest) {
-
+return;
     ManifestLoader manifestLoader(resolvePath("test/testjsonld-cpp/test_data/"), "expand-manifest.jsonld");
     std::map<std::string, TestCase> testCases = manifestLoader.load();
 
     for(auto & testCaseEntry : testCases) {
         std::cout << testCaseEntry.first << std::endl;
+
+        JsonLdOptions options = testCaseEntry.second.getOptions();
+
+        json expanded = JsonLdProcessor::expand(testCaseEntry.second.input, options);
+
+        RemoteDocument expectedDocument = options.getDocumentLoader()->loadDocument(
+                testCaseEntry.second.expect);
+        json expected = expectedDocument.getDocument();
+
+        EXPECT_TRUE(JsonLdUtils::deepCompare(expected, expanded));
 
     }
 

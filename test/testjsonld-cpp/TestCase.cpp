@@ -1,5 +1,9 @@
 #include "TestCase.h"
 #include "JsonLdConsts.h"
+#include "UriBaseRewriter.h"
+#include "TestCaseOptions.h"
+
+TestCase::TestCase(const std::string &itestsBase) : testsBase(itestsBase) {}
 
 TestCase TestCase::create(
         nlohmann::json o,
@@ -7,7 +11,7 @@ TestCase TestCase::create(
         const std::string& manifestBase,
         const std::string& baseUri) {
 
-    TestCase testCase;
+    TestCase testCase(manifestBase);
 
     testCase.id = o[JsonLdConsts::ID];
 
@@ -38,10 +42,29 @@ TestCase TestCase::create(
     // todo: not needed until we do the NegativeEvaluationTests
     // testCase.expectErrorCode = ...
 
-    // todo: need to parse the testcase options...
-    // testCase.options = ...
+    if(o.contains("option")) {
+        testCase.options = TestCaseOptions::create(o["option"], baseUri);
+    }
 
     testCase.baseUri = baseUri;
 
     return testCase;
 }
+
+JsonLdOptions TestCase::getOptions() {
+    std::unique_ptr<DocumentLoader> loader =
+            std::unique_ptr<DocumentLoader>(new UriBaseRewriter(
+                    baseUri,
+                    testsBase,
+                    std::unique_ptr<FileLoader>(new FileLoader())
+            ));
+
+    JsonLdOptions jsonLdOptions(std::move(loader));
+    //jsonLdOptions.setOrdered(true);
+
+    options.copyTo(jsonLdOptions);
+
+    return jsonLdOptions;
+
+}
+
