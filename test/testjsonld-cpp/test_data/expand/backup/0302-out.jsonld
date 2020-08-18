@@ -1,0 +1,109 @@
+[ {
+  "@id" : "_:b1",
+  "http://example.org/vocab#p" : [ {
+    "@id" : "_:b2"
+  }, {
+    "@id" : "_:b4"
+  }, {
+    "@id" : "_:b3"
+  } ]
+}, {
+  "@id" : "_:b2",
+  "http://example.org/vocab#p" : [ {
+    "@id" : "_:b1"
+  }, {
+    "@id" : "_:b3"
+  }, {
+    "@id" : "_:b5"
+  } ]
+}, {
+  "@id" : "_:b3",
+  "http://example.org/vocab#p" : [ {
+    "@id" : "_:b1"
+  }, {
+    "@id" : "_:b2"
+  }, {
+    "@id" : "_:b6"
+  } ]
+}, {
+  "@id" : "_:b4",
+  "http://example.org/vocab#p" : [ {
+    "@id" : "_:b1"
+  }, {
+    "@id" : "_:b5"
+  }, {
+    "@id" : "_:b6"
+  } ]
+}, {
+  "@id" : "_:b5",
+  "http://example.org/vocab#p" : [ {
+    "@id" : "_:b2"
+  }, {
+    "@id" : "_:b4"
+  }, {
+    "@id" : "_:b6"
+  } ]
+}, {
+  "@id" : "_:b6",
+  "http://example.org/vocab#p" : [ {
+    "@id" : "_:b3"
+  }, {
+    "@id" : "_:b4"
+  }, {
+    "@id" : "_:b5"
+  } ]
+}, {
+  "@id" : "_:c1",
+  "http://example.org/vocab#p" : [ {
+    "@id" : "_:c4"
+  }, {
+    "@id" : "_:c5"
+  }, {
+    "@id" : "_:c6"
+  } ]
+}, {
+  "@id" : "_:c2",
+  "http://example.org/vocab#p" : [ {
+    "@id" : "_:c4"
+  }, {
+    "@id" : "_:c5"
+  }, {
+    "@id" : "_:c6"
+  } ]
+}, {
+  "@id" : "_:c3",
+  "http://example.org/vocab#p" : [ {
+    "@id" : "_:c4"
+  }, {
+    "@id" : "_:c5"
+  }, {
+    "@id" : "_:c6"
+  } ]
+}, {
+  "@id" : "_:c4",
+  "http://example.org/vocab#p" : [ {
+    "@id" : "_:c1"
+  }, {
+    "@id" : "_:c2"
+  }, {
+    "@id" : "_:c3"
+  } ]
+}, {
+  "@id" : "_:c5",
+  "http://example.org/vocab#p" : [ {
+    "@id" : "_:c1"
+  }, {
+    "@id" : "_:c2"
+  }, {
+    "@id" : "_:c3"
+  } ]
+}, {
+  "@id" : "_:c6",
+  "http://example.org/vocab#p" : [ {
+    "@id" : "_:c1"
+  }, {
+    "@id" : "_:c2"
+  }, {
+    "@id" : "_:c3"
+  } ]
+} ]
