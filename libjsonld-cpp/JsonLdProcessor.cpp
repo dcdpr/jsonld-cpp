@@ -50,8 +50,8 @@ nlohmann::json JsonLdProcessor::expand(const std::string& input, JsonLdOptions o
     // 2) TODO: better verification of DOMString IRI
     if (input.find(':') != std::string::npos) {
         try {
-            RemoteDocument tmp = opts.getDocumentLoader()->loadDocument(input);
-            const json& json_input = tmp.getDocument();
+            auto tmp = opts.getDocumentLoader()->loadDocument(input);
+            const json& json_input = tmp->getJSONContent();
             // TODO: figure out how to deal with remote context
 
             // if set the base in options should override the base iri in the
@@ -64,6 +64,9 @@ nlohmann::json JsonLdProcessor::expand(const std::string& input, JsonLdOptions o
 
             return expand(json_input, opts);
 
+        }
+        catch (const JsonLdError &e) {
+            throw e;
         }
         catch (const std::exception &e) {
             throw JsonLdError(JsonLdError::LoadingDocumentFailed, e.what());

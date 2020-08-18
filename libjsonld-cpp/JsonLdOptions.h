@@ -4,7 +4,7 @@
 // The JsonLdOptions type as specified in "JSON-LD-API specification":
 // http://www.w3.org/TR/json-ld-api/#the-jsonldoptions-type
 
-#include "FileLoader.h"
+#include "DocumentLoader.h"
 #include "JsonLdConsts.h"
 #include <string>
 #include <sstream>

@@ -8,7 +8,7 @@ UriBaseRewriter::UriBaseRewriter(
         targetBase(itargetBase),
         loader(std::move(iloader)) {}
 
-RemoteDocument UriBaseRewriter::loadDocument(const std::string &url) {
+std::unique_ptr<RemoteDocument> UriBaseRewriter::loadDocument(const std::string &url) {
 
     if(url.find(sourceBase) != 0) {
         return loader->loadDocument(url); // todo: when might this happen?
@@ -16,7 +16,7 @@ RemoteDocument UriBaseRewriter::loadDocument(const std::string &url) {
 
     std::string relativePath = url.substr(sourceBase.length());
 
-    RemoteDocument remoteDocument = loader->loadDocument(targetBase + relativePath);
+    auto remoteDocument = loader->loadDocument(targetBase + relativePath);
 
     return remoteDocument;
 }

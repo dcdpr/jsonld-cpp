@@ -18,7 +18,7 @@ public:
     virtual DocumentLoader* clone() const = 0;
 
     // loads the document referred to by the url
-    virtual RemoteDocument loadDocument(const std::string &url) = 0;
+    virtual std::unique_ptr<RemoteDocument> loadDocument(const std::string &url) = 0;
 
 };
 

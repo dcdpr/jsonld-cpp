@@ -1,7 +1,7 @@
 #include "JsonLdError.h"
 
 JsonLdError::JsonLdError(const std::string& itype, const nlohmann::json& idetail)
-        : std::runtime_error(itype + idetail.get<std::string>())
+        : std::runtime_error(itype + ": " + idetail.get<std::string>())
 {
 }
 

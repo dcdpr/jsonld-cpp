@@ -5,20 +5,19 @@
 #include "DocumentLoader.h"
 
 class FileLoader : public DocumentLoader {
-
-    using json = nlohmann::json;
-
 private:
-    std::map<std::string, json> cache;
+// todo: trying to create this cache object is giving me "copy constructor is implicitly deleted because 'unique_ptr<RemoteDocument,
+//      std::__1::default_delete<RemoteDocument> >' has a user-declared move constructor" errors
+//    std::map<std::string, std::unique_ptr<RemoteDocument>> cache;
 
 public:
 
-    virtual FileLoader* clone() const;
+    virtual FileLoader* clone() const override;
 
-    void addDocumentToCache(const std::string &url, const std::string &contents);
+    //void addDocumentToCache(const std::string &url, const std::string &contents);
 
     // load url and return a RemoteDocument
-    RemoteDocument loadDocument(const std::string &url);
+    std::unique_ptr<RemoteDocument> loadDocument(const std::string &url) override;
 };
 
 

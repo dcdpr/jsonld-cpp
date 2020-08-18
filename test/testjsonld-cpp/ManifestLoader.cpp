@@ -9,8 +9,8 @@ ManifestLoader::ManifestLoader(const std::string &imanifestBase, const std::stri
 std::map<std::string, TestCase> ManifestLoader::load() {
 
     std::string manifestPath = manifestBase + manifestName;
-    RemoteDocument d = documentLoader.loadDocument(manifestPath);
-    json manifest = d.getDocument();
+    auto d = documentLoader.loadDocument(manifestPath);
+    json manifest = d->getJSONContent();
 
     std::string baseUri = manifest["baseIri"];
 

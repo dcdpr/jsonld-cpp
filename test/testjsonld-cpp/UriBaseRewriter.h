@@ -16,7 +16,7 @@ public:
     UriBaseRewriter(const UriBaseRewriter & other);             // copy constructor
     UriBaseRewriter& operator=(const UriBaseRewriter & other);  // copy assignment
 
-    RemoteDocument loadDocument(const std::string &url) override;
+    std::unique_ptr<RemoteDocument> loadDocument(const std::string &url) override;
 
     UriBaseRewriter *clone() const override;
 

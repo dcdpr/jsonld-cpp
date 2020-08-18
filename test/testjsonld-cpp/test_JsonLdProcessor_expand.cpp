@@ -15,29 +15,12 @@ using nlohmann::json;
 #pragma clang diagnostic pop
 #pragma GCC diagnostic pop
 
-void performExpandTest(int testNumber) {
 
-    std::string testName = "expand";
-    std::string testNumberStr = getTestNumberStr(testNumber);
-
-    std::string baseUri = getBaseUri(testName, testNumberStr);
-    std::string inputStr = getInputStr(testName, testNumberStr);
-    json expected = getExpectedJson(testName, testNumberStr);
-
-    std::unique_ptr<FileLoader> loader(new FileLoader);
-    loader->addDocumentToCache(baseUri, inputStr);
-    JsonLdOptions opts(baseUri);
-    opts.setDocumentLoader(std::move(loader));
-
-    json expanded = JsonLdProcessor::expand(baseUri, opts);
-    EXPECT_TRUE(JsonLdUtils::deepCompare(expected, expanded));
-}
-
-void performExpandTestFromManifest(std::string testName) {
+void performExpandTestFromManifest(std::string testName, std::string manifestName="expand-manifest.jsonld") {
 
     ManifestLoader manifestLoader(
             resolvePath("test/testjsonld-cpp/test_data/"),
-            "expand-manifest.jsonld");
+            manifestName);
     std::map<std::string, TestCase> testCases = manifestLoader.load();
 
     auto testCase = testCases.at(testName);
@@ -46,10 +29,10 @@ void performExpandTestFromManifest(std::string testName) {
 
     json expanded = JsonLdProcessor::expand(testCase.input, options);
 
-    RemoteDocument expectedDocument =
+    std::unique_ptr<RemoteDocument> expectedDocument =
             options.getDocumentLoader()->loadDocument(testCase.expect);
 
-    const json& expected = expectedDocument.getDocument();
+    const json& expected = expectedDocument->getJSONContent();
 
     EXPECT_TRUE(JsonLdUtils::deepCompare(expected, expanded));
 
@@ -364,23 +347,28 @@ TEST(JsonLdProcessorTest, expand_0076) {
 //    performExpandTestFromManifest("#t0077");
 //}
 
+TEST(JsonLdProcessorTest, expand_0078) {
+    performExpandTestFromManifest("#t0078");
+}
+
+
 TEST(JsonLdProcessorTest, expand_0300) {
     // this is an extra test Dan added while trying to debug issues with normalize test 0008
-    performExpandTest(300);
+    performExpandTestFromManifest("#t0300", "expand-manifest-extra.jsonld");
 }
 
 TEST(JsonLdProcessorTest, expand_0301) {
     // this is an extra test Dan added while trying to debug issues with normalize test 0020
-    performExpandTest(301);
+    performExpandTestFromManifest("#t0301", "expand-manifest-extra.jsonld");
 }
 
 TEST(JsonLdProcessorTest, expand_0302) {
     // this is an extra test Dan added while trying to debug issues with normalize test 0044
-    performExpandTest(302);
+    performExpandTestFromManifest("#t0302", "expand-manifest-extra.jsonld");
 }
 
 TEST(JsonLdProcessorTest, expand_with_manifest) {
-return;
+
     ManifestLoader manifestLoader(resolvePath("test/testjsonld-cpp/test_data/"), "expand-manifest.jsonld");
     std::map<std::string, TestCase> testCases = manifestLoader.load();
 
@@ -389,16 +377,33 @@ return;
 
         JsonLdOptions options = testCaseEntry.second.getOptions();
 
-        json expanded = JsonLdProcessor::expand(testCaseEntry.second.input, options);
+        json expanded;
+        try {
+            std::cout << testCaseEntry.second.options.specVersion;
+            if(testCaseEntry.second.options.specVersion == "json-ld-1.1") {
+                std::cout << " ...skipping for now." << std::endl;
+                continue;
+            }
+            else
+                std::cout << std::endl;
+            expanded = JsonLdProcessor::expand(testCaseEntry.second.input, options);
+        }
+        catch (JsonLdError &e) {
+            std::cout << e.what() << std::endl;
+            continue;
+        }
+        catch (std::runtime_error &e) {
+            std::cout << e.what() << std::endl;
+            continue;
+        }
 
-        RemoteDocument expectedDocument = options.getDocumentLoader()->loadDocument(
+        auto expectedDocument = options.getDocumentLoader()->loadDocument(
                 testCaseEntry.second.expect);
-        json expected = expectedDocument.getDocument();
+        const json& expected = expectedDocument->getJSONContent();
 
         EXPECT_TRUE(JsonLdUtils::deepCompare(expected, expanded));
 
     }
 
-    // todo ...
 }
 

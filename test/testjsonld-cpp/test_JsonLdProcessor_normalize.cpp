@@ -9,6 +9,8 @@
 #pragma GCC diagnostic ignored "-Wall"
 #pragma GCC diagnostic ignored "-Wextra"
 #include <rapidcheck/gtest.h>
+#include <FileLoader.h>
+
 #pragma clang diagnostic pop
 #pragma GCC diagnostic pop
 
@@ -22,7 +24,6 @@ void performNormalizeTest(int testNumber) {
     std::string expected = getExpectedRDF(testName, testNumberStr);
 
     std::unique_ptr<FileLoader> loader(new FileLoader);
-    loader->addDocumentToCache(baseUri, inputStr);
     JsonLdOptions opts(baseUri);
     opts.setDocumentLoader(std::move(loader));
 

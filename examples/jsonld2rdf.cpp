@@ -12,6 +12,7 @@
 #include "JsonLdProcessor.h"
 #include <iostream>
 #include <fstream>
+#include <FileLoader.h>
 
 int main (int argc, char *argv[]) {
 
@@ -42,7 +43,7 @@ int main (int argc, char *argv[]) {
     std::string fileUri = "file://" + inputFilename;
 
     std::unique_ptr<FileLoader> loader(new FileLoader);
-    loader->addDocumentToCache(fileUri, inputStr);
+    //loader->addDocumentToCache(fileUri, inputStr);
     JsonLdOptions opts(fileUri);
     opts.setDocumentLoader(std::move(loader));
 

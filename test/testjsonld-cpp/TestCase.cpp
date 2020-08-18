@@ -1,3 +1,4 @@
+#include <FileLoader.h>
 #include "TestCase.h"
 #include "JsonLdConsts.h"
 #include "UriBaseRewriter.h"

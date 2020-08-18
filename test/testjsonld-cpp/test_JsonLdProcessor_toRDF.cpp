@@ -1,5 +1,7 @@
 #include "JsonLdProcessor.h"
 #include "testHelpers.h"
+#include "ManifestLoader.h"
+#include "FileLoader.h"
 #include <fstream>
 
 #include <gtest/gtest.h>
@@ -12,6 +14,8 @@
 #pragma clang diagnostic pop
 #pragma GCC diagnostic pop
 
+using nlohmann::json;
+
 void performToRDFTest(int testNumber) {
 
     std::string testName = "toRdf";
@@ -22,7 +26,7 @@ void performToRDFTest(int testNumber) {
     std::string expected = getExpectedRDF(testName, testNumberStr);
 
     std::unique_ptr<FileLoader> loader(new FileLoader);
-    loader->addDocumentToCache(baseUri, inputStr);
+    //loader->addDocumentToCache(baseUri, inputStr);
     JsonLdOptions opts(baseUri);
     opts.setDocumentLoader(std::move(loader));
 
@@ -41,7 +45,7 @@ void performToRDFTest(std::string prefix, int testNumber) {
     std::string expected = getExpectedRDF(testName, testNumberStr);
 
     std::unique_ptr<FileLoader> loader(new FileLoader);
-    loader->addDocumentToCache(baseUri, inputStr);
+    //loader->addDocumentToCache(baseUri, inputStr);
     JsonLdOptions opts(baseUri);
     opts.setDocumentLoader(std::move(loader));
 
@@ -50,468 +54,490 @@ void performToRDFTest(std::string prefix, int testNumber) {
     EXPECT_EQ(expected, str);
 }
 
+void performToRDFTestFromManifest(std::string testName, std::string manifestName="toRdf-manifest.jsonld") {
+
+    ManifestLoader manifestLoader(
+            resolvePath("test/testjsonld-cpp/test_data/"),
+            manifestName);
+    std::map<std::string, TestCase> testCases = manifestLoader.load();
+
+    auto testCase = testCases.at(testName);
+
+    JsonLdOptions options = testCase.getOptions();
+
+    std::string rdfStr = JsonLdProcessor::toRDFString(testCase.input, options);
+
+    std::unique_ptr<RemoteDocument> expectedDocument =
+            options.getDocumentLoader()->loadDocument(testCase.expect);
+
+    const std::string & expected = expectedDocument->getRDFContent();
+
+    EXPECT_TRUE(JsonLdUtils::deepCompare(expected, rdfStr));
+
+}
+
 TEST(JsonLdProcessorTest, toRDF_0001) {
-    performToRDFTest(1);
+    performToRDFTestFromManifest("#t0001");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0002) {
-    performToRDFTest(2);
+    performToRDFTestFromManifest("#t0002");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0003) {
-    performToRDFTest(3);
+    performToRDFTestFromManifest("#t0003");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0004) {
-    performToRDFTest(4);
+    performToRDFTestFromManifest("#t0004");
 }
 
 // skip until I have better utf8 char handling
 //TEST(JsonLdProcessorTest, toRDF_0005) {
-//    performToRDFTest(5);
+//    performToRDFTestFromManifest("#t005");
 //}
 
 TEST(JsonLdProcessorTest, toRDF_0006) {
-    performToRDFTest(6);
+    performToRDFTestFromManifest("#t0006");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0007) {
-    performToRDFTest(7);
+    performToRDFTestFromManifest("#t0007");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0008) {
-    performToRDFTest(8);
+    performToRDFTestFromManifest("#t0008");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0009) {
-    performToRDFTest(9);
+    performToRDFTestFromManifest("#t0009");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0010) {
-    performToRDFTest(10);
+    performToRDFTestFromManifest("#t0010");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0011) {
-    performToRDFTest(11);
+    performToRDFTestFromManifest("#t0011");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0012) {
-    performToRDFTest(12);
+    performToRDFTestFromManifest("#t0012");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0013) {
-    performToRDFTest(13);
+    performToRDFTestFromManifest("#t0013");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0014) {
-    performToRDFTest(14);
+    performToRDFTestFromManifest("#t0014");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0015) {
-    performToRDFTest(15);
+    performToRDFTestFromManifest("#t0015");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0016) {
-    performToRDFTest(16);
+    performToRDFTestFromManifest("#t0016");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0017) {
-    performToRDFTest(17);
+    performToRDFTestFromManifest("#t0017");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0018) {
-    performToRDFTest(18);
+    performToRDFTestFromManifest("#t0018");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0019) {
-    performToRDFTest(19);
+    performToRDFTestFromManifest("#t0019");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0020) {
-    performToRDFTest(20);
+    performToRDFTestFromManifest("#t0020");
 }
 
 // case 21 doesn't exist
 
 TEST(JsonLdProcessorTest, toRDF_0022) {
-    performToRDFTest(22);
+    performToRDFTestFromManifest("#t0022");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0023) {
-    performToRDFTest(23);
+    performToRDFTestFromManifest("#t0023");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0024) {
-    performToRDFTest(24);
+    performToRDFTestFromManifest("#t0024");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0025) {
-    performToRDFTest(25);
+    performToRDFTestFromManifest("#t0025");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0026) {
-    performToRDFTest(26);
+    performToRDFTestFromManifest("#t0026");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0027) {
-    performToRDFTest(27);
+    performToRDFTestFromManifest("#t0027");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0028) {
-    performToRDFTest(28);
+    performToRDFTestFromManifest("#t0028");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0029) {
-    performToRDFTest(29);
+    performToRDFTestFromManifest("#t0029");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0030) {
-    performToRDFTest(30);
+    performToRDFTestFromManifest("#t0030");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0031) {
-    performToRDFTest(31);
+    performToRDFTestFromManifest("#t0031");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0032) {
-    performToRDFTest(32);
+    performToRDFTestFromManifest("#t0032");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0033) {
-    performToRDFTest(33);
+    performToRDFTestFromManifest("#t0033");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0034) {
-    performToRDFTest(34);
+    performToRDFTestFromManifest("#t0034");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0035) {
-    performToRDFTest(35);
+    performToRDFTestFromManifest("#t0035");
 }
 
 TEST(JsonLdProcessorTest, toRDF_0036) {
-    performToRDFTest(36);
+    performToRDFTestFromManifest("#t0036");
 }
 
 // cases 37-112 don't exist
 
 TEST(JsonLdProcessorTest, toRdf_0113) {
-    performToRDFTest(113);
+    performToRDFTestFromManifest("#t0113");
 }
 
 TEST(JsonLdProcessorTest, toRdf_0114) {
-    performToRDFTest(114);
+    performToRDFTestFromManifest("#t0114");
 }
 
 TEST(JsonLdProcessorTest, toRdf_0115) {
-    performToRDFTest(115);
+    performToRDFTestFromManifest("#t0115");
 }
 
 TEST(JsonLdProcessorTest, toRdf_0116) {
-    performToRDFTest(116);
+    performToRDFTestFromManifest("#t0116");
 }
 
 TEST(JsonLdProcessorTest, toRdf_0117) {
-    performToRDFTest(117);
+    performToRDFTestFromManifest("#t0117");
 }
 
 //
 //TEST(JsonLdProcessorTest, toRdf_0118) {
-//    performToRDFTest(118);
+//    performToRDFTestFromManifest("#t00118");
 //}
 
 TEST(JsonLdProcessorTest, toRdf_0119) {
-    performToRDFTest(119);
+    performToRDFTestFromManifest("#t0119");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e001) {
-    performToRDFTest("e", 1);
+    performToRDFTestFromManifest("#te001");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e002) {
-    performToRDFTest("e", 2);
+    performToRDFTestFromManifest("#te002");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e003) {
-    performToRDFTest("e", 3);
+    performToRDFTestFromManifest("#te003");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e004) {
-    performToRDFTest("e", 4);
+    performToRDFTestFromManifest("#te004");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e005) {
-    performToRDFTest("e", 5);
+    performToRDFTestFromManifest("#te005");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e006) {
-    performToRDFTest("e", 6);
+    performToRDFTestFromManifest("#te006");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e007) {
-    performToRDFTest("e", 7);
+    performToRDFTestFromManifest("#te007");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e008) {
-    performToRDFTest("e", 8);
+    performToRDFTestFromManifest("#te008");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e009) {
-    performToRDFTest("e", 9);
+    performToRDFTestFromManifest("#te009");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e010) {
-    performToRDFTest("e", 10);
+    performToRDFTestFromManifest("#te0010");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e011) {
-    performToRDFTest("e", 11);
+    performToRDFTestFromManifest("#te0011");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e012) {
-    performToRDFTest("e", 12);
+    performToRDFTestFromManifest("#te0012");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e013) {
-    performToRDFTest("e", 13);
+    performToRDFTestFromManifest("#te0013");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e014) {
-    performToRDFTest("e", 14);
+    performToRDFTestFromManifest("#te0014");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e015) {
-    performToRDFTest("e", 15);
+    performToRDFTestFromManifest("#te0015");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e016) {
-    performToRDFTest("e", 16);
+    performToRDFTestFromManifest("#te0016");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e017) {
-    performToRDFTest("e", 17);
+    performToRDFTestFromManifest("#te0017");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e018) {
-    performToRDFTest("e", 18);
+    performToRDFTestFromManifest("#te0018");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e019) {
-    performToRDFTest("e", 19);
+    performToRDFTestFromManifest("#te0019");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e020) {
-    performToRDFTest("e", 20);
+    performToRDFTestFromManifest("#te0020");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e021) {
-    performToRDFTest("e", 21);
+    performToRDFTestFromManifest("#te0021");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e022) {
-    performToRDFTest("e", 22);
+    performToRDFTestFromManifest("#te0022");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e023) {
-    performToRDFTest("e", 23);
+    performToRDFTestFromManifest("#te0023");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e024) {
-    performToRDFTest("e", 24);
+    performToRDFTestFromManifest("#te0024");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e025) {
-    performToRDFTest("e", 25);
+    performToRDFTestFromManifest("#te0025");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e026) {
-    performToRDFTest("e", 26);
+    performToRDFTestFromManifest("#te0026");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e027) {
-    performToRDFTest("e", 27);
+    performToRDFTestFromManifest("#te0027");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e028) {
-    performToRDFTest("e", 28);
+    performToRDFTestFromManifest("#te0028");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e029) {
-    performToRDFTest("e", 29);
+    performToRDFTestFromManifest("#te0029");
 }
 
 // skip until I have better utf8 char handling
 //TEST(JsonLdProcessorTest, toRdf_e030) {
-//    performToRDFTest("e", 30);
+//    performToRDFTestFromManifest("#te0030");
 //}
 
 TEST(JsonLdProcessorTest, toRdf_e031) {
-    performToRDFTest("e", 31);
+    performToRDFTestFromManifest("#te0031");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e032) {
-    performToRDFTest("e", 32);
+    performToRDFTestFromManifest("#te0032");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e033) {
-    performToRDFTest("e", 33);
+    performToRDFTestFromManifest("#te0033");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e034) {
-    performToRDFTest("e", 34);
+    performToRDFTestFromManifest("#te0034");
 }
 
 // skip until I have better utf8 char handling
 //TEST(JsonLdProcessorTest, toRdf_e035) {
-//    performToRDFTest("e", 35);
+//    performToRDFTestFromManifest("#te0035");
 //}
 
 TEST(JsonLdProcessorTest, toRdf_e036) {
-    performToRDFTest("e", 36);
+    performToRDFTestFromManifest("#te0036");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e037) {
-    performToRDFTest("e", 37);
+    performToRDFTestFromManifest("#te0037");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e038) {
-    performToRDFTest("e", 38);
+    performToRDFTestFromManifest("#te0038");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e039) {
-    performToRDFTest("e", 39);
+    performToRDFTestFromManifest("#te0039");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e040) {
-    performToRDFTest("e", 40);
+    performToRDFTestFromManifest("#te0040");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e041) {
-    performToRDFTest("e", 41);
+    performToRDFTestFromManifest("#te0041");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e042) {
-    performToRDFTest("e", 42);
+    performToRDFTestFromManifest("#te0042");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e043) {
-    performToRDFTest("e", 43);
+    performToRDFTestFromManifest("#te0043");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e044) {
-    performToRDFTest("e", 44);
+    performToRDFTestFromManifest("#te0044");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e045) {
-    performToRDFTest("e", 45);
+    performToRDFTestFromManifest("#te0045");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e046) {
-    performToRDFTest("e", 46);
+    performToRDFTestFromManifest("#te0046");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e047) {
-    performToRDFTest("e", 47);
+    performToRDFTestFromManifest("#te0047");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e048) {
-    performToRDFTest("e", 48);
+    performToRDFTestFromManifest("#te0048");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e049) {
-    performToRDFTest("e", 49);
+    performToRDFTestFromManifest("#te0049");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e050) {
-    performToRDFTest("e", 50);
+    performToRDFTestFromManifest("#te0050");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e051) {
-    performToRDFTest("e", 51);
+    performToRDFTestFromManifest("#te0051");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e052) {
-    performToRDFTest("e", 52);
+    performToRDFTestFromManifest("#te0052");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e053) {
-    performToRDFTest("e", 53);
+    performToRDFTestFromManifest("#te0053");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e054) {
-    performToRDFTest("e", 54);
+    performToRDFTestFromManifest("#te0054");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e055) {
-    performToRDFTest("e", 55);
+    performToRDFTestFromManifest("#te0055");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e056) {
-    performToRDFTest("e", 56);
+    performToRDFTestFromManifest("#te0056");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e057) {
-    performToRDFTest("e", 57);
+    performToRDFTestFromManifest("#te0057");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e058) {
-    performToRDFTest("e", 58);
+    performToRDFTestFromManifest("#te0058");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e059) {
-    performToRDFTest("e", 59);
+    performToRDFTestFromManifest("#te0059");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e060) {
-    performToRDFTest("e", 60);
+    performToRDFTestFromManifest("#te0060");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e061) {
-    performToRDFTest("e", 61);
+    performToRDFTestFromManifest("#te0061");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e062) {
-    performToRDFTest("e", 62);
+    performToRDFTestFromManifest("#te0062");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e063) {
-    performToRDFTest("e", 63);
+    performToRDFTestFromManifest("#te0063");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e064) {
-    performToRDFTest("e", 64);
+    performToRDFTestFromManifest("#te0064");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e065) {
-    performToRDFTest("e", 65);
+    performToRDFTestFromManifest("#te0065");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e066) {
-    performToRDFTest("e", 66);
+    performToRDFTestFromManifest("#te0066");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e067) {
-    performToRDFTest("e", 67);
+    performToRDFTestFromManifest("#te0067");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e068) {
-    performToRDFTest("e", 68);
+    performToRDFTestFromManifest("#te0068");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e069) {
-    performToRDFTest("e", 69);
+    performToRDFTestFromManifest("#te0069");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e070) {
-    performToRDFTest("e", 70);
+    performToRDFTestFromManifest("#te0070");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e071) {
-    performToRDFTest("e", 71);
+    performToRDFTestFromManifest("#te0071");
 }
 
 TEST(JsonLdProcessorTest, toRdf_e072) {
-    performToRDFTest("e", 72);
+    performToRDFTestFromManifest("#te0072");
 }
 
 //TEST(JsonLdProcessorTest, toRdf_loop) {
@@ -529,23 +555,55 @@ TEST(JsonLdProcessorTest, toRdf_e072) {
 //            case 118:// skip until I have generalized RDF flag implemented
 //                continue;
 //            default:
-//                performToRDFTest(i);
+//                performToRDFTestFromManifest(i);
 //        }
 //    }
 //}
 
 TEST(JsonLdProcessorTest, toRdf_0300) {
     // this is an extra test Dan added while trying to debug issues with normalize test 0008
-    performToRDFTest(300);
+    performToRDFTestFromManifest("#t0300", "toRdf-manifest-extra.jsonld");
 }
 
 TEST(JsonLdProcessorTest, toRdf_0301) {
     // this is an extra test Dan added while trying to debug issues with normalize test 0020
-    performToRDFTest(301);
+    performToRDFTestFromManifest("#t0301", "toRdf-manifest-extra.jsonld");
 }
 
 TEST(JsonLdProcessorTest, toRdf_0302) {
     // this is an extra test Dan added while trying to debug issues with normalize test 0044
-    performToRDFTest(302);
+    performToRDFTestFromManifest("#t0302", "toRdf-manifest-extra.jsonld");
 }
 
+TEST(JsonLdProcessorTest, toRdf_with_manifest) {
+
+    ManifestLoader manifestLoader(resolvePath("test/testjsonld-cpp/test_data/"), "toRdf-manifest.jsonld");
+    std::map<std::string, TestCase> testCases = manifestLoader.load();
+
+    for (auto & testCaseEntry : testCases) {
+        std::cout << testCaseEntry.first << std::endl;
+
+        JsonLdOptions options = testCaseEntry.second.getOptions();
+
+        std::string str;
+        try {
+            str = JsonLdProcessor::toRDFString(testCaseEntry.second.input, options);
+        }
+        catch (JsonLdError &e) {
+            std::cout << e.what() << std::endl;
+            continue;
+        }
+        catch (std::runtime_error &e) {
+            std::cout << e.what() << std::endl;
+            continue;
+        }
+
+        auto expectedDocument = options.getDocumentLoader()->loadDocument(
+                testCaseEntry.second.expect);
+        std::string expected = expectedDocument->getRDFContent();
+
+        EXPECT_EQ(expected, str);
+
+    }
+
+}
