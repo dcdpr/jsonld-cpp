@@ -587,14 +587,20 @@ json Context::expandValue(const std::string & activeProperty, const json& value)
     json td = getTermDefinition(activeProperty);
     // 1)
     if (!td.is_null() && td.contains(JsonLdConsts::TYPE) && td.at(JsonLdConsts::TYPE) == JsonLdConsts::ID) {
-        // TODO: i'm pretty sure value should be a string if the @type is @id
-        rval[JsonLdConsts::ID] = expandIri(value.get<std::string>(), true, false);
+        if(value.is_string())
+            rval[JsonLdConsts::ID] = expandIri(value.get<std::string>(), true, false);
+        else
+            rval[JsonLdConsts::VALUE] = value;
+
         return rval;
     }
     // 2)
     if (!td.is_null() && td.contains(JsonLdConsts::TYPE) && td.at(JsonLdConsts::TYPE) == JsonLdConsts::VOCAB) {
-        // TODO: same as above
-        rval[JsonLdConsts::ID] = expandIri(value.get<std::string>(), true, true);
+        if(value.is_string())
+            rval[JsonLdConsts::ID] = expandIri(value.get<std::string>(), true, true);
+        else
+            rval[JsonLdConsts::VALUE] = value;
+
         return rval;
     }
     // 3)
