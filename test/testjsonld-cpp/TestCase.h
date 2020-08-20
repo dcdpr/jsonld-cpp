@@ -28,7 +28,7 @@ public:
 
     std::string frame;
 
-//public JsonLdErrorCode expectErrorCode;
+    std::string expectErrorCode;
 
     std::string baseUri;
 

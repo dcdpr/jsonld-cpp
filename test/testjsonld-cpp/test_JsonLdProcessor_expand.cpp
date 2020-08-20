@@ -16,7 +16,50 @@ using nlohmann::json;
 #pragma GCC diagnostic pop
 
 
-void performExpandTestFromManifest(std::string testName, std::string manifestName="expand-manifest.jsonld") {
+void performExpandTest(TestCase &testCase) {
+    JsonLdOptions options = testCase.getOptions();
+
+    std::cout << "Id: " << testCase.id << std::endl;
+    std::cout << "Name: " << testCase.name << std::endl;
+    if(!testCase.options.specVersion.empty())
+        std::cout << "SpecVersion: " << testCase.options.specVersion;
+    if(testCase.options.specVersion == "json-ld-1.1") {
+        std::cout << " ...skipping for now." << std::endl;
+        SUCCEED();
+        return;
+    }
+    else
+        std::cout << std::endl;
+
+    json expanded;
+    try {
+        expanded = JsonLdProcessor::expand(testCase.input, options);
+    }
+    catch (JsonLdError &e) {
+        std::cout << "JsonLdError: " << e.what() << std::endl;
+        if(testCase.type.count("jld:NegativeEvaluationTest")) {
+            std::string error = e.what();
+            if(error.find(testCase.expectErrorCode) != std::string::npos) {
+                SUCCEED();
+                return;
+            }
+        }
+    }
+    catch (std::runtime_error &e) {
+        FAIL() << e.what();
+    }
+
+    std::unique_ptr<RemoteDocument> expectedDocument =
+            options.getDocumentLoader()->loadDocument(testCase.expect);
+
+    const json& expected = expectedDocument->getJSONContent();
+
+    EXPECT_TRUE(JsonLdUtils::deepCompare(expected, expanded));
+    //std::cout << expected.dump() << std::endl;
+    //std::cout << expanded.dump() << std::endl;
+}
+
+void performExpandTestFromManifest(const std::string& testName, const std::string& manifestName="expand-manifest.jsonld") {
 
     ManifestLoader manifestLoader(
             resolvePath("test/testjsonld-cpp/test_data/"),
@@ -25,16 +68,7 @@ void performExpandTestFromManifest(std::string testName, std::string manifestNam
 
     auto testCase = testCases.at(testName);
 
-    JsonLdOptions options = testCase.getOptions();
-
-    json expanded = JsonLdProcessor::expand(testCase.input, options);
-
-    std::unique_ptr<RemoteDocument> expectedDocument =
-            options.getDocumentLoader()->loadDocument(testCase.expect);
-
-    const json& expected = expectedDocument->getJSONContent();
-
-    EXPECT_TRUE(JsonLdUtils::deepCompare(expected, expanded));
+    performExpandTest(testCase);
 
 }
 
@@ -351,6 +385,18 @@ TEST(JsonLdProcessorTest, expand_0078) {
     performExpandTestFromManifest("#t0078");
 }
 
+TEST(JsonLdProcessorTest, expand_0088) {
+    performExpandTestFromManifest("#t0088");
+}
+
+TEST(JsonLdProcessorTest, expand_0114) {
+    performExpandTestFromManifest("#t0114");
+}
+
+TEST(JsonLdProcessorTest, expand_0115) {
+    performExpandTestFromManifest("#t0115");
+}
+
 
 TEST(JsonLdProcessorTest, expand_0300) {
     // this is an extra test Dan added while trying to debug issues with normalize test 0008
@@ -375,34 +421,9 @@ TEST(JsonLdProcessorTest, expand_with_manifest) {
     for(auto & testCaseEntry : testCases) {
         std::cout << testCaseEntry.first << std::endl;
 
-        JsonLdOptions options = testCaseEntry.second.getOptions();
+        auto testCase = testCaseEntry.second;
 
-        json expanded;
-        try {
-            std::cout << testCaseEntry.second.options.specVersion;
-            if(testCaseEntry.second.options.specVersion == "json-ld-1.1") {
-                std::cout << " ...skipping for now." << std::endl;
-                continue;
-            }
-            else
-                std::cout << std::endl;
-            expanded = JsonLdProcessor::expand(testCaseEntry.second.input, options);
-        }
-        catch (JsonLdError &e) {
-            std::cout << e.what() << std::endl;
-            continue;
-        }
-        catch (std::runtime_error &e) {
-            std::cout << e.what() << std::endl;
-            continue;
-        }
-
-        auto expectedDocument = options.getDocumentLoader()->loadDocument(
-                testCaseEntry.second.expect);
-        const json& expected = expectedDocument->getJSONContent();
-
-        EXPECT_TRUE(JsonLdUtils::deepCompare(expected, expanded));
-
+        performExpandTest(testCase);
     }
 
 }

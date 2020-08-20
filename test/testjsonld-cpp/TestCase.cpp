@@ -40,8 +40,9 @@ TestCase TestCase::create(
                        baseUri + o["frame"].get<std::string>() :
                        "";
 
-    // todo: not needed until we do the NegativeEvaluationTests
-    // testCase.expectErrorCode = ...
+    testCase.expectErrorCode = o.contains("expectErrorCode") ?
+                       o["expectErrorCode"].get<std::string>() :
+                       "";
 
     if(o.contains("option")) {
         testCase.options = TestCaseOptions::create(o["option"], baseUri);
