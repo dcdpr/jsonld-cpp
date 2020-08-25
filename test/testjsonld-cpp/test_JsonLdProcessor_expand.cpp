@@ -20,9 +20,6 @@ using nlohmann::json;
 // test suite fixture class
 class JsonLdProcessorExpandTest : public ::testing::Test {
 public:
-    // Per-test-suite set-up.
-    // Called before the first test in this test suite.
-    // Can be omitted if not needed.
     static void SetUpTestCase() {
         ManifestLoader manifestLoader(
                 resolvePath("test/testjsonld-cpp/test_data/"),
@@ -30,25 +27,11 @@ public:
         testCases = manifestLoader.load();
     }
 
-    // Per-test-suite tear-down.
-    // Called after the last test in this test suite.
-    // Can be omitted if not needed.
-    //static void TearDownTestSuite() {
-    //}
-
-    // You can define per-test set-up logic as usual.
-    //virtual void SetUp() { ... }
-
-    // You can define per-test tear-down logic as usual.
-    //virtual void TearDown() { ... }
-
-    // Some expensive resource shared by all tests.
+    // resources shared by all tests.
     static std::string mainManifestName;
     static std::map<std::string, TestCase> testCases;
 
-    void foobar() {}
-
-    void performExpandTest(TestCase &testCase) {
+    static void performExpandTest(TestCase &testCase) {
         JsonLdOptions options = testCase.getOptions();
 
         std::cout << "Id: " << testCase.id << std::endl;
@@ -1652,7 +1635,6 @@ TEST_F(JsonLdProcessorExpandTest, expand_0302) {
 // This test would run everything in the manifest all at once, but is disabled for now
 // until after we get everything working using the single test functions above.
 TEST_F(JsonLdProcessorExpandTest, DISABLED_expand_with_manifest) {
-
     ManifestLoader manifestLoader(resolvePath("test/testjsonld-cpp/test_data/"), "expand-manifest.jsonld");
     std::map<std::string, TestCase> testCases = manifestLoader.load();
 
@@ -1663,5 +1645,4 @@ TEST_F(JsonLdProcessorExpandTest, DISABLED_expand_with_manifest) {
 
         performExpandTest(testCase);
     }
-
 }

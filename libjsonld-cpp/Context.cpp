@@ -410,7 +410,7 @@ void Context::createTermDefinition(json context, const std::string& term,
             typeStr = expandIri(typeStr, false, true, context, defined);
         } catch (JsonLdError &error) {
             std::string msg = error.what();
-            if(msg.find(JsonLdError::InvalidIriMapping) != std::string::npos) {
+            if(msg.find(JsonLdError::InvalidIriMapping) == std::string::npos) {
                 throw error;
             }
             throw JsonLdError(JsonLdError::InvalidTypeMapping, type);
