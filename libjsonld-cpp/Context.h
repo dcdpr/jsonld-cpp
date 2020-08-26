@@ -35,8 +35,8 @@ public:
     explicit Context(std::map<std::string, std::string> map);
 
 // todo: should these be static constructors?
-    Context parse(const nlohmann::json & localContext, const std::vector<std::string> & remoteContexts, bool parsingARemoteContext);
-    Context parse(const nlohmann::json & localContext, const std::vector<std::string> & remoteContexts);
+    Context parse(const nlohmann::json & localContext, std::vector<std::string> & remoteContexts, bool parsingARemoteContext);
+    Context parse(const nlohmann::json & localContext, std::vector<std::string> & remoteContexts);
     Context parse(const nlohmann::json & localContext);
 
     /**

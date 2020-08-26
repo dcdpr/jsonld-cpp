@@ -39,7 +39,8 @@ void Context::init() {
  *             If there is an error parsing the contexts.
  */
 Context Context::parse(const json & localContext)  {
-    return parse(localContext, std::vector<std::string>(), false);
+    std::vector<std::string> remoteContexts;
+    return parse(localContext, remoteContexts, false);
 }
 
 /**
@@ -55,7 +56,7 @@ Context Context::parse(const json & localContext)  {
  * @throws JsonLdError
  *             If there is an error parsing the contexts.
  */
-Context Context::parse(const json & localContext, const std::vector<std::string> & remoteContexts)  {
+Context Context::parse(const json & localContext, std::vector<std::string> & remoteContexts)  {
     return parse(localContext, remoteContexts, false);
 }
 
@@ -76,12 +77,9 @@ Context Context::parse(const json & localContext, const std::vector<std::string>
  * @throws JsonLdError
  *             If there is an error parsing the contexts.
  */
- Context Context::parse(const json & localContext, const std::vector<std::string> & remoteContexts,
+ Context Context::parse(const json & localContext, std::vector<std::string> & remoteContexts,
                       bool parsingARemoteContext) {
 
-//    if (remoteContexts == null) {
-//        remoteContexts = new ArrayList<String>();
-//    }
     // 1. Initialize result to the result of cloning active context.
     Context result = *this;
     // 2)
@@ -108,31 +106,39 @@ Context Context::parse(const json & localContext, const std::vector<std::string>
 //        }
         // 3.2)
         else if (context.is_string()) {
-            throw JsonLdError(JsonLdError::NotImplemented, "context.is_string() not implemented: ");
-//            std::string uri = result->get(JsonLdConsts::BASE);
-//            uri = JsonLdUrl.resolve(uri, (String) context);
-//            // 3.2.2
-//            if (remoteContexts.contains(uri)) {
-//                throw new JsonLdError(Error.RECURSIVE_CONTEXT_INCLUSION, uri);
-//            }
-//            remoteContexts.add(uri);
-//
-//            // 3.2.3: Dereference context
-//            final RemoteDocument rd = this.options.getDocumentLoader().loadDocument(uri);
-//            final Object remoteContext = rd.getDocument();
-//            if (!(remoteContext instanceof Map) || !((Map<String, Object>) remoteContext)
-//                    .containsKey(JsonLdConsts.CONTEXT)) {
-//                // If the dereferenced document has no top-level JSON object
-//                // with an @context member
-//                throw new JsonLdError(Error.INVALID_REMOTE_CONTEXT, context);
-//            }
-//            final Object tempContext = ((Map<String, Object>) remoteContext)
-//                    .get(JsonLdConsts.CONTEXT);
-//
-//            // 3.2.4
-//            result = result.parse(tempContext, remoteContexts, true);
-//            // 3.2.5
-//            continue;
+            std::string uri = result.at(JsonLdConsts::BASE);
+            std::string contextStr = context.get<std::string>();
+            uri = JsonLdUrl::resolve(&uri, &contextStr);
+
+            // 3.2.2
+            if (std::find(remoteContexts.begin(), remoteContexts.end(), uri) != remoteContexts.end()) {
+                throw JsonLdError(JsonLdError::RecursiveContextInclusion, uri);
+            }
+            remoteContexts.push_back(uri);
+
+            // 3.2.3: Dereference context
+            std::unique_ptr<RemoteDocument> rd;
+            try {
+                rd = options.getDocumentLoader()->loadDocument(uri);
+            }
+            catch (JsonLdError &error) {
+                std::string msg = error.what();
+                if(msg.find(JsonLdError::LoadingDocumentFailed) != std::string::npos) {
+                    throw JsonLdError(JsonLdError::LoadingRemoteContextFailed, msg);
+                }
+            }
+            const json &remoteContext = rd->getJSONContent();
+            if (!remoteContext.is_object() || !remoteContext.contains(JsonLdConsts::CONTEXT)) {
+                // If the dereferenced document has no top-level JSON object
+                // with an @context member
+                throw JsonLdError(JsonLdError::InvalidRemoteContext, context);
+            }
+            const json &tempContext = remoteContext[JsonLdConsts::CONTEXT];
+
+            // 3.2.4
+            result = result.parse(tempContext, remoteContexts, true);
+            // 3.2.5
+            continue;
         } else if (!(context.is_object())) {
             // 3.3
             throw JsonLdError(JsonLdError::InvalidLocalContext, context);
