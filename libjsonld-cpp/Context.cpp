@@ -410,7 +410,7 @@ void Context::createTermDefinition(json context, const std::string& term,
 
         // 13.1)
         if (!(type.is_string())) {
-            throw JsonLdError(JsonLdError::InvalidTypeMapping, type);
+            throw JsonLdError(JsonLdError::InvalidTypeMapping);
         }
         std::string typeStr = type.get<std::string>();
 
