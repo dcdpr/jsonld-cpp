@@ -141,7 +141,10 @@ Context Context::parse(const json & localContext, std::vector<std::string> & rem
             continue;
         } else if (!(context.is_object())) {
             // 3.3
-            throw JsonLdError(JsonLdError::InvalidLocalContext, context);
+            if(context.is_string())
+                throw JsonLdError(JsonLdError::InvalidLocalContext, context);
+            else
+                throw JsonLdError(JsonLdError::InvalidLocalContext);
         }
         checkEmptyKey(context);
         // 3.4
