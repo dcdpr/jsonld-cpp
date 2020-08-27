@@ -396,7 +396,7 @@ void Context::createTermDefinition(json context, const std::string& term,
 
     // 10)
     if (!(value.is_object())) {
-        throw JsonLdError(JsonLdError::InvalidTermDefinition, value);
+        throw JsonLdError(JsonLdError::InvalidTermDefinition);
     }
 
     // 11) create a new term definition
