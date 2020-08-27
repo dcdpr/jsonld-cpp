@@ -439,7 +439,7 @@ void Context::createTermDefinition(json context, const std::string& term,
         // 11)
         if (value.contains(JsonLdConsts::REVERSE)) {
             if (value.contains(JsonLdConsts::ID)) {
-                throw JsonLdError(JsonLdError::InvalidReverseProperty, value);
+                throw JsonLdError(JsonLdError::InvalidReverseProperty);
             }
             auto reverse = value.at(JsonLdConsts::REVERSE);
 
