@@ -199,7 +199,7 @@ Context Context::parse(const json & localContext, std::vector<std::string> & rem
             } else if (value.is_string()) {
                 result.insert(std::make_pair(JsonLdConsts::LANGUAGE, value.get<std::string>())); // todo: value to lowercase
             } else {
-                throw JsonLdError(JsonLdError::InvalidDefaultLanguage, value);
+                throw JsonLdError(JsonLdError::InvalidDefaultLanguage);
             }
         }
 
