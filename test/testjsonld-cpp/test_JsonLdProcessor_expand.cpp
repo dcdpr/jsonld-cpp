@@ -70,8 +70,8 @@ public:
         const json& expected = expectedDocument->getJSONContent();
 
         EXPECT_TRUE(JsonLdUtils::deepCompare(expected, expanded));
-        std::cout << expected.dump() << std::endl;
-        std::cout << expanded.dump() << std::endl;
+        std::cout << "  Actual JSON: " << expanded.dump() << std::endl;
+        std::cout << "Expected JSON: " << expected.dump() << std::endl;
     }
 
     void performExpandTestFromAlternateManifest(const std::string& testName, const std::string& manifestName) {
@@ -96,12 +96,10 @@ public:
         performExpandTest(testCase);
     }
 
-
 };
 
 std::string JsonLdProcessorExpandTest::mainManifestName = "expand-manifest.jsonld";
 std::map<std::string, TestCase> JsonLdProcessorExpandTest::testCases;
-
 
 
 TEST_F(JsonLdProcessorExpandTest, expand_t0001) {
@@ -1041,9 +1039,10 @@ TEST_F(JsonLdProcessorExpandTest, expand_ter52) {
     performExpandTestFromManifest("#ter52");
 }
 
-TEST_F(JsonLdProcessorExpandTest, expand_ter53) {
-    performExpandTestFromManifest("#ter53");
-}
+// todo: commented this until we get an answer from guthub: https://github.com/w3c/json-ld-api/issues/507
+//TEST_F(JsonLdProcessorExpandTest, expand_ter53) {
+//    performExpandTestFromManifest("#ter53");
+//}
 
 TEST_F(JsonLdProcessorExpandTest, expand_ter54) {
     performExpandTestFromManifest("#ter54");
