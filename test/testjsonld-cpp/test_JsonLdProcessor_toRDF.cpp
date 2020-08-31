@@ -73,7 +73,7 @@ public:
 
         const std::string & expected = expectedDocument->getRDFContent();
 
-        EXPECT_TRUE(JsonLdUtils::deepCompare(expected, rdfStr));
+        EXPECT_EQ(expected, rdfStr);
 
         std::cout << "  Actual RDF: " << rdfStr << std::endl;
         std::cout << "Expected RDF: " << expected << std::endl;
