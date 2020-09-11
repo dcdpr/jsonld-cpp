@@ -3,15 +3,16 @@
 
 
 #include "RemoteDocument.h"
+#include "RDFDataset.h"
 
 class RDFDocument : public RemoteDocument {
 private:
     MediaType contentType;
     std::string documentUrl;
-    std::string document;
+    RDF::RDFDataset document;
     std::string contextUrl;
 
-    RDFDocument(MediaType contentType, std::string document);
+    RDFDocument(MediaType contentType, RDF::RDFDataset document);
 
 public:
 
@@ -24,7 +25,7 @@ public:
     const std::string &getContextUrl() const override;
     const std::string &getDocumentUrl() const override;
     const nlohmann::json &getJSONContent() const override;
-    const std::string & getRDFContent() const override;
+    const RDF::RDFDataset & getRDFContent() const override;
 
     void setContextUrl(const std::string &url) override;
     void setDocumentUrl(const std::string &url) override;

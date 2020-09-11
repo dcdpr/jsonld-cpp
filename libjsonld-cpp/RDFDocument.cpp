@@ -2,9 +2,10 @@
 #include <utility>
 #include <sstream>
 #include "RDFDocument.h"
+#include "RDFDatasetUtils.h"
 #include "JsonLdError.h"
 
-RDFDocument::RDFDocument(MediaType icontentType, std::string idocument)
+RDFDocument::RDFDocument(MediaType icontentType, RDF::RDFDataset idocument)
         : contentType(std::move(icontentType)), document(std::move(idocument))
 {
 }
@@ -17,7 +18,7 @@ const std::string &RDFDocument::getContextUrl() const {
     return contextUrl;
 }
 
-const std::string & RDFDocument::getRDFContent() const {
+const RDF::RDFDataset & RDFDocument::getRDFContent() const {
     return document;
 }
 
@@ -38,6 +39,7 @@ RDFDocument RDFDocument::of(const MediaType& contentType, std::istream &in) {
         throw JsonLdError(JsonLdError::LoadingDocumentFailed,
                           "Failed to create RDFDocument.");
 
+    // read data from incoming stream to a tmp string
     std::vector<std::string> lines;
     std::string line;
     while (std::getline(in, line, '\n'))
@@ -45,7 +47,9 @@ RDFDocument RDFDocument::of(const MediaType& contentType, std::istream &in) {
     std::sort(lines.begin(), lines.end());
     std::stringstream result;
     copy(lines.begin(), lines.end(), std::ostream_iterator<std::string>(result, "\n"));
-    return RDFDocument(contentType, result.str());
+    // parse tmp string into an RDFDataset
+    RDF::RDFDataset dataset = RDFDatasetUtils::parseNQuads(result.str());
+    return RDFDocument(contentType, dataset);
 }
 
 bool RDFDocument::accepts(const MediaType& contentType) {

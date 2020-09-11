@@ -3,6 +3,7 @@
 #include "testHelpers.h"
 #include "ManifestLoader.h"
 #include "FileLoader.h"
+#include "RDFDatasetUtils.h"
 #include <fstream>
 
 #include <gtest/gtest.h>
@@ -71,7 +72,11 @@ public:
         std::unique_ptr<RemoteDocument> expectedDocument =
                 options.getDocumentLoader()->loadDocument(testCase.expect);
 
-        const std::string & expected = expectedDocument->getRDFContent();
+        // todo: too many conversions? maybe we should use JsonLdProcessor::toRDF which
+        // returns RDFDataset so we can compare that directly to getRDFContent() rather
+        // than converting both to strings for the compare?
+        const std::string & expected =
+                RDFDatasetUtils::toNQuads(expectedDocument->getRDFContent());
 
         EXPECT_EQ(expected, rdfStr);
 

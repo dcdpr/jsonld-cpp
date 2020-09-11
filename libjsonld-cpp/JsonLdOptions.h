@@ -262,7 +262,7 @@ public:
         this->produceGeneralizedRdf_ = produceGeneralizedRdf;
     }
 
-    DocumentLoader * getDocumentLoader() {
+    DocumentLoader * getDocumentLoader() const {
         return documentLoader_.get();
     }
 

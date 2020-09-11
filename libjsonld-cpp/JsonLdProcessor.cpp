@@ -142,9 +142,18 @@ std::string JsonLdProcessor::toRDFString(const std::string& input, const JsonLdO
 
 std::string JsonLdProcessor::normalize(const std::string& input, const JsonLdOptions& options) {
 
-    RDFDataset dataset = toRDF(input, options);
     JsonLdApi api(options);
-    return api.normalize(dataset);
+    auto tmp = options.getDocumentLoader()->loadDocument(input);
+
+    if(tmp->getContentType() == MediaType::json_ld()) {
+        RDFDataset dataset = toRDF(input, options);
+        return api.normalize(dataset);
+    }
+    else if(tmp->getContentType() == MediaType::n_quads()) {
+        RDFDataset dataset = tmp->getRDFContent();
+        return api.normalize(dataset);
+    }
+
 }
 
 nlohmann::json JsonLdProcessor::expand(nlohmann::json input) {

@@ -1,8 +1,11 @@
 #ifndef LIBJSONLD_CPP_JSONDOCUMENT_H
 #define LIBJSONLD_CPP_JSONDOCUMENT_H
 
-
 #include "RemoteDocument.h"
+
+namespace RDF {
+    class RDFDataset;
+}
 
 class JSONDocument : public RemoteDocument {
 private:
@@ -24,7 +27,7 @@ public:
     const std::string &getContextUrl() const override;
     const std::string &getDocumentUrl() const override;
     const nlohmann::json &getJSONContent() const override;
-    const std::string & getRDFContent() const override;
+    const RDF::RDFDataset & getRDFContent() const override;
 
     void setContextUrl(const std::string &url) override;
     void setDocumentUrl(const std::string &url) override;

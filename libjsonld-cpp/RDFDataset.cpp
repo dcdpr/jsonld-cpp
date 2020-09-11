@@ -18,7 +18,7 @@ namespace RDF {
     }
 
     std::pair<VectorMap::iterator, bool>
-    RDF::RDFDataset::insert(const std::map<std::string, std::vector<Quad>>::value_type &value) {
+    RDF::RDFDataset::insert(const VectorMap::value_type &value) {
         return vectorMap.insert(value);
     }
 
@@ -399,6 +399,20 @@ namespace RDF {
         if(vectorMap.count(graphName))
             return vectorMap.at(graphName);
         return std::vector<Quad>();
+    }
+
+    void RDFDataset::addQuad(std::string name, const Quad& quad) {
+        if(!vectorMap.count(name)) {
+            // initialise graph in dataset
+            std::vector<Quad> v {quad};
+            vectorMap.insert(std::make_pair(name, v));
+        }
+        else {
+            // add triple if unique to its graph
+            if (std::find(vectorMap[name].begin(), vectorMap[name].end(), quad) == vectorMap[name].end()) {
+                vectorMap[name].push_back(quad);
+            }
+        }
     }
 
     bool Literal::isLiteral() const {

@@ -170,6 +170,8 @@ namespace RDF {
 
         std::set<std::string> graphNames() const;
         std::vector<Quad> getQuads(const std::string & graphName) const;
+
+        void addQuad(std::string name, const Quad& quad);
     };
 
 }

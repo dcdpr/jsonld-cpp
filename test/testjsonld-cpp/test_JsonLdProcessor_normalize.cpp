@@ -14,6 +14,7 @@ using nlohmann::json;
 #pragma GCC diagnostic ignored "-Wextra"
 #include <rapidcheck/gtest.h>
 #include <FileLoader.h>
+#include <RDFDatasetUtils.h>
 
 #pragma clang diagnostic pop
 #pragma GCC diagnostic pop
@@ -68,7 +69,11 @@ public:
         std::unique_ptr<RemoteDocument> expectedDocument =
                 options.getDocumentLoader()->loadDocument(testCase.expect);
 
-        const std::string & expected = expectedDocument->getRDFContent();
+        // todo: too many conversions? maybe JsonLdProcessor::normalize should return RDFDataset
+        // so we can compare that directly to getRDFContent() rather than converting both
+        // to strings for the compare?
+        const std::string & expected =
+                RDFDatasetUtils::toNQuads(expectedDocument->getRDFContent());
 
         EXPECT_EQ(expected, normalized);
 

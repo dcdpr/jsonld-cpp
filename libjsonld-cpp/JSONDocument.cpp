@@ -17,7 +17,7 @@ const std::string &JSONDocument::getContextUrl() const {
     return contextUrl;
 }
 
-const std::string & JSONDocument::getRDFContent() const {
+const RDF::RDFDataset & JSONDocument::getRDFContent() const {
     // todo: could return std::optional when using C++17
     throw JsonLdError(JsonLdError::LoadingDocumentFailed,
                       "No RDF content for this JSONDocument");
