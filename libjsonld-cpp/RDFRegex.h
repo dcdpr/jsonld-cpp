@@ -4,13 +4,16 @@
 #include <string>
 
 namespace RDFRegex {
+    // Note: The following regexes for matching RDF data is not quite complete. Please see
+    // https://www.w3.org/TR/n-quads/#sec-grammar for other items needed when unicode support
+    // is completed.
     const std::string EOLN(R"((?:\r\n)|(?:\n)|(?:\r))");
     const std::string WS(R"([ \t]+)");
     const std::string WSO(R"([ \t]*)");
     const std::string EMPTY("^" + WSO + "$");
 
     const std::string IRI(R"((?:<([^>]*)>))");
-    const std::string BNODE(R"((_:(?:[A-Za-z][A-Za-z0-9]*)))");
+    const std::string BNODE(R"((_:(?:[A-Za-z_:0-9])(?:(?:[A-Za-z_:0-9\.-])*[A-Za-z_:0-9-])?))");
     const std::string PLAIN(R"lit("([^"\\]*(?:\\.[^"\\]*)*)")lit");
     const std::string DATATYPE("(?:\\^\\^" + IRI + ")");
     const std::string LANGUAGE("(?:@([a-z]+(?:-[a-zA-Z0-9]+)*))");

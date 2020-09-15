@@ -12,6 +12,7 @@ namespace RDFDatasetUtils {
 
     void escape(const std::string& str, std::stringstream & ss);
     void unescape(const std::string& str, std::stringstream & ss);
+    std::string escape(const std::string& str);
     std::string unescape(const std::string& str);
 
     bool isHighSurrogate(char c);

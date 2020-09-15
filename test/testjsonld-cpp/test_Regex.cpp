@@ -104,5 +104,3 @@ TEST(RegexTest, match_quads) {
     }
 
 }
-
-

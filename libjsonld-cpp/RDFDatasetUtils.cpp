@@ -181,11 +181,11 @@ void RDFDatasetUtils::unescape(const std::string& str, std::stringstream & ss) {
 
     std::string rval = str;
 
-    if(!rval.empty()) {
+    if(!str.empty()) {
 
         std::regex charsRgx(RDFRegex::UCHAR_MATCHED);
         auto chars_begin =
-                std::sregex_iterator(rval.begin(), rval.end(), charsRgx);
+                std::sregex_iterator(str.begin(), str.end(), charsRgx);
         auto chars_end = std::sregex_iterator();
         for (std::sregex_iterator i = chars_begin; i != chars_end; ++i) {
             std::smatch match = *i;
@@ -198,7 +198,51 @@ void RDFDatasetUtils::unescape(const std::string& str, std::stringstream & ss) {
                 std::cout << "  submatch " << i << ": [" << piece << "]\n";
             }
 
-
+            std::string uni;
+            if(!match[1].matched) {
+                std::string hex = match[2].matched ? match[2].str() : match[3].str();
+                long v = std::stol(hex, nullptr, 16);
+                if (v > 0xFFFF) {
+                    throw JsonLdError(JsonLdError::SyntaxError,
+                                      "UTF-32 chars not yet supported");
+                }
+                else {
+                    uni = static_cast<char>(v);
+                }
+            }
+            else {
+                char c = match[1].str()[0];
+                switch (c) {
+                    case 'b':
+                        uni = "\b";
+                        break;
+                    case 'n':
+                        uni = "\n";
+                        break;
+                    case 't':
+                        uni = "\t";
+                        break;
+                    case 'f':
+                        uni = "\f";
+                        break;
+                    case 'r':
+                        uni = "\r";
+                        break;
+                    case '\'':
+                        uni = "'";
+                        break;
+                    case '\"':
+                        uni = "\"";
+                        break;
+                    case '\\':
+                        uni = "\\";
+                        break;
+                    default:
+                        continue;
+                }
+            }
+            std::regex pat(escape(match[0].str()));
+            rval = std::regex_replace(rval, pat, uni);
         }
 
     }
@@ -209,6 +253,12 @@ void RDFDatasetUtils::unescape(const std::string& str, std::stringstream & ss) {
 std::string RDFDatasetUtils::unescape(const std::string& str) {
     std::stringstream ss;
     unescape(str, ss);
+    return ss.str();
+}
+
+std::string RDFDatasetUtils::escape(const std::string& str) {
+    std::stringstream ss;
+    escape(str, ss);
     return ss.str();
 }
 
