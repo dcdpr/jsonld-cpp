@@ -70,12 +70,12 @@ TEST(IriUtilsTest, removeDotSegments_withSingleDotAtEnd_returnsRemoved) {
     EXPECT_EQ(result, "example/");
 }
 
-TEST(IriUtilsTest, removeDotSegments_rfc3896_example1) {
+TEST(IriUtilsTest, removeDotSegments_rfc3986_example1) {
     std::string result = IriUtils::removeDotSegments("/a/b/c/./../../g", false);
     EXPECT_EQ(result, "/a/g");
 }
 
-TEST(IriUtilsTest, removeDotSegments_rfc3896_example2) {
+TEST(IriUtilsTest, removeDotSegments_rfc3986_example2) {
     std::string result = IriUtils::removeDotSegments("mid/content=5/../6", false);
     EXPECT_EQ(result, "mid/6");
 }
@@ -90,9 +90,9 @@ TEST(IriUtilsTest, prependBase_emptyArguments) {
     EXPECT_EQ(result, "b");
 }
 
-TEST(IriUtilsTest, prependBase_rfc3896_normalExamples) {
+TEST(IriUtilsTest, prependBase_rfc3986_normalExamples) {
 
-    // from RFC 3896, Section 5.4.1
+    // from RFC 3986, Section 5.4.1
 
     std::string result;
 
@@ -163,9 +163,9 @@ TEST(IriUtilsTest, prependBase_rfc3896_normalExamples) {
     EXPECT_EQ(result, "http://a/g");
 }
 
-TEST(IriUtilsTest, prependBase_rfc3896_abnormalExamples) {
+TEST(IriUtilsTest, prependBase_rfc3986_abnormalExamples) {
 
-    // from RFC 3896, Section 5.4.2
+    // from RFC 3986, Section 5.4.2
 
     std::string result;
 
@@ -222,5 +222,15 @@ TEST(IriUtilsTest, prependBase_rfc3896_abnormalExamples) {
 
 //    result = IriUtils::prependBase("http://a/b/c/d;p?q", "http:g");
 //    EXPECT_EQ(result, "http:g");
+
+}
+
+TEST(IriUtilsTest, prependBase_otherExamples) {
+
+    std::string result;
+
+    // discovered this as a failing case when testing expand test "#t0109"
+    result = IriUtils::prependBase("https://ex.org/", "#Test");
+    EXPECT_EQ(result, "https://ex.org/#Test");
 
 }

@@ -1039,10 +1039,9 @@ TEST_F(JsonLdProcessorExpandTest, expand_ter52) {
     performExpandTestFromManifest("#ter52");
 }
 
-// todo: commented this until we get an answer from guthub: https://github.com/w3c/json-ld-api/issues/507
-//TEST_F(JsonLdProcessorExpandTest, expand_ter53) {
-//    performExpandTestFromManifest("#ter53");
-//}
+TEST_F(JsonLdProcessorExpandTest, expand_ter53) {
+    performExpandTestFromManifest("#ter53");
+}
 
 TEST_F(JsonLdProcessorExpandTest, expand_ter54) {
     performExpandTestFromManifest("#ter54");

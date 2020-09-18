@@ -170,7 +170,8 @@ std::string IriUtils::prependBase(std::string base, std::string iri) {
     }
     else {
         // if finalIriPath is empty after removingDots, but the original was not, then we need a trailing slash
-        if(!parsedIri.get_path().empty())
+        if(!parsedIri.get_path().empty() ||
+                (!finalIriQuery.empty() || !finalIriFragment.empty()))
             result += "/";
     }
 
@@ -181,5 +182,15 @@ std::string IriUtils::prependBase(std::string base, std::string iri) {
         result += "#" + finalIriFragment;
 
     return result;
+}
+
+bool IriUtils::isIriAbsolute(const std::string& iri) {
+    try {
+        uri parsedIri(iri);
+        return !parsedIri.get_scheme().empty();
+    }
+    catch(std::invalid_argument &) {
+        return false;
+    }
 }
 

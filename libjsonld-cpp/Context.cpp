@@ -1,6 +1,7 @@
 #include "Context.h"
 #include "JsonLdUrl.h"
 #include "ObjUtils.h"
+#include "IriUtils.h"
 #include <iostream>
 #include <utility>
 
@@ -307,7 +308,8 @@ std::string Context::expandIri(
                 return id;
             }
             // 4.5)
-            return value;
+            if(IriUtils::isIriAbsolute(value) || value.find_first_of("_:") == 0)
+                return value;
         }
         // 5)
         if (vocab && contextMap.find(JsonLdConsts::VOCAB) != contextMap.end()) {
