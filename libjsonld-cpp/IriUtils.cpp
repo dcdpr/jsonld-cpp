@@ -7,6 +7,8 @@
 #pragma clang diagnostic pop
 #pragma GCC diagnostic pop
 
+#include <uriparser/Uri.h>
+
 #include <vector>
 
 namespace {
