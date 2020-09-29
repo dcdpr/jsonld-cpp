@@ -703,7 +703,7 @@ TEST(UriParserResolveTest, resolve_otherExamples) {
     std::string t;
 
     // discovered these as failing cases when testing expand test "#t0109", but now
-    // passes since we switched to using "external/uriparser" library
+    // they pass since we switched to using "external/uriparser" library
 
     resolved_uri.reset(UriParser::createResolved("https://ex.org/",  "#Test"));
     EXPECT_TRUE(resolved_uri);

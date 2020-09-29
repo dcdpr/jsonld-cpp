@@ -112,48 +112,44 @@ bool UriParser::ToString(std::string* output) const {
     return true;
 }
 
-bool UriParser::GetScheme(std::string *scheme) const {
-    return pimpl_->GetUriComponent(pimpl_->get_uri()->scheme, scheme);
+bool UriParser::GetScheme(std::string *output) const {
+    return pimpl_->GetUriComponent(pimpl_->get_uri()->scheme, output);
 }
 
-bool UriParser::GetHost(std::string *host) const {
-    return pimpl_->GetUriComponent(
-            pimpl_->get_uri()->hostText, host);
+bool UriParser::GetHost(std::string *output) const {
+    return pimpl_->GetUriComponent(pimpl_->get_uri()->hostText, output);
 }
 
-bool UriParser::GetPort(std::string *port) const {
-    return pimpl_->GetUriComponent(
-            pimpl_->get_uri()->portText, port);
+bool UriParser::GetPort(std::string *output) const {
+    return pimpl_->GetUriComponent(pimpl_->get_uri()->portText, output);
 }
 
-bool UriParser::GetQuery(std::string *query) const {
-    return pimpl_->GetUriComponent(
-            pimpl_->get_uri()->query, query);
+bool UriParser::GetQuery(std::string *output) const {
+    return pimpl_->GetUriComponent(pimpl_->get_uri()->query, output);
 }
 
-bool UriParser::GetFragment(std::string *fragment) const {
-    return pimpl_->GetUriComponent(
-            pimpl_->get_uri()->fragment, fragment);
+bool UriParser::GetFragment(std::string *output) const {
+    return pimpl_->GetUriComponent(pimpl_->get_uri()->fragment, output);
 }
 
-bool UriParser::GetPath(std::string *path) const {
+bool UriParser::GetPath(std::string *output) const {
     if (!pimpl_->get_uri()->pathHead ||
         !pimpl_->get_uri()->pathTail) {
         return false;
     }
-    if (path) {
-        path->clear();
+    if (output) {
+        output->clear();
         UriPathSegmentA* segment = pimpl_->get_uri()->pathHead;
         while (segment) {
             UriTextRangeA* text_range = &segment->text;
             if (!text_range || !text_range->first || !text_range->afterLast) {
                 return false;  // Something is corrupt.
             }
-            path->append(text_range->first,
+            output->append(text_range->first,
                          text_range->afterLast - text_range->first);
             segment = segment->next;
             if (segment) {  // If there's a next segment append a separator.
-                path->append("/");
+                output->append("/");
             }
         }
     }

@@ -1,5 +1,5 @@
 #include "JsonLdUrl.h"
-#include "IriUtils.h"
+#include "Uri.h"
 
 std::string JsonLdUrl::resolve(std::string *baseUri, std::string *pathToResolve) {
     if (baseUri == nullptr) {
@@ -8,5 +8,9 @@ std::string JsonLdUrl::resolve(std::string *baseUri, std::string *pathToResolve)
     if (pathToResolve == nullptr || pathToResolve->empty()) {
         return *baseUri;
     }
-    return IriUtils::prependBase(*baseUri, *pathToResolve);
+    std::string result;
+    if(Uri::ResolveUri(*baseUri, *pathToResolve, &result))
+        return result;
+    else
+        return ""; // todo: throw?
 }

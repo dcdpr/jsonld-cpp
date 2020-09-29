@@ -4,31 +4,33 @@
 #include <memory>
 #include <string>
 
-// A class that wraps "external/uriparser" library with a C++ API.
-
+/**
+ * UriParser wraps "external/uriparser" library with a C++ API.
+ *
+ * UriParser should most often be constructed from one of the static "create" methods.
+ *
+ * It is recommended that a UriParser* be managed with stdd::unique_ptr or equivalent.
+ *
+ */
 class UriParserImpl;
 
 class UriParser {
 
 public:
-    // UriParser should always be constructed from one of the following static methods.
 
-    // This creates a UriParser from a URI in string form.
+    // This creates a UriParser from a URI.
     static UriParser* create(const char* str);
 
-    // This creates a UriParser representing the resolution of the given
-    // relative URI against the given base URI.
+    // This creates a UriParser representing the resolution of the
+    // relative URI against the base URI.
     static UriParser* createResolved(const char* base, const char* relative);
 
-    // The destructor must perform uriparser-specific operations to release
-    // resources.  It is highly recommdended that a UriParser* be managed
-    // with boost::scoped_ptr or equivalent (as is done in CreateResolveUri).
     ~UriParser();
 
     // This parses the given URI string into the UriParser object and obliterates
     // any previous URI parsed into this object.  If the parse succeeds true is
     // returned, else false is returned.  This method is intended for use mainly
-    // with the CreateFromParse() static method.
+    // with the create() static method.
     bool Parse(const char* str);
 
     // UriParser (and the underlying uriparser library) does not automatically
@@ -39,35 +41,63 @@ public:
 
     // This resolves the URI represented by the UriParser relative against the
     // URI represented by the UriParser base.  This method is intended for use
-    // mainly with the CreateResolvedUri() static method.
+    // mainly with the CreateResolved() static method.
     bool Resolve(const UriParser& base, const UriParser& relative);
 
-    // This method saves the URI in string form into the given string.  This
-    // returns false if a NULL string argument is supplied or on any internal
-    // errors in saving to this string.  True is returned on success.
+    // This method outputs the URI in string form.  This returns false if
+    // a NULL string argument is supplied or on any internal errors in saving
+    // to this string.  True is returned on success.
     bool ToString(std::string* output) const;
 
-    // This returns the scheme of the URI if one exists.
-    bool GetScheme(std::string* scheme) const;
+    /**
+     * Copy URI's scheme to output string if the scheme exists and output string is not null
+     *
+     * @param output string
+     * @return true if scheme exists
+     */
+    bool GetScheme(std::string* output) const;
 
-    // This returns the host of the URI if one exists.
-    bool GetHost(std::string* host) const;
+    /**
+     * Copy URI's host to output string if the host exists and output string is not null
+     *
+     * @param output string
+     * @return true if host exists
+     */
+    bool GetHost(std::string* output) const;
 
-    // This returns the port of the URI if one exists.
-    bool GetPort(std::string* port) const;
+    /**
+     * Copy URI's port to output string if the port exists and output string is not null
+     *
+     * @param output string
+     * @return true if port exists
+     */
+    bool GetPort(std::string* output) const;
 
-    // This returns the query of the URI if one exists.
-    bool GetQuery(std::string* query) const;
+    /**
+     * Copy URI's query to output string if the query exists and output string is not null
+     *
+     * @param output string
+     * @return true if query exists
+     */
+    bool GetQuery(std::string* output) const;
 
-    // This method returns the fragment portion of the URI into the given
-    // string if such is supplied.  If no string is supplied or if there is no
-    // fragment in this URI false is returned.  The fragment returned does not
-    // include the '#' found in the corresponding URI.
-    bool GetFragment(std::string* fragment) const;
+    /**
+     * Copy URI's fragment to output string if the fragment exists and output string is not null
+     *
+     * The fragment returned does not include the '#'.
+     *
+     * @param output string
+     * @return true if fragment exists
+     */
+    bool GetFragment(std::string* output) const;
 
-    // This method returns true if the uri has a path.  If an output string
-    // pointer is supplied the path is saved there.
-    bool GetPath(std::string* path) const;
+    /**
+     * Copy URI's path to output string if the path exists and output string is not null
+     *
+     * @param output string
+     * @return true if path exists
+     */
+    bool GetPath(std::string* output) const;
 
 protected:
     UriParser();
