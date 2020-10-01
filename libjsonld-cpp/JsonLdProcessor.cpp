@@ -153,6 +153,13 @@ std::string JsonLdProcessor::normalize(const std::string& input, const JsonLdOpt
         RDFDataset dataset = tmp->getRDFContent();
         return api.normalize(dataset);
     }
+    else {
+        std::stringstream ss;
+        ss << "Unsupported content type: '" << tmp->getContentType()
+           << "'. Supported content types for normalization are: "
+           << MediaType::json_ld() << " and " << MediaType::n_quads();
+        throw JsonLdError(JsonLdError::LoadingDocumentFailed, ss.str());
+    }
 
 }
 

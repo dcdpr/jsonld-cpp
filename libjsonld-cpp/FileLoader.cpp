@@ -108,7 +108,7 @@ std::unique_ptr<RemoteDocument> FileLoader::loadDocument(const std::string &url)
 
     std::stringstream ss;
     ss << "Unsupported content type: '" << contentType << "'. Supported content types are: ["
-       << MediaType::json_ld() << ", " << MediaType::json() << " and " << MediaType::n_quads();
+       << MediaType::json_ld() << ", " << MediaType::json() << " and " << MediaType::n_quads() << "]";
     throw JsonLdError(JsonLdError::LoadingDocumentFailed, ss.str());
 
 }

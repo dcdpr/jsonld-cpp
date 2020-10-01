@@ -346,18 +346,6 @@ TEST(UriParserNormalizeTest, normalize_withMultipleSingleDotsAtStart_returnsRemo
     EXPECT_EQ("example", t);
 }
 
-TEST(UriParserNormalizeTest, normalize_withDoubleDotsAtStart_returnsRemoved) {
-    std::string a = "../example";
-    std::unique_ptr<UriParser> base_uri(UriParser::create(a.c_str()));
-
-    EXPECT_TRUE(base_uri->Normalize());
-
-    std::string t;
-    EXPECT_TRUE(base_uri->ToString(&t));
-
-    EXPECT_EQ("example", t); // ? does there need to be a separate "removeDotSegments"? what does the jsonld code need?
-}
-
 TEST(UriParserNormalizeTest, normalize_withSingleDotInMiddle_returnsRemoved) {
     std::string a = "example/./foo";
     std::unique_ptr<UriParser> base_uri(UriParser::create(a.c_str()));

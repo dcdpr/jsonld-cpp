@@ -1,7 +1,7 @@
 #include "Context.h"
 #include "JsonLdUrl.h"
 #include "ObjUtils.h"
-#include "IriUtils.h"
+#include "Uri.h"
 #include <iostream>
 #include <utility>
 
@@ -308,7 +308,7 @@ std::string Context::expandIri(
                 return id;
             }
             // 4.5)
-            if(IriUtils::isIriAbsolute(value) || value.find_first_of("_:") == 0)
+            if(Uri::isAbsolute(value) || value.find_first_of("_:") == 0)
                 return value;
         }
         // 5)
