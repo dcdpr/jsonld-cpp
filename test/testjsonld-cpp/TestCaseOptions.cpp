@@ -18,7 +18,6 @@ TestCaseOptions TestCaseOptions::create(nlohmann::json o, std::string baseUri) {
 
     result.normative = o.contains("normative") && o["normative"].get<bool>();
 
-    // todo: may need some better URI resolving...
     if(o.contains("expandContext")) {
         std::string context = o["expandContext"].get<std::string>();
         result.expandContext = JsonLdUrl::resolve(&baseUri, &context);

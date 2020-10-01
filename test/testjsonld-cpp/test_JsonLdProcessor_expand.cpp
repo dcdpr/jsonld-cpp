@@ -406,10 +406,9 @@ TEST_F(JsonLdProcessorExpandTest, expand_t0076) {
     performExpandTestFromManifest("#t0076");
 }
 
-// Disabled this test because we need to implement expandContext option
-//TEST_F(JsonLdProcessorExpandTest, expand_0077) {
-//    performExpandTestFromManifest("#t0077");
-//}
+TEST_F(JsonLdProcessorExpandTest, expand_0077) {
+    performExpandTestFromManifest("#t0077");
+}
 
 TEST_F(JsonLdProcessorExpandTest, expand_t0078) {
     performExpandTestFromManifest("#t0078");
