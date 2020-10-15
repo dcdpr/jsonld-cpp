@@ -1,6 +1,7 @@
 #include "JsonLdApi.h"
 #include "ObjUtils.h"
 #include "NormalizeUtils.h"
+#include "BlankNode.h"
 
 #include <utility>
 #include <iostream>
@@ -549,7 +550,7 @@ RDF::RDFDataset JsonLdApi::toRDF(nlohmann::json element) {
 
     for (auto & graphName : keys) {
         // 4.1)
-        if (JsonLdUtils::isRelativeIri(graphName)) {
+        if (!BlankNode::isBlankNodeName(graphName) && JsonLdUtils::isRelativeIri(graphName)) {
             continue;
         }
         json & graph = nodeMap[graphName];

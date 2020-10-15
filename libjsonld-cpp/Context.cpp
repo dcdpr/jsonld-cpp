@@ -2,6 +2,7 @@
 #include "JsonLdUrl.h"
 #include "ObjUtils.h"
 #include "Uri.h"
+#include "BlankNode.h"
 #include <iostream>
 #include <utility>
 
@@ -180,7 +181,7 @@ Context Context::parse(const json & localContext, std::vector<std::string> & rem
             if (value.is_null()) {
                 result.erase(JsonLdConsts::VOCAB);
             } else if (value.is_string()) {
-                if (JsonLdUtils::isAbsoluteIri(value)) {
+                if (BlankNode::isBlankNodeName(value) || JsonLdUtils::isAbsoluteIri(value)) {
                     result.insert(std::make_pair(JsonLdConsts::VOCAB, value.get<std::string>()));
                 } else {
                     throw JsonLdError(JsonLdError::InvalidVocabMapping,
@@ -430,7 +431,7 @@ void Context::createTermDefinition(json context, const std::string& term,
         // TODO: fix check for absoluteIri (blank nodes shouldn't count, at least not here!)
         // 13.3)
         if (typeStr == JsonLdConsts::ID || typeStr == JsonLdConsts::VOCAB
-            || (typeStr.find(JsonLdConsts::BLANK_NODE_PREFIX) != 0
+            || (!BlankNode::isBlankNodeName(typeStr)
                 && JsonLdUtils::isAbsoluteIri(typeStr))) {
             definition[JsonLdConsts::TYPE] = typeStr;
         } else {
@@ -485,7 +486,7 @@ void Context::createTermDefinition(json context, const std::string& term,
             std::string idStr = id.get<std::string>();
 
             idStr = expandIri(idStr, false, true, context, defined);
-            if (JsonLdUtils::isKeyword(idStr) || JsonLdUtils::isAbsoluteIri(idStr)) {
+            if (JsonLdUtils::isKeyword(idStr) || JsonLdUtils::isAbsoluteIri(idStr) || BlankNode::isBlankNodeName(idStr)) {
                 if (idStr == JsonLdConsts::CONTEXT) {
                     throw JsonLdError(JsonLdError::InvalidKeywordAlias, "cannot alias @context");
                 }

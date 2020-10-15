@@ -1,5 +1,7 @@
+#include <iostream>
 #include "JsonLdUtils.h"
 #include "JsonLdConsts.h"
+#include "Uri.h"
 
 bool JsonLdUtils::isKeyword(const std::string& property) {
 
@@ -26,8 +28,10 @@ bool JsonLdUtils::isKeyword(const std::string& property) {
 }
 
 bool JsonLdUtils::isAbsoluteIri(const std::string &value) {
-    // TODO: this is a bit simplistic!
-    return value.find(':') != std::string::npos;
+    std::cout << "isAbsoluteIri: " << value
+              << " " << (value.find(':') != std::string::npos)
+              << " " << Uri::isAbsolute(value) << std::endl;
+    return Uri::isAbsolute(value);
 }
 
 bool JsonLdUtils::isRelativeIri(const std::string &value) {

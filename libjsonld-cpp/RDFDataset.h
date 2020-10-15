@@ -172,8 +172,11 @@ namespace RDF {
         std::vector<Quad> getQuads(const std::string & graphName) const;
 
         void addQuad(std::string name, const Quad& quad);
+
+        int size() const;
     };
 
+    bool areIsomorphic(const RDFDataset & dataset1, const RDFDataset & dataset2);
 }
 
 #endif //LIBJSONLD_CPP_RDFDATASET_H

@@ -106,3 +106,13 @@ TEST(RDFDatasetTest, add_two_quad_to_two_vectors) {
     EXPECT_EQ(two, result2[0]);
 }
 
+TEST(RDFDatasetTest, areIsomorphic_withEmptyDatasets_isTrue) {
+    JsonLdOptions options;
+    UniqueNamer blankNodeUniqueNamer1;
+    RDFDataset dataset1(options, &blankNodeUniqueNamer1);
+    UniqueNamer blankNodeUniqueNamer2;
+    RDFDataset dataset2(options, &blankNodeUniqueNamer2);
+
+    EXPECT_TRUE(areIsomorphic(dataset1, dataset2));
+
+}

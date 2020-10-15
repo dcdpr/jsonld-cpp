@@ -75,7 +75,7 @@ public:
         const std::string & expected =
                 RDFDatasetUtils::toNQuads(expectedDocument->getRDFContent());
 
-        EXPECT_EQ(expected, normalized);
+        EXPECT_EQ(normalized, expected);
 
         std::cout << "  Actual normalized: " << normalized << std::endl;
         std::cout << "Expected normalized: " << expected << std::endl;

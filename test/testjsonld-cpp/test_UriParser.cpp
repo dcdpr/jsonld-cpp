@@ -174,6 +174,22 @@ TEST(UriParserTest, rfc3986example8) {
     EXPECT_FALSE(base_uri->GetFragment(&t));
 }
 
+TEST(UriParserTest, rfc3986_reference_example) {
+    std::string a = "http://a/b/c/d;p?q";
+    std::unique_ptr<UriParser> base_uri(UriParser::create(a.c_str()));
+
+    std::string t;
+    EXPECT_TRUE(base_uri->GetScheme(&t));
+    EXPECT_EQ(t, "http");
+    EXPECT_TRUE(base_uri->GetHost(&t));
+    EXPECT_EQ(t, "a");
+    EXPECT_TRUE(base_uri->GetPath(&t));
+    EXPECT_EQ(t, "b/c/d;p");
+    EXPECT_TRUE(base_uri->GetQuery(&t));
+    EXPECT_EQ(t, "q");
+    EXPECT_FALSE(base_uri->GetFragment(&t));
+}
+
 
 // other tests
 

@@ -2,6 +2,7 @@
 #include "JsonLdOptions.h"
 #include "JsonLdUtils.h"
 #include "DoubleFormatter.h"
+#include "BlankNode.h"
 
 using VectorMap = RDF::RDFDataset::VectorMap;
 using nlohmann::json;
@@ -54,7 +55,7 @@ namespace RDF {
         // else?
 
         for (auto id : subjects) {
-            if (JsonLdUtils::isRelativeIri(id)) {
+            if (!::BlankNode::isBlankNodeName(id) && JsonLdUtils::isRelativeIri(id)) {
                 continue;
             }
             const json & node = graph[id];
@@ -78,7 +79,7 @@ namespace RDF {
                     continue;
                 }
                     // 4.3.2.3)
-                else if (property.find_first_of("_:") == 0 && !options.getProduceGeneralizedRdf()) {
+                else if (::BlankNode::isBlankNodeName(property) && !options.getProduceGeneralizedRdf()) {
                     continue;
                 }
                     // 4.3.2.4)
@@ -206,7 +207,7 @@ namespace RDF {
             std::string id;
             if (JsonLdUtils::isObject(item)) {
                 id = item["@id"];
-                if (JsonLdUtils::isRelativeIri(id)) {
+                if (!::BlankNode::isBlankNodeName(id) && JsonLdUtils::isRelativeIri(id)) {
                     return nullptr;
                 }
             } else {
@@ -415,6 +416,10 @@ namespace RDF {
         }
     }
 
+    int RDFDataset::size() const {
+        return 0;
+    }
+
     bool Literal::isLiteral() const {
         return true;
     }
@@ -535,4 +540,11 @@ namespace RDF {
         if(lhs && rhs) return *lhs == *rhs;
         return false;
     }
+
+    bool areIsomorphic(const RDFDataset & dataset1, const RDFDataset & dataset2) {
+//        if(dataset1.getQuads())
+
+        return false;
+    }
+
 }
