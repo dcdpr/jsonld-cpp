@@ -99,14 +99,14 @@ TEST(NodeComparisonsTest, literals_differentThanIris) {
 
 TEST(NodeComparisonsTest, literals_differentThanBlankNodes) {
     std::string dt_string = JsonLdConsts::XSD_STRING;
-    BlankNode b1("Same");
+    RDF::BlankNode b1("Same");
     Literal l1("Same", &dt_string, nullptr);
     EXPECT_NE(b1, l1);
 }
 
 TEST(NodeComparisonsTest, iris_differentThanBlankNodes) {
     IRI i1("Same");
-    BlankNode b1("Same");
+    RDF::BlankNode b1("Same");
     EXPECT_NE(i1, b1);
 }
 
@@ -139,9 +139,9 @@ TEST(NodeComparisonsTest, sortingBlankNodes_differentValues) {
     std::string bnStr2 = "bn2";
     std::string bnStr3 = "bn3";
 
-    bns.insert(std::make_shared<BlankNode>(bnStr2));
-    bns.insert(std::make_shared<BlankNode>(bnStr3));
-    bns.insert(std::make_shared<BlankNode>(bnStr1));
+    bns.insert(std::make_shared<RDF::BlankNode>(bnStr2));
+    bns.insert(std::make_shared<RDF::BlankNode>(bnStr3));
+    bns.insert(std::make_shared<RDF::BlankNode>(bnStr1));
 
     auto ci = bns.begin();
 

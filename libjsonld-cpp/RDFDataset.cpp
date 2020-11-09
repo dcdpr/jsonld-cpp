@@ -15,12 +15,12 @@ namespace RDF {
     }
 
     VectorMap::mapped_type &RDF::RDFDataset::at(const VectorMap::key_type &s) {
-        return vectorMap.at(s);
+        return namedQuads.at(s);
     }
 
     std::pair<VectorMap::iterator, bool>
     RDF::RDFDataset::insert(const VectorMap::value_type &value) {
-        return vectorMap.insert(value);
+        return namedQuads.insert(value);
     }
 
 /**
@@ -41,7 +41,7 @@ namespace RDF {
         // 4.2)
         std::vector<Quad> triples;
 
-        //todo: so, wait! ... will rdfdataset ever needs to store shared_ptr to quads, or just quads? If
+        //todo: so, wait! ... will rdfdataset ever need to store shared_ptr to quads, or just quads? If
         // just quads, did I have to go through all that bother with shared_ptr comparisons? probably need to see
         // what java does with the list of quads later.
 
@@ -142,8 +142,11 @@ namespace RDF {
             }
         }
 
-        insert(std::make_pair(graphName, triples));
-
+        //insert(std::make_pair(graphName, triples));
+        for(const auto& i : triples) {
+            addQuad(graphName, i);
+            addQuad(RDF::RDFGraphName::createRDFGraphName(graphName, RDF::RDFGraphName::Type::BLANKNODE), i);
+        }
     }
 
     std::shared_ptr<RDF::Node> RDF::RDFDataset::objectToRDF(json item) {
@@ -390,34 +393,61 @@ namespace RDF {
 
     std::set<std::string> RDFDataset::graphNames() const {
         std::set<std::string> names;
-        for (const auto & it : vectorMap) {
+        for (const auto & it : namedQuads) {
             names.insert(it.first);
         }
         return names;
     }
 
     std::vector<Quad> RDFDataset::getQuads(const std::string & graphName) const {
-        if(vectorMap.count(graphName))
-            return vectorMap.at(graphName);
+        if(namedQuads.count(graphName))
+            return namedQuads.at(graphName);
         return std::vector<Quad>();
     }
 
+    std::vector<Quad> RDFDataset::getAllQuads() const {
+        return quads;
+    }
+
     void RDFDataset::addQuad(std::string name, const Quad& quad) {
-        if(!vectorMap.count(name)) {
+        // todo: maybe make this add the @default named graph?
+        if(!namedQuads.count(name)) {
             // initialise graph in dataset
             std::vector<Quad> v {quad};
-            vectorMap.insert(std::make_pair(name, v));
+            namedQuads.insert(std::make_pair(name, v));
+            quads.push_back(quad);
         }
         else {
             // add triple if unique to its graph
-            if (std::find(vectorMap[name].begin(), vectorMap[name].end(), quad) == vectorMap[name].end()) {
-                vectorMap[name].push_back(quad);
+            if (std::find(namedQuads[name].begin(), namedQuads[name].end(), quad) == namedQuads[name].end()) {
+                namedQuads[name].push_back(quad);
+                quads.push_back(quad);
             }
         }
     }
 
-    int RDFDataset::size() const {
-        return 0;
+    void RDFDataset::addQuad(RDFGraphName name, const Quad& quad) {
+        if(!graphnamedQuads.count(name)) {
+            // initialise graph in dataset
+            std::vector<Quad> v {quad};
+            graphnamedQuads.insert(std::make_pair(name, v));
+            //quads.push_back(quad);
+        }
+        else {
+            // add triple if unique to its graph
+            if (std::find(graphnamedQuads[name].begin(), graphnamedQuads[name].end(), quad) == graphnamedQuads[name].end()) {
+                graphnamedQuads[name].push_back(quad);
+                //quads.push_back(quad);
+            }
+        }
+    }
+
+    RDFDataset::size_type RDFDataset::size() const {
+        return quads.size();
+    }
+
+    bool RDFDataset::empty() const {
+        return quads.empty();
     }
 
     bool Literal::isLiteral() const {
@@ -541,10 +571,211 @@ namespace RDF {
         return false;
     }
 
+    bool compareGraphName(std::shared_ptr<Node> name1, std::shared_ptr<Node> name2, std::map<std::string, std::string> *mapping) {
+
+        if (!name1 && !name2) {
+            return true;
+        }
+
+        if (!name1 || !name2) {
+            return false;
+        }
+
+        if (name1->isBlankNode() && name2->isBlankNode()) {
+            return name1->getValue() ==
+                    (mapping != nullptr ? mapping->at(name2->getValue()) : name2->getValue());
+
+        } else if (name1->isIRI() && name2->isIRI()) {
+            return name1->getValue() == name2->getValue();
+        }
+        return false;
+    }
+
+    bool compareObject(std::shared_ptr<Node> object1, std::shared_ptr<Node> object2, std::map<std::string, std::string> *mapping) {
+        if(object1->isBlankNode() && object2->isBlankNode()) {
+            return object1->getValue() ==
+                   (mapping != nullptr ? mapping->at(object2->getValue()) : object2->getValue());
+        }
+        else if(object1->isIRI() && object2->isIRI()) {
+            return object1->getValue() == object2->getValue();
+        }
+        else if(object1->isLiteral() && object2->isLiteral()) {
+            return object1->getValue() == object2->getValue();
+        }
+        return false;
+    }
+
+    bool comparePredicate(std::shared_ptr<Node> predicate1, std::shared_ptr<Node> predicate2) {
+        return predicate1->getValue() == predicate2->getValue();
+    }
+
+    bool compareSubject(std::shared_ptr<Node> subject1, std::shared_ptr<Node> subject2, std::map<std::string, std::string> *mapping) {
+        if(subject1->isBlankNode() && subject2->isBlankNode()) {
+            return subject1->getValue() ==
+                   (mapping != nullptr ? mapping->at(subject2->getValue()) : subject2->getValue());
+        }
+        else if(subject1->isIRI() && subject2->isIRI()) {
+            return subject1->getValue() == subject2->getValue();
+        }
+        return false;
+    }
+
+    bool compareNQuad(Quad &nquad1, Quad &nquad2, std::map<std::string, std::string> *mapping) {
+        return
+                compareSubject(nquad1.getSubject(), nquad2.getSubject(), mapping) &&
+                comparePredicate(nquad1.getPredicate(), nquad2.getPredicate()) &&
+                compareObject(nquad1.getObject(), nquad2.getObject(), mapping) &&
+                compareGraphName(nquad1.getGraph(), nquad2.getGraph(), mapping);
+    }
+
+    bool
+    compareNQuads(
+            const std::vector<Quad>& nquads1,
+            const std::vector<Quad>& nquads2,
+            std::map<std::string, std::string> *mapping) {
+
+        std::vector<Quad> remaining(nquads2);
+
+        for (Quad nquad1 : nquads1) {
+
+            bool found = false;
+
+            for (auto nquad2_it = remaining.begin(); nquad2_it != remaining.end(); ) {
+                found = compareNQuad(*nquad2_it, nquad1, mapping);
+
+                if (found) {
+                    nquad2_it = remaining.erase(nquad2_it);
+                    break;
+                } else {
+                    ++nquad2_it;
+                }
+            }
+
+            if (!found) {
+                return false;
+            }
+        }
+        return remaining.empty();
+    }
+
     bool areIsomorphic(const RDFDataset & dataset1, const RDFDataset & dataset2) {
-//        if(dataset1.getQuads())
+
+        // if datasets are empty
+        if (dataset1.empty() && dataset2.empty()) {
+            return true;
+        }
+
+        // compare total number of n-quads
+        if (dataset1.size() != dataset2.size()) {
+            return false;
+        }
+
+        std::vector<Quad> nquads1 = dataset1.getAllQuads();
+        std::vector<Quad> nquads2 = dataset2.getAllQuads();
+
+        std::vector<Quad> nquads1_noBlanks;
+        std::copy_if(nquads1.begin(), nquads1.end(), std::back_inserter(nquads1_noBlanks),
+                     [](const Quad& q) {
+                         return !(q.getObject()->isBlankNode() ||
+                                  q.getSubject()->isBlankNode() ||
+                                  (q.getGraph() && q.getGraph()->isBlankNode()));
+                     });
+
+        std::vector<Quad> nquads2_noBlanks;
+        std::copy_if(nquads2.begin(), nquads2.end(), std::back_inserter(nquads2_noBlanks),
+                     [](const Quad& q) {
+                         return !(q.getObject()->isBlankNode() ||
+                                  q.getSubject()->isBlankNode() ||
+                                  (q.getGraph() && q.getGraph()->isBlankNode()));
+                     });
+
+        // compare number of non-blank node n-quads
+        if (nquads1_noBlanks.size() != nquads2_noBlanks.size()) {
+            return false;
+        }
+
+        if (!compareNQuads(nquads1_noBlanks, nquads2_noBlanks, nullptr)) {
+            return false;
+        }
+
+        // if datasets have no blank nodes
+        if (nquads1_noBlanks.size() == dataset2.size()) {
+            return true;
+        }
+
+        std::vector<Quad> nquads1_blanks;
+        std::copy_if(nquads1.begin(), nquads1.end(), std::back_inserter(nquads1_blanks),
+                     [](const Quad& q) {
+                         return q.getObject()->isBlankNode() ||
+                                q.getSubject()->isBlankNode() ||
+                                (q.getGraph() && q.getGraph()->isBlankNode());
+                     });
+
+        std::vector<Quad> nquads2_blanks;
+        std::copy_if(nquads2.begin(), nquads2.end(), std::back_inserter(nquads2_blanks),
+                     [](const Quad& q) {
+                         return q.getObject()->isBlankNode() ||
+                                q.getSubject()->isBlankNode() ||
+                                (q.getGraph() && q.getGraph()->isBlankNode());
+                     });
+
+        // compare number of blank node n-quads
+        if (nquads1_blanks.size() != nquads2_blanks.size()) {
+            return false;
+        }
+
+        // create mappings from nquads2_blanks to nquads1_blanks
+        NodeMapper mapper = NodeMapper::create(nquads2_blanks, nquads1_blanks);
+
+        int iteration = 0;
+
+        while (mapper.hasNext()) {
+
+            std::map<std::string, std::string> mapping = mapper.next();
+            if (compareNQuads(nquads1_blanks, nquads2_blanks, &mapping)) {
+                return true;
+            }
+
+            iteration++;
+
+            if (iteration >=  5000000) {
+                std::cout << "Too many permutations [" << mapper.permutations() << "]" << std::endl;
+                return false;
+            }
+        }
 
         return false;
+    }
+
+    RDFGraphName::RDFGraphName(const std::string &iname, RDFGraphName::Type itype)
+            : name(iname), type(itype) {}
+
+    RDFGraphName RDFGraphName::createRDFGraphName(const std::string &name, RDFGraphName::Type type) {
+        return RDFGraphName(name, type);
+    }
+
+    bool operator<(const RDFGraphName &lhs, const RDFGraphName &rhs) {
+        return std::tie(lhs.name, lhs.type) < std::tie(rhs.name, rhs.type);
+    }
+
+    bool operator>(const RDFGraphName &lhs, const RDFGraphName &rhs) {
+        return rhs < lhs;
+    }
+
+    bool operator<=(const RDFGraphName &lhs, const RDFGraphName &rhs) {
+        return !(rhs < lhs);
+    }
+
+    bool operator>=(const RDFGraphName &lhs, const RDFGraphName &rhs) {
+        return !(lhs < rhs);
+    }
+
+    bool operator==(const RDFGraphName &lhs, const RDFGraphName &rhs) {
+        return std::tie(lhs.name, lhs.type) == std::tie(rhs.name, rhs.type);
+    }
+
+    bool operator!=(const RDFGraphName &lhs, const RDFGraphName &rhs) {
+        return !(rhs == lhs);
     }
 
 }

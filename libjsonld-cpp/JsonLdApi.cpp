@@ -549,12 +549,24 @@ RDF::RDFDataset JsonLdApi::toRDF(nlohmann::json element) {
     }
 
     for (auto & graphName : keys) {
-        // 4.1)
-        if (!BlankNode::isBlankNodeName(graphName) && JsonLdUtils::isRelativeIri(graphName)) {
-            continue;
+
+        RDF::RDFGraphName gname =
+                RDF::RDFGraphName::createRDFGraphName(graphName, RDF::RDFGraphName::DEFAULT);
+
+        if(graphName != JsonLdConsts::DEFAULT) {
+            if (BlankNode::isBlankNodeName(graphName)) {
+                gname = RDF::RDFGraphName::createRDFGraphName(graphName, RDF::RDFGraphName::BLANKNODE);
+            } else if (JsonLdUtils::isAbsoluteIri(graphName)) {
+                gname = RDF::RDFGraphName::createRDFGraphName(graphName, RDF::RDFGraphName::IRI);
+            } else {
+                continue;
+            }
         }
+
         json & graph = nodeMap[graphName];
         dataset.graphToRDF(graphName, graph);
+        // todo: dataset.graphToRDF(gname, graph);
+
     }
 
     return dataset;

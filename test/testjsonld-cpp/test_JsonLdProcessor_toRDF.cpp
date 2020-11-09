@@ -47,13 +47,23 @@ public:
         else
             std::cout << std::endl;
 
-        std::string rdfStr;
+
         try {
-            rdfStr = JsonLdProcessor::toRDFString(testCase.input, options);
+            RDF::RDFDataset actual = JsonLdProcessor::toRDF(testCase.input, options);
             if (testCase.type.count("jld:PositiveSyntaxTest")) {
                 SUCCEED();
                 return;
             }
+
+            std::unique_ptr<RemoteDocument> expectedDocument =
+                    options.getDocumentLoader()->loadDocument(testCase.expect);
+            RDF::RDFDataset expected = expectedDocument->getRDFContent();
+
+            EXPECT_TRUE(areIsomorphic(actual, expected));
+
+            std::cout << "  Actual RDF: " << RDFDatasetUtils::toNQuads(actual) << std::endl;
+            std::cout << "Expected RDF: " << RDFDatasetUtils::toNQuads(expected) << std::endl;
+
         }
         catch (JsonLdError &e) {
             std::cout << "JsonLdError: " << e.what() << std::endl;
@@ -69,19 +79,6 @@ public:
             FAIL() << e.what();
         }
 
-        std::unique_ptr<RemoteDocument> expectedDocument =
-                options.getDocumentLoader()->loadDocument(testCase.expect);
-
-        // todo: too many conversions? maybe we should use JsonLdProcessor::toRDF which
-        // returns RDFDataset so we can compare that directly to getRDFContent() rather
-        // than converting both to strings for the compare?
-        const std::string & expected =
-                RDFDatasetUtils::toNQuads(expectedDocument->getRDFContent());
-
-        EXPECT_EQ(rdfStr, expected);
-
-        std::cout << "  Actual RDF: " << rdfStr << std::endl;
-        std::cout << "Expected RDF: " << expected << std::endl;
     }
 
     void performToRDFTestFromAlternateManifest(const std::string& testName, const std::string& manifestName) {
@@ -128,10 +125,10 @@ TEST_F(JsonLdProcessorToRDFTest, toRdf_t0004) {
     performToRDFTestFromManifest("#t0004");
 }
 
-// skip until I have better utf8 char handling
-//TEST_F(JsonLdProcessorToRDFTest, toRdf_t0005) {
-//    performToRDFTestFromManifest("#t0005");
-//}
+// disable until I have better utf8 char handling
+TEST_F(JsonLdProcessorToRDFTest, DISABLED_toRdf_t0005) {
+    performToRDFTestFromManifest("#t0005");
+}
 
 TEST_F(JsonLdProcessorToRDFTest, toRdf_t0006) {
     performToRDFTestFromManifest("#t0006");
@@ -273,9 +270,9 @@ TEST_F(JsonLdProcessorToRDFTest, toRdf_t0117) {
     performToRDFTestFromManifest("#t0117");
 }
 
-TEST_F(JsonLdProcessorToRDFTest, toRdf_t0118) {
-    // Test output file has blank nodes as predicates, and they are not supported
-    // performToRDFTestFromManifest("#t0118");
+// Test output file has blank nodes as predicates, and they are not supported
+TEST_F(JsonLdProcessorToRDFTest, DISABLED_toRdf_t0118) {
+    performToRDFTestFromManifest("#t0118");
 }
 
 TEST_F(JsonLdProcessorToRDFTest, toRdf_t0119) {
@@ -294,9 +291,9 @@ TEST_F(JsonLdProcessorToRDFTest, toRdf_t0122) {
     performToRDFTestFromManifest("#t0122");
 }
 
-// test failing due to possible problem with uri resolution. waiting to hear from uriparser project
-TEST_F(JsonLdProcessorToRDFTest, toRdf_t0123) {
-    //performToRDFTestFromManifest("#t0123");
+// Test failing due to possible problem with uri resolution. Waiting to hear from uriparser project
+TEST_F(JsonLdProcessorToRDFTest, DISABLED_toRdf_t0123) {
+    performToRDFTestFromManifest("#t0123");
 }
 
 TEST_F(JsonLdProcessorToRDFTest, toRdf_t0124) {
@@ -643,10 +640,10 @@ TEST_F(JsonLdProcessorToRDFTest, toRdf_te029) {
     performToRDFTestFromManifest("#te029");
 }
 
-// skip until I have better utf8 char handling
-//TEST_F(JsonLdProcessorToRDFTest, toRdf_te030) {
-//    performToRDFTestFromManifest("#te030");
-//}
+// disable until I have better utf8 char handling
+TEST_F(JsonLdProcessorToRDFTest, DISABLED_toRdf_te030) {
+    performToRDFTestFromManifest("#te030");
+}
 
 TEST_F(JsonLdProcessorToRDFTest, toRdf_te031) {
     performToRDFTestFromManifest("#te031");
@@ -664,10 +661,10 @@ TEST_F(JsonLdProcessorToRDFTest, toRdf_te034) {
     performToRDFTestFromManifest("#te034");
 }
 
-// skip until I have better utf8 char handling
-//TEST_F(JsonLdProcessorToRDFTest, toRdf_te035) {
-//    performToRDFTestFromManifest("#te035");
-//}
+// disable until I have better utf8 char handling
+TEST_F(JsonLdProcessorToRDFTest, DISABLED_toRdf_te035) {
+    performToRDFTestFromManifest("#te035");
+}
 
 TEST_F(JsonLdProcessorToRDFTest, toRdf_te036) {
     performToRDFTestFromManifest("#te036");
@@ -825,9 +822,9 @@ TEST_F(JsonLdProcessorToRDFTest, toRdf_te074) {
     performToRDFTestFromManifest("#te074");
 }
 
-TEST_F(JsonLdProcessorToRDFTest, toRdf_te075) {
-    // Test output file has blank nodes as predicates, and they are not supported
-    // performToRDFTestFromManifest("#te075");
+// Test output file has blank nodes as predicates, and they are not supported
+TEST_F(JsonLdProcessorToRDFTest, DISABLE_toRdf_te075) {
+    performToRDFTestFromManifest("#te075");
 }
 
 TEST_F(JsonLdProcessorToRDFTest, toRdf_te076) {

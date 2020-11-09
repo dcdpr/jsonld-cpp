@@ -338,15 +338,19 @@ RDF::RDFDataset RDFDatasetUtils::parseNQuads(std::string input) {
 
         // get graph name ('@default' is used for the default graph)
         std::string name = "@default";
+        RDF::RDFGraphName gname = RDF::RDFGraphName::createRDFGraphName(name, RDF::RDFGraphName::DEFAULT);
         if (match[9].matched) {
             name = unescape(match[9].str());
+            gname = RDF::RDFGraphName::createRDFGraphName(name, RDF::RDFGraphName::IRI);
         } else if (match[10].matched) {
             name = unescape(match[10].str());
+            gname = RDF::RDFGraphName::createRDFGraphName(name, RDF::RDFGraphName::BLANKNODE);
         }
 
         RDF::Quad triple(subject, predicate, object, &name);
 
         dataset.addQuad(name, triple);
+        dataset.addQuad(gname, triple);
 
     }
 
