@@ -49,23 +49,6 @@ add_test(NAME UnitTests_JsonLdProcessor_toRdf_jsonld-cpp
 
 ####
 
-add_executable(UnitTests_JsonLdProcessor_normalize_jsonld-cpp main.cpp test_JsonLdProcessor_normalize.cpp testHelpers.cpp testHelpers.h ManifestLoader.cpp ManifestLoader.h UrdnaManifestLoader.cpp UrdnaManifestLoader.h TestCase.cpp TestCase.h UriBaseRewriter.cpp UriBaseRewriter.h TestCaseOptions.cpp TestCaseOptions.h)
-
-target_compile_features(UnitTests_JsonLdProcessor_normalize_jsonld-cpp PRIVATE cxx_std_11)
-target_compile_options(UnitTests_JsonLdProcessor_normalize_jsonld-cpp PRIVATE ${DCD_CXX_FLAGS})
-set_target_properties(UnitTests_JsonLdProcessor_normalize_jsonld-cpp PROPERTIES CXX_EXTENSIONS OFF)
-
-target_include_directories(UnitTests_JsonLdProcessor_normalize_jsonld-cpp
-        PUBLIC
-        ${PROJECT_SOURCE_DIR}/libjsonld-cpp)
-
-target_link_libraries(UnitTests_JsonLdProcessor_normalize_jsonld-cpp jsonld-cpp Boost::filesystem gtest gmock rapidcheck_gtest)
-
-add_test(NAME UnitTests_JsonLdProcessor_normalize_jsonld-cpp
-        COMMAND UnitTests_JsonLdProcessor_normalize_jsonld-cpp)
-
-####
-
 add_executable(UnitTests_JsonLdProcessor_normalize_urdna2015_jsonld-cpp main.cpp test_JsonLdProcessor_normalize-urdna2015.cpp testHelpers.cpp testHelpers.h ManifestLoader.cpp ManifestLoader.h UrdnaManifestLoader.cpp UrdnaManifestLoader.h TestCase.cpp TestCase.h UriBaseRewriter.cpp UriBaseRewriter.h TestCaseOptions.cpp TestCaseOptions.h)
 
 target_compile_features(UnitTests_JsonLdProcessor_normalize_urdna2015_jsonld-cpp PRIVATE cxx_std_11)
