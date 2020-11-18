@@ -32,10 +32,6 @@ std::string RDFDatasetUtils::toNQuads(const RDF::RDFDataset &dataset) {
 }
 
 std::string RDFDatasetUtils::toNQuad(const RDF::Quad& triple, std::string *graphName) {
-    return toNQuad(triple, graphName, nullptr);
-}
-
-std::string RDFDatasetUtils::toNQuad(const RDF::Quad& triple, std::string *graphName, std::string *bnode) {
     std::stringstream ss;
 
     std::shared_ptr<RDF::Node> s = triple.getSubject();
@@ -48,21 +44,16 @@ std::string RDFDatasetUtils::toNQuad(const RDF::Quad& triple, std::string *graph
         escape(s->getValue(), ss);
         ss << ">";
     }
-        // normalization mode
-    else if (bnode != nullptr) {
-        ss << ((s->getValue() == *bnode)  ? "_:a" : "_:z");
-    }
-        // normal mode
     else {
         ss << s->getValue();
     }
 
+    // predicate is either an IRI or bnode
     if (p->isIRI()) {
         ss << " <";
         escape(p->getValue(), ss);
         ss << "> ";
     }
-        // otherwise it must be a bnode (TODO: can we only allow this if the flag is set in options?)
     else {
         ss << " ";
         escape(p->getValue(), ss);
@@ -75,14 +66,7 @@ std::string RDFDatasetUtils::toNQuad(const RDF::Quad& triple, std::string *graph
         escape(o->getValue(), ss);
         ss << ">";
     } else if (o->isBlankNode()) {
-        // normalization mode
-        if (bnode != nullptr) {
-            ss << ((o->getValue() == *bnode)  ? "_:a" : "_:z");
-        }
-        // normal mode
-        else {
-            ss << o->getValue();
-        }
+        ss << o->getValue();
     } else {
         ss << "\"";
         escape(o->getValue(), ss);
@@ -103,11 +87,76 @@ std::string RDFDatasetUtils::toNQuad(const RDF::Quad& triple, std::string *graph
             ss << " <";
             escape(*graphName, ss);
             ss << ">";
-        } else if (bnode != nullptr) {
-            ss << " _:g";
         } else {
             ss << " ";
             ss << *graphName;
+        }
+    }
+
+    ss << " .\n";
+
+    return ss.str();
+}
+
+std::string RDFDatasetUtils::toNQuadForNormalization(const RDF::Quad& triple, std::string *graphName, std::string *bnode) {
+    assert(bnode);
+    std::stringstream ss;
+
+    std::shared_ptr<RDF::Node> s = triple.getSubject();
+    std::shared_ptr<RDF::Node> p = triple.getPredicate();
+    std::shared_ptr<RDF::Node> o = triple.getObject();
+
+    // subject is either an IRI or bnode
+    if (s->isIRI()) {
+        ss << "<";
+        escape(s->getValue(), ss);
+        ss << ">";
+    }
+    else {
+        assert(s->isBlankNode());
+        ss << ((s->getValue() == *bnode)  ? "_:a" : "_:z");
+    }
+
+    // predicate is either an IRI or bnode
+    if (p->isIRI()) {
+        ss << " <";
+        escape(p->getValue(), ss);
+        ss << "> ";
+    }
+    else {
+        assert(p->isBlankNode());
+        ss << ((p->getValue() == *bnode)  ? "_:a" : "_:z");
+    }
+
+    // object is IRI, bnode or literal
+    if (o->isIRI()) {
+        ss << "<";
+        escape(o->getValue(), ss);
+        ss << ">";
+    } else if (o->isBlankNode()) {
+        ss << ((o->getValue() == *bnode)  ? "_:a" : "_:z");
+    } else {
+        ss << "\"";
+        escape(o->getValue(), ss);
+        ss << "\"";
+        if (o->getDatatype() == JsonLdConsts::RDF_LANGSTRING) {
+            ss << "@";
+            ss << o->getLanguage();
+        } else if (o->getDatatype() != JsonLdConsts::XSD_STRING) {
+            ss << "^^<";
+            escape(o->getDatatype(), ss);
+            ss << ">";
+        }
+    }
+
+    // graph
+    if (graphName != nullptr) {
+        if (graphName->find_first_of("_:") != 0) {
+            ss << " <";
+            escape(*graphName, ss);
+            ss << ">";
+        } else {
+            ss << ((*graphName == *bnode)  ? " _:a" : " _:z");
         }
     }
 

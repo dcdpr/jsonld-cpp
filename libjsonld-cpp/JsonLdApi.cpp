@@ -825,11 +825,6 @@ std::string JsonLdApi::normalize(const RDF::RDFDataset& dataset) {
 
     // mapping complete, start canonical naming
     NormalizeUtils normalizeUtils(quads, bnodes, UniqueNamer("_:c14n"), options);
-    std::vector<std::string> ids;
-    ids.reserve(bnodes.size()); // todo: need to make a keySet() function...
-    for(auto const & i : bnodes) {
-        ids.push_back(i.first);
-    }
-    return normalizeUtils.hashBlankNodes(bnodes_insertion_order_keys); // todo: this is the only call to hashblanknodes. that method should just always use all the ids so I don't have to pass them in?
+    return normalizeUtils.hashBlankNodes(bnodes_insertion_order_keys);
 }
 

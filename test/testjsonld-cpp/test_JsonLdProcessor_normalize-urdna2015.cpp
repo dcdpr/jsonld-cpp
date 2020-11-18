@@ -69,9 +69,6 @@ public:
         std::unique_ptr<RemoteDocument> expectedDocument =
                 options.getDocumentLoader()->loadDocument(testCase.expect);
 
-        // todo: too many conversions? maybe JsonLdProcessor::normalize should return RDFDataset
-        // so we can compare that directly to getRDFContent() rather than converting both
-        // to strings for the compare?
         const std::string & expected =
                 RDFDatasetUtils::toNQuads(expectedDocument->getRDFContent());
 

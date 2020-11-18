@@ -1,6 +1,6 @@
 #include "NormalizeUtils.h"
 #include "RDFDatasetUtils.h"
-#include "sha1.h"
+#include "sha256.h"
 #include "Permutator.h"
 #include <utility>
 
@@ -215,7 +215,7 @@ NormalizeUtils::HashResult NormalizeUtils::hashPaths(const std::string& id, Uniq
 
     std::map<std::string, std::vector<std::string>> groups;
     std::vector<RDF::Quad> bnode_quads = bnodes.at(id).at("quads");
-    SHA1 md;
+    SHA256 md;
 
     for (size_t hpi = 0;; hpi++) {
         if (hpi == bnode_quads.size()) {
@@ -333,44 +333,104 @@ NormalizeUtils::HashResult NormalizeUtils::hashPaths(const std::string& id, Uniq
                 }
             }
         }
-        // get adjacent bnode
+
+        // for each quad, build "hash to related blank nodes map"
         RDF::Quad quad = bnode_quads.at(hpi);
-        std::shared_ptr<std::string> bnode = getAdjacentBlankNodeName(quad.getSubject(), id);
-        std::string direction;
-        if (bnode != nullptr) {
-            // normal property
-            direction = "p";
-        } else {
-            bnode = getAdjacentBlankNodeName(quad.getObject(), id);
+
+        // check subject
+        {
+            std::shared_ptr<std::string> bnode = getAdjacentBlankNodeName(quad.getSubject(), id);
+            std::string position;
             if (bnode != nullptr) {
-                // reverse property
-                direction = "r";
+                position = "s";
+                // get bnode name (try canonical, path, then hash)
+                std::string name;
+                if (uniqueNamer.exists(*bnode)) {
+                    name = uniqueNamer.get(*bnode);
+                } else if (pathUniqueNamer.exists(*bnode)) {
+                    name = pathUniqueNamer.get(*bnode);
+                } else {
+                    name = hashQuads(*bnode);
+                }
+
+                // hash position, property, and bnode name/hash
+                SHA256 md1;
+                md1.update(position);
+                if(position != "g")
+                    md1.update("<" + quad.getPredicate()->getValue() + ">");
+                md1.update(name);
+                std::string groupHash = md1.digest();
+                if (groups.count(groupHash)) {
+                    groups[groupHash].push_back(*bnode);
+                } else {
+                    std::vector<std::string> tmp;
+                    tmp.push_back(*bnode);
+                    groups[groupHash] = tmp;
+                }
             }
         }
+        // check object
+        {
+            std::shared_ptr<std::string> bnode = getAdjacentBlankNodeName(quad.getObject(), id);
+            std::string position;
+            if (bnode != nullptr) {
+                position = "o";
+                // get bnode name (try canonical, path, then hash)
+                std::string name;
+                if (uniqueNamer.exists(*bnode)) {
+                    name = uniqueNamer.get(*bnode);
+                } else if (pathUniqueNamer.exists(*bnode)) {
+                    name = pathUniqueNamer.get(*bnode);
+                } else {
+                    name = hashQuads(*bnode);
+                }
 
-        if (bnode != nullptr) {
-            // get bnode name (try canonical, path, then hash)
-            std::string name;
-            if (uniqueNamer.exists(*bnode)) {
-                name = uniqueNamer.get(*bnode);
-            } else if (pathUniqueNamer.exists(*bnode)) {
-                name = pathUniqueNamer.get(*bnode);
-            } else {
-                name = hashQuads(*bnode);
+                // hash position, property, and bnode name/hash
+                SHA256 md1;
+                md1.update(position);
+                if(position != "g")
+                    md1.update("<" + quad.getPredicate()->getValue() + ">");
+                md1.update(name);
+                std::string groupHash = md1.digest();
+                if (groups.count(groupHash)) {
+                    groups[groupHash].push_back(*bnode);
+                } else {
+                    std::vector<std::string> tmp;
+                    tmp.push_back(*bnode);
+                    groups[groupHash] = tmp;
+                }
             }
+        }
+        // check graph
+        {
+            std::shared_ptr<std::string> bnode = getAdjacentBlankNodeName(quad.getGraph(), id);
+            std::string position;
+            if (bnode != nullptr) {
+                position = "g";
+                // get bnode name (try canonical, path, then hash)
+                std::string name;
+                if (uniqueNamer.exists(*bnode)) {
+                    name = uniqueNamer.get(*bnode);
+                } else if (pathUniqueNamer.exists(*bnode)) {
+                    name = pathUniqueNamer.get(*bnode);
+                } else {
+                    name = hashQuads(*bnode);
+                }
 
-            // hash direction, property, end bnode name/hash
-            SHA1 md1;
-            md1.update(direction);
-            md1.update(quad.getPredicate()->getValue());
-            md1.update(name);
-            std::string groupHash = md1.digest();
-            if (groups.count(groupHash)) {
-                groups[groupHash].push_back(*bnode);
-            } else {
-                std::vector<std::string> tmp;
-                tmp.push_back(*bnode);
-                groups[groupHash] = tmp;
+                // hash position, property, and bnode name/hash
+                SHA256 md1;
+                md1.update(position);
+                if(position != "g")
+                    md1.update("<" + quad.getPredicate()->getValue() + ">");
+                md1.update(name);
+                std::string groupHash = md1.digest();
+                if (groups.count(groupHash)) {
+                    groups[groupHash].push_back(*bnode);
+                } else {
+                    std::vector<std::string> tmp;
+                    tmp.push_back(*bnode);
+                    groups[groupHash] = tmp;
+                }
             }
         }
     }
@@ -390,12 +450,12 @@ std::string NormalizeUtils::hashQuads(std::string id) {
         if(name != nullptr)
             graphName = name->getValue();
         nquads.push_back(
-                RDFDatasetUtils::toNQuad(quad,name == nullptr ? nullptr : &graphName, &id));
+                RDFDatasetUtils::toNQuadForNormalization(quad, name == nullptr ? nullptr : &graphName, &id));
     }
     // sort serialized quads
     std::sort(nquads.begin(), nquads.end());
     // return hashed quads
-    std::string hash = sha1(nquads);
+    std::string hash = sha256(nquads);
     cachedHashes[id] = hash;
     return hash;
 }
@@ -414,6 +474,9 @@ std::string NormalizeUtils::hashQuads(std::string id) {
  * @return the adjacent blank node name or null if none was found.
  */
 std::shared_ptr<std::string> NormalizeUtils::getAdjacentBlankNodeName(std::shared_ptr<RDF::Node> node, std::string id) {
+
+    if(!node)
+        return nullptr;
 
     if (node->isBlankNode()) {
         std::string v = node->getValue();

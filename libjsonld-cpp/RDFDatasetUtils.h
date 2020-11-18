@@ -8,7 +8,7 @@ namespace RDFDatasetUtils {
 
     std::string toNQuad(const RDF::Quad& triple, std::string *graphName);
 
-    std::string toNQuad(const RDF::Quad& triple, std::string *graphName, std::string *bnode);
+    std::string toNQuadForNormalization(const RDF::Quad& triple, std::string *graphName, std::string *bnode);
 
     void escape(const std::string& str, std::stringstream & ss);
     void unescape(const std::string& str, std::stringstream & ss);
