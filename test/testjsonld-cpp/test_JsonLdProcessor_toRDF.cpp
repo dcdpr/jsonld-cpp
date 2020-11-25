@@ -125,8 +125,8 @@ TEST_F(JsonLdProcessorToRDFTest, toRdf_t0004) {
     performToRDFTestFromManifest("#t0004");
 }
 
-// disable until I have better utf8 char handling
-TEST_F(JsonLdProcessorToRDFTest, DISABLED_toRdf_t0005) {
+// todo: disable until I have better utf8 char handling?
+TEST_F(JsonLdProcessorToRDFTest, toRdf_t0005) {
     performToRDFTestFromManifest("#t0005");
 }
 
@@ -640,8 +640,8 @@ TEST_F(JsonLdProcessorToRDFTest, toRdf_te029) {
     performToRDFTestFromManifest("#te029");
 }
 
-// disable until I have better utf8 char handling
-TEST_F(JsonLdProcessorToRDFTest, DISABLED_toRdf_te030) {
+// todo: disable until I have better utf8 char handling?
+TEST_F(JsonLdProcessorToRDFTest, toRdf_te030) {
     performToRDFTestFromManifest("#te030");
 }
 
@@ -661,8 +661,8 @@ TEST_F(JsonLdProcessorToRDFTest, toRdf_te034) {
     performToRDFTestFromManifest("#te034");
 }
 
-// disable until I have better utf8 char handling
-TEST_F(JsonLdProcessorToRDFTest, DISABLED_toRdf_te035) {
+// todo: disable until I have better utf8 char handling?
+TEST_F(JsonLdProcessorToRDFTest, toRdf_te035) {
     performToRDFTestFromManifest("#te035");
 }
 

@@ -27,7 +27,7 @@ namespace RDFRegex {
     const std::string QUAD("^" + WSO + SUBJECT + PROPERTY + OBJECT + GRAPH + WSO + "$");
 
     const std::string HEX("[0-9A-Fa-f]");
-    const std::string UCHAR_MATCHED(R"(\u005C(?:([tbnrf\"'])|(?:u()" + HEX + "{4}))|(?:U(" + HEX + "{8})))");
+    const std::string UCHAR_MATCHED(R"(\u005C(?:([tbnrf\\\"'])|(?:u()" + HEX + "{4}))|(?:U(" + HEX + "{8})))");
 
 
 }

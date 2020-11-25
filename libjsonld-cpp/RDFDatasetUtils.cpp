@@ -256,7 +256,18 @@ void RDFDatasetUtils::unescape(const std::string& str, std::stringstream & ss) {
                                       "UTF-32 chars not yet supported");
                 }
                 else {
-                    uni = static_cast<char>(v);
+                    auto it = std::back_inserter(uni);
+                    if (v < 0x80)                        // one octet
+                        *(it++) = static_cast<char>(v);
+                    else if (v < 0x800) {                // two octets
+                        *(it++) = static_cast<char>((v >> 6)            | 0xc0);
+                        *(it++) = static_cast<char>((v & 0x3f)          | 0x80);
+                    }
+                    else if (v < 0x10000) {              // three octets
+                        *(it++) = static_cast<char>((v >> 12)           | 0xe0);
+                        *(it++) = static_cast<char>(((v >> 6) & 0x3f)   | 0x80);
+                        *(it++) = static_cast<char>((v & 0x3f)          | 0x80);
+                    }
                 }
             }
             else {
