@@ -10,8 +10,8 @@
  *   - <a href="#shortening">Creating References</a>
  *   - <a href="#filenames">Filenames and URIs</a>
  *   - <a href="#normalization">Normalizing URIs</a>
- *   - <a href="#querystrings">Working with query strings</a>
- * - <a href="#chartypes">Ansi and Unicode</a>
+ *   - <a href="#querystrings">Working with Query Strings</a>
+ * - <a href="#chartypes">Narrow Strings and Wide Strings</a>
  * - <a href="#autoconf">Autoconf Check</a>
  *
  *
@@ -226,7 +226,7 @@
  * @endcode
  *
  *
- * @section querystrings Working with query strings
+ * @section querystrings Working with Query Strings
  * <a href="http://tools.ietf.org/html/rfc3986" target="_blank">RFC 3986</a>
  * itself does not understand the query part of a URI as a list of key/value pairs.
  * But HTML 2.0 does and defines a media type <i>application/x-www-form-urlencoded</i>
@@ -281,37 +281,20 @@
  * @endcode
  *
  *
- * @section chartypes Ansi and Unicode
+ * @section chartypes Narrow Strings and Wide Strings
  * uriparser comes with two versions of every structure and function:
- * one handling Ansi text (char *) and one working with Unicode text (wchar_t *),
+ * one handling narrow strings (<code>char *</code>) and one working with wide strings (<code>wchar_t *</code>),
  * for instance
- * - uriParseSingleUriA() for Ansi and
- * - uriParseSingleUriW() for Unicode.
+ * - uriParseSingleUriA() for <code>char *</code>
+ * - uriParseSingleUriW() for <code>wchar_t *</code>.
  *
- * This tutorial only shows the usage of the Ansi editions but
- * their Unicode counterparts work in the very same way.
+ * This tutorial only shows the usage of the narrow string editions but
+ * their wide string counterparts work in the very same way.
  *
  *
  * @section autoconf Autoconf Check
  * You can use the code below to make <c>./configure</c> test for presence
  * of uriparser 0.9.0 or later.
  *
- *<div class="fragment"><pre class="fragment">URIPARSER_MISSING=<span class="stringliteral">"Please install uriparser 0.9.0 or later.
- *   On a Debian-based system enter 'sudo apt-get install liburiparser-dev'."</span>
- *AC_CHECK_LIB(uriparser, uriParseSingleUriA,, AC_MSG_ERROR(${URIPARSER_MISSING}))
- *AC_CHECK_HEADER(uriparser/Uri.h,, AC_MSG_ERROR(${URIPARSER_MISSING}))
- *<b></b>
- *URIPARSER_TOO_OLD=<span class="stringliteral">"uriparser 0.9.0 or later is required, your copy is too old."</span>
- *AC_COMPILE_IFELSE([
- *<span class="preprocessor">\#include <uriparser/Uri.h>
- *\#if (defined(URI_VER_MAJOR) && defined(URI_VER_MINOR) && defined(URI_VER_RELEASE) \\<b></b>
- *&& ((URI_VER_MAJOR > 0) \\<b></b>
- *|| ((URI_VER_MAJOR == 0) && (URI_VER_MINOR > 9)) \\<b></b>
- *|| ((URI_VER_MAJOR == 0) && (URI_VER_MINOR == 9) && (URI_VER_RELEASE >= 0)) \\<b></b>
- *))</span>
- *<span class="comment"><b></b>/<b></b>* FINE *<b></b>/</span>
- *<span class="preprocessor">\#else
- *\# error uriparser not recent enough
- *\#endif</span>
- *],,AC_MSG_ERROR(${URIPARSER_TOO_OLD}))</pre></div>
+ *<div class="fragment"><pre class="fragment">PKG_CHECK_MODULES([URIPARSER], [liburiparser >= 0.9.0], [], [])</pre></div>
  */

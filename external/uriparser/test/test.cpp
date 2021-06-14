@@ -311,7 +311,7 @@ TEST(UriSuite, TestUri) {
 		ASSERT_TRUE(0 == uriParseUriA(&stateA, "//user:pass@localhost/one/two/three"));
 		uriFreeUriMembersA(&uriA);
 
-		// ANSI and Unicode
+		// Both narrow and wide string version
 		ASSERT_TRUE(0 == uriParseUriA(&stateA, "http://www.example.com/"));
 		uriFreeUriMembersA(&uriA);
 		ASSERT_TRUE(0 == uriParseUriW(&stateW, L"http://www.example.com/"));
@@ -1098,6 +1098,19 @@ TEST(UriSuite, TestAddBase) {
 		// Bug related to absolutePath flag set despite presence of host
 		ASSERT_TRUE(testAddBaseHelper(L"http://a/b/c/d;p?q", L"/", L"http://a/"));
 		ASSERT_TRUE(testAddBaseHelper(L"http://a/b/c/d;p?q", L"/g/", L"http://a/g/"));
+
+		// GitHub issue #92
+		EXPECT_TRUE(testAddBaseHelper(L"http://a/b/c/../d;p?q", L"../..", L"http://a/"));
+		EXPECT_TRUE(testAddBaseHelper(L"http://a/b/c/../d;p?q", L"../../", L"http://a/"));
+
+		EXPECT_TRUE(testAddBaseHelper(L"http://a/b/../c/d;p?q", L"../..", L"http://a/"));
+		EXPECT_TRUE(testAddBaseHelper(L"http://a/b/../c/d;p?q", L"../../", L"http://a/"));
+
+		EXPECT_TRUE(testAddBaseHelper(L"http://a/../b/c/d;p?q", L"../..", L"http://a/"));
+		EXPECT_TRUE(testAddBaseHelper(L"http://a/../b/c/d;p?q", L"../../", L"http://a/"));
+
+		EXPECT_TRUE(testAddBaseHelper(L"http://a/b/c/d;p?q", L"../../..", L"http://a/"));
+		EXPECT_TRUE(testAddBaseHelper(L"http://a/b/c/d;p?q", L"../../../", L"http://a/"));
 }
 
 namespace {
@@ -1475,6 +1488,48 @@ TEST(UriSuite, TestNormalizeSyntaxComponents) {
 				L"HTTP://%41@EXAMPLE.ORG/../a?%41#%41",
 				L"HTTP://%41@EXAMPLE.ORG/../a?%41#A",
 				URI_NORMALIZE_FRAGMENT));
+}
+
+TEST(UriSuite, TestNormalizeSyntaxPath) {
+	// These are from GitHub issue #92
+	EXPECT_TRUE(testNormalizeSyntaxHelper(
+			L"http://a/b/c/../../..",
+			L"http://a/",
+			URI_NORMALIZE_PATH));
+	EXPECT_TRUE(testNormalizeSyntaxHelper(
+			L"http://a/b/../c/../..",
+			L"http://a/",
+			URI_NORMALIZE_PATH));
+	EXPECT_TRUE(testNormalizeSyntaxHelper(
+			L"http://a/b/c/../../..",
+			L"http://a/",
+			URI_NORMALIZE_PATH));
+
+	// .. and these are related
+	EXPECT_TRUE(testNormalizeSyntaxHelper(
+			L"http://a/..",
+			L"http://a/",
+			URI_NORMALIZE_PATH));
+	EXPECT_TRUE(testNormalizeSyntaxHelper(
+			L"/..",
+			L"/",
+			URI_NORMALIZE_PATH));
+	EXPECT_TRUE(testNormalizeSyntaxHelper(
+			L"http://a/..///",
+			L"http://a///",
+			URI_NORMALIZE_PATH));
+	EXPECT_TRUE(testNormalizeSyntaxHelper(
+			L"http://a/..///..",
+			L"http://a//",
+			URI_NORMALIZE_PATH));
+	EXPECT_TRUE(testNormalizeSyntaxHelper(
+			L"a/b/c/../../..",
+			L"",
+			URI_NORMALIZE_PATH));
+	EXPECT_TRUE(testNormalizeSyntaxHelper(
+			L"a/b/../../c/..",
+			L"",
+			URI_NORMALIZE_PATH));
 }
 
 TEST(UriSuite, TestNormalizeCrashBug20080224) {

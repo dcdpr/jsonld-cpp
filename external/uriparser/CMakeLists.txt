@@ -38,14 +38,14 @@ cmake_minimum_required(VERSION 3.3)
 
 project(uriparser
     VERSION
-        0.9.4
+        0.9.5
     LANGUAGES
         C
 )
 
-# See https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
+# See https://verbump.de/ for what these numbers do
 set(URIPARSER_SO_CURRENT    1)
-set(URIPARSER_SO_REVISION  27)
+set(URIPARSER_SO_REVISION  28)
 set(URIPARSER_SO_AGE        0)
 
 include(CheckCCompilerFlag)
@@ -65,6 +65,7 @@ option(URIPARSER_BUILD_TOOLS "Build tools (e.g. CLI \"uriparse\")" ON)
 option(URIPARSER_BUILD_CHAR "Build code supporting data type 'char'" ON)
 option(URIPARSER_BUILD_WCHAR_T "Build code supporting data type 'wchar_t'" ON)
 option(URIPARSER_ENABLE_INSTALL "Enable installation of uriparser" ON)
+option(URIPARSER_WARNINGS_AS_ERRORS "Treat all compiler warnings as errors" OFF)
 set(URIPARSER_MSVC_RUNTIME "" CACHE STRING "Use of specific runtime library (/MT /MTd /MD /MDd) with MSVC")
 
 if(NOT URIPARSER_BUILD_CHAR AND NOT URIPARSER_BUILD_WCHAR_T)
@@ -103,6 +104,14 @@ if(URIPARSER_COMPILER_SUPPORTS_VISIBILITY)
     set(URIPARSER_EXTRA_COMPILE_FLAGS "${URIPARSER_EXTRA_COMPILE_FLAGS} -fvisibility=hidden")
 endif()
 
+if(URIPARSER_WARNINGS_AS_ERRORS)
+    if(MSVC)
+        add_definitions(/WX)
+    else()
+        set(URIPARSER_EXTRA_COMPILE_FLAGS "${URIPARSER_EXTRA_COMPILE_FLAGS} -Werror")
+    endif()
+endif()
+
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${URIPARSER_EXTRA_COMPILE_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${URIPARSER_EXTRA_COMPILE_FLAGS}")
 
@@ -111,40 +120,40 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${URIPARSER_EXTRA_COMPILE_FLAGS}")
 #
 check_symbol_exists(wprintf wchar.h HAVE_WPRINTF)
 check_function_exists(reallocarray HAVE_REALLOCARRAY)  # no luck with CheckSymbolExists
-configure_file(src/UriConfig.h.in config.h)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/UriConfig.h.in config.h)
 
 #
 # C library
 #
 set(API_HEADER_FILES
-    include/uriparser/UriBase.h
-    include/uriparser/UriDefsAnsi.h
-    include/uriparser/UriDefsConfig.h
-    include/uriparser/UriDefsUnicode.h
-    include/uriparser/Uri.h
-    include/uriparser/UriIp4.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/uriparser/UriBase.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/uriparser/UriDefsAnsi.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/uriparser/UriDefsConfig.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/uriparser/UriDefsUnicode.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/uriparser/Uri.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/uriparser/UriIp4.h
 )
 set(LIBRARY_CODE_FILES
-    src/UriCommon.c
-    src/UriCommon.h
-    src/UriCompare.c
-    src/UriEscape.c
-    src/UriFile.c
-    src/UriIp4Base.c
-    src/UriIp4Base.h
-    src/UriIp4.c
-    src/UriMemory.c
-    src/UriMemory.h
-    src/UriNormalizeBase.c
-    src/UriNormalizeBase.h
-    src/UriNormalize.c
-    src/UriParseBase.c
-    src/UriParseBase.h
-    src/UriParse.c
-    src/UriQuery.c
-    src/UriRecompose.c
-    src/UriResolve.c
-    src/UriShorten.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/UriCommon.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/UriCommon.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/UriCompare.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/UriEscape.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/UriFile.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/UriIp4Base.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/UriIp4Base.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/UriIp4.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/UriMemory.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/UriMemory.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/UriNormalizeBase.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/UriNormalizeBase.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/UriNormalize.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/UriParseBase.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/UriParseBase.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/UriParse.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/UriQuery.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/UriRecompose.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/UriResolve.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/UriShorten.c
 )
 
 add_library(uriparser
@@ -217,7 +226,7 @@ uriparser_install(
 #
 if(URIPARSER_BUILD_TOOLS)
     add_executable(uriparse
-        tool/uriparse.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/tool/uriparse.c
     )
 
     target_link_libraries(uriparse PUBLIC uriparser)
@@ -263,10 +272,10 @@ if(URIPARSER_BUILD_TESTS)
     find_package(GTest 1.8.0 REQUIRED)
 
     add_executable(testrunner
-        test/FourSuite.cpp
-        test/MemoryManagerSuite.cpp
-        test/test.cpp
-        test/VersionSuite.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/test/FourSuite.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/test/MemoryManagerSuite.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/test/test.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/test/VersionSuite.cpp
 
         # These library code files have non-public symbols that the test suite
         # needs to link to, so they appear here as well:
@@ -293,6 +302,15 @@ if(URIPARSER_BUILD_TESTS)
         ${GTEST_BOTH_LIBRARIES}
     )
 
+    # NOTE: uriparser does not use pthreads itself but gtest does
+    find_package(Threads REQUIRED)
+    target_link_libraries(testrunner PRIVATE Threads::Threads)
+
+    if(MSVC)
+        # Specify unwind semantics so that MSVC knowns how to handle exceptions
+        target_compile_options(testrunner PRIVATE /EHsc)
+    endif()
+
     add_test(
         NAME
             test
@@ -308,11 +326,20 @@ endif()
 #
 if(URIPARSER_BUILD_DOCS)
     find_package(Doxygen REQUIRED dot doxygen)
-    find_program(QHG_LOCATION
-        NAMES
-            qhelpgenerator
-            qhelpgenerator-qt5  # e.g. CentOS 7
-    )
+
+    set(QHG_LOCATION "" CACHE FILEPATH "Path to qhelpgenerator program (default: auto-detect)")
+    if(NOT QHG_LOCATION)
+        find_package(Qt5Help QUIET)
+        if(TARGET Qt5::qhelpgenerator)
+            get_target_property(QHG_LOCATION Qt5::qhelpgenerator LOCATION)
+            mark_as_advanced(Qt5Core_DIR)
+            mark_as_advanced(Qt5Gui_DIR)
+            mark_as_advanced(Qt5Help_DIR)
+            mark_as_advanced(Qt5Sql_DIR)
+            mark_as_advanced(Qt5Widgets_DIR)
+        endif()
+    endif()
+
     include(FindHTMLHelp)
 
     # Generate Doxyfile
@@ -326,8 +353,8 @@ if(URIPARSER_BUILD_DOCS)
     else()
         set(GENERATE_QHP NO)
     endif()
-    configure_file(doc/Doxyfile.in doc/Doxyfile @ONLY)
-    configure_file(doc/release.sh.in doc/release.sh @ONLY)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile.in doc/Doxyfile @ONLY)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doc/release.sh.in doc/release.sh @ONLY)
 
     add_custom_target(doc
         ALL
@@ -361,7 +388,7 @@ endif()
 # CMake files for find_package(uriparser [..] CONFIG [..])
 #
 configure_package_config_file(
-        cmake/uriparser-config.cmake.in
+        ${CMAKE_CURRENT_SOURCE_DIR}/cmake/uriparser-config.cmake.in
         cmake/uriparser-config.cmake
     INSTALL_DESTINATION
         ${CMAKE_INSTALL_LIBDIR}/cmake/uriparser-${PROJECT_VERSION}/
@@ -396,7 +423,7 @@ uriparser_install(
 # pkg-config file
 #
 if(NOT MSVC)
-    configure_file(liburiparser.pc.in liburiparser.pc @ONLY)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/liburiparser.pc.in liburiparser.pc @ONLY)
     uriparser_install(
         FILES
             ${CMAKE_CURRENT_BINARY_DIR}/liburiparser.pc
@@ -411,13 +438,25 @@ endif()
 message(STATUS "===========================================================================")
 message(STATUS "")
 message(STATUS "Configuration")
-message(STATUS "  Prefix ............... ${CMAKE_INSTALL_PREFIX}")
-message(STATUS "  Shared libraries ..... ${BUILD_SHARED_LIBS}")
-message(STATUS "  Code for char * ...... ${URIPARSER_BUILD_CHAR}")
-message(STATUS "  Code for wchar_t * ... ${URIPARSER_BUILD_WCHAR_T}")
-message(STATUS "  Tools ................ ${URIPARSER_BUILD_TOOLS}")
-message(STATUS "  Test suite ........... ${URIPARSER_BUILD_TESTS}")
-message(STATUS "  Documentation ........ ${URIPARSER_BUILD_DOCS}")
+message(STATUS "  Build type ............. ${CMAKE_BUILD_TYPE}")
+message(STATUS "  Shared libraries ....... ${BUILD_SHARED_LIBS}")
+message(STATUS "  Compiler flags")
+message(STATUS "    C .................... ${CMAKE_C_FLAGS}")
+message(STATUS "    C++ .................. ${CMAKE_CXX_FLAGS}")
+message(STATUS "  Linker flags")
+message(STATUS "    Executable ........... ${CMAKE_EXE_LINKER_FLAGS}")
+message(STATUS "    Module ............... ${CMAKE_MODULE_LINKER_FLAGS}")
+message(STATUS "    Shared ............... ${CMAKE_SHARED_LINKER_FLAGS}")
+message(STATUS "  Paths")
+message(STATUS "    Prefix ............... ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "    qhelpgenerator ....... ${QHG_LOCATION}")
+message(STATUS "")
+message(STATUS "  Features")
+message(STATUS "    Code for char * ...... ${URIPARSER_BUILD_CHAR}")
+message(STATUS "    Code for wchar_t * ... ${URIPARSER_BUILD_WCHAR_T}")
+message(STATUS "    Tools ................ ${URIPARSER_BUILD_TOOLS}")
+message(STATUS "    Test suite ........... ${URIPARSER_BUILD_TESTS}")
+message(STATUS "    Documentation ........ ${URIPARSER_BUILD_DOCS}")
 message(STATUS "")
 if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     message(STATUS "Continue with")
