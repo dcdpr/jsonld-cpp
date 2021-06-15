@@ -232,12 +232,11 @@ TEST(UriTest, resolveUri_otherExamples) {
 
 
     // discovered these as failing cases when testing toRdf test "#t0123", but now
-    // some pass since we switched to using "external/uriparser" library
+    // they pass since we switched to using "external/uriparser" library
 
-// Test still failing due to possible problem with uri resolution. Waiting to hear from uriparser project
-//    resolveSucceeded = Uri::ResolveUri("http://a/bb/ccc/../d;p?q", "../..", &result);
-//    EXPECT_TRUE(resolveSucceeded);
-//    EXPECT_EQ(result, "http://a/");
+    resolveSucceeded = Uri::ResolveUri("http://a/bb/ccc/../d;p?q", "../..", &result);
+    EXPECT_TRUE(resolveSucceeded);
+    EXPECT_EQ(result, "http://a/");
 
     resolveSucceeded = Uri::ResolveUri("http://a/bb/ccc/../d;p?q", "../../", &result);
     EXPECT_TRUE(resolveSucceeded);
@@ -247,10 +246,9 @@ TEST(UriTest, resolveUri_otherExamples) {
     EXPECT_TRUE(resolveSucceeded);
     EXPECT_EQ(result, "http://a/");
 
-// Test still failing due to possible problem with uri resolution. Waiting to hear from uriparser project
-//    resolveSucceeded = Uri::ResolveUri("http://a/b/c/../d;p?q", "../..", &result);
-//    EXPECT_TRUE(resolveSucceeded);
-//    EXPECT_EQ(result, "http://a/");
+    resolveSucceeded = Uri::ResolveUri("http://a/b/c/../d;p?q", "../..", &result);
+    EXPECT_TRUE(resolveSucceeded);
+    EXPECT_EQ(result, "http://a/");
 
 }
 

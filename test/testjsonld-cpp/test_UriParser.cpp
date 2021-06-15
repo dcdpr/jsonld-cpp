@@ -718,4 +718,28 @@ TEST(UriParserResolveTest, resolve_otherExamples) {
     EXPECT_TRUE(resolved_uri);
     EXPECT_TRUE(resolved_uri->ToString(&t));
     EXPECT_EQ(t, "https://ex.org/#Test:2");
+
+    // discovered these as failing cases when testing toRdf test "#t0123", but now
+    // they pass since we switched to using "external/uriparser" library
+
+    resolved_uri.reset(UriParser::createResolved("http://a/bb/ccc/../d;p?q", "../.."));
+    EXPECT_TRUE(resolved_uri);
+    EXPECT_TRUE(resolved_uri->ToString(&t));
+    EXPECT_EQ(t, "http://a/");
+
+    resolved_uri.reset(UriParser::createResolved("http://a/bb/ccc/../d;p?q", "../../"));
+    EXPECT_TRUE(resolved_uri);
+    EXPECT_TRUE(resolved_uri->ToString(&t));
+    EXPECT_EQ(t, "http://a/");
+
+    resolved_uri.reset(UriParser::createResolved("http://a/b/c/../d;p?q", "../../"));
+    EXPECT_TRUE(resolved_uri);
+    EXPECT_TRUE(resolved_uri->ToString(&t));
+    EXPECT_EQ(t, "http://a/");
+
+    resolved_uri.reset(UriParser::createResolved("http://a/b/c/../d;p?q", "../.."));
+    EXPECT_TRUE(resolved_uri);
+    EXPECT_TRUE(resolved_uri->ToString(&t));
+    EXPECT_EQ(t, "http://a/");
+
 }
