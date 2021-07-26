@@ -48,6 +48,9 @@ public:
     static const char ParseError[];
     static const char UnknownError[];
 
+    static const char InvalidVersionValue[];
+    static const char ProcessingModeConflict[];
+
 private:
     nlohmann::json detail;
 

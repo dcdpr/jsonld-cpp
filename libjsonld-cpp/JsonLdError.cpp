@@ -55,3 +55,5 @@ const char JsonLdError::UnknownFormat[] = "unknown format";
 const char JsonLdError::InvalidInput[] = "invalid input";
 const char JsonLdError::ParseError[] = "parse error";
 const char JsonLdError::UnknownError[] = "unknown error";
+const char JsonLdError::InvalidVersionValue[] = "invalid @version value";
+const char JsonLdError::ProcessingModeConflict[] = "processing mode conflict";

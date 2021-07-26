@@ -23,6 +23,16 @@ json JsonLdApi::expand(Context activeCtx, json element) {
 
 json JsonLdApi::expand(Context activeCtx, std::string * activeProperty, json element) {
 
+    // Comments in this function are labelled with numbers that correspond to sections
+    // from the description of the Expansion algorithm.
+    // See: https://www.w3.org/TR/2014/REC-json-ld-api-20140116/#expansion-algorithm
+
+    // todo: This needs to be upgraded to conform with
+    // https://w3c.github.io/json-ld-api/#expansion-algorithm
+
+    // todo: remove
+    std::cout << "... 1.0 JsonLdApi::expand()\n";
+
     // 1)
     if (element.empty()) {
         return element; // todo: was null...
@@ -43,6 +53,17 @@ json JsonLdApi::expand(Context activeCtx, std::string * activeProperty, json ele
 }
 
 json JsonLdApi::expandArrayElement(Context activeCtx, std::string * activeProperty, const json& element) {
+
+    // Comments in this function are labelled with numbers that correspond to sections
+    // from the description of the Expansion algorithm.
+    // See: https://www.w3.org/TR/2014/REC-json-ld-api-20140116/#expansion-algorithm
+
+    // todo: This needs to be upgraded to conform with
+    // https://w3c.github.io/json-ld-api/#expansion-algorithm
+
+    // todo: remove
+    std::cout << "... 1.0 JsonLdApi::expandArrayElement()\n";
+
     // 3.1)
     json result = json::array();
     // 3.2)
@@ -72,7 +93,16 @@ json JsonLdApi::expandArrayElement(Context activeCtx, std::string * activeProper
 
 json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activeProperty, json element) {
 
-    // access helper
+    // Comments in this function are labelled with numbers that correspond to sections
+    // from the description of the Expansion algorithm.
+    // See: https://www.w3.org/TR/2014/REC-json-ld-api-20140116/#expansion-algorithm
+
+    // todo: This needs to be upgraded to conform with
+    // https://w3c.github.io/json-ld-api/#expansion-algorithm
+
+    // todo: remove
+    std::cout << "... 1.0 JsonLdApi::expandObjectElement()\n";
+
     // 5)
     if (element.contains(JsonLdConsts::CONTEXT)) {
         activeCtx = activeCtx.parse(element[JsonLdConsts::CONTEXT]);
@@ -575,6 +605,14 @@ RDF::RDFDataset JsonLdApi::toRDF(nlohmann::json element) {
 void JsonLdApi::generateNodeMap(json & element, json &nodeMap, std::string *activeGraph, nlohmann::json *activeSubject,
                                 std::string *activeProperty, json *list)
 {
+    // Comments in this function are labelled with numbers that correspond to sections
+    // from the description of the node map generation algorithm.
+    // See: https://www.w3.org/TR/2014/REC-json-ld-api-20140116/#node-map-generation
+
+    // todo: This needs to be upgraded to conform with
+    // https://w3c.github.io/json-ld-api/#node-map-generation
+
+
     // 1)
     if (element.is_array()) {
         // 1.1)

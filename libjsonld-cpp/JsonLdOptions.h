@@ -29,7 +29,7 @@ private:
     /**
      * http://www.w3.org/TR/json-ld-api/#widl-JsonLdOptions-processingMode
      */
-    std::string processingMode_ = JSON_LD_1_0;
+    std::string processingMode_ = JSON_LD_1_1;
     /**
      * http://www.w3.org/TR/json-ld-api/#widl-JsonLdOptions-documentLoader
      */

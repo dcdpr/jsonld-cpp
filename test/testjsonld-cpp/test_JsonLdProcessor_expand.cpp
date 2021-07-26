@@ -39,8 +39,11 @@ public:
         if(!testCase.options.specVersion.empty())
             std::cout << "SpecVersion: " << testCase.options.specVersion;
         if(testCase.options.specVersion == "json-ld-1.1") {
-            std::cout << " ...skipping for now." << std::endl;
-            GTEST_SKIP();
+            if(testCase.id != "#t0079") {
+                std::cout << " ...skipping for now.";
+                GTEST_SKIP();
+            }
+            std::cout << std::endl;
         }
         else
             std::cout << std::endl;

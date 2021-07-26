@@ -7,6 +7,16 @@ using nlohmann::json;
 
 nlohmann::json JsonLdProcessor::expand(nlohmann::json input, JsonLdOptions opts) {
 
+    // Comments in this function are labelled with numbers that correspond to sections
+    // from the description of the JsonLdProcessor interface.
+    // See: https://www.w3.org/TR/2014/REC-json-ld-api-20140116/#the-jsonldprocessor-interface
+
+    // todo: This needs to be upgraded to conform with
+    // https://w3c.github.io/json-ld-api/#the-jsonldprocessor-interface
+
+    // todo: remove
+    std::cout << "... 1.0 JsonLdProcessor::expand2()\n";
+
     // 3)
     Context activeCtx(opts);
 
@@ -46,6 +56,16 @@ nlohmann::json JsonLdProcessor::expand(nlohmann::json input, JsonLdOptions opts)
 }
 
 nlohmann::json JsonLdProcessor::expand(const std::string& input, JsonLdOptions opts) {
+
+    // Comments in this function are labelled with numbers that correspond to sections
+    // from the description of the JsonLdProcessor interface.
+    // See: https://www.w3.org/TR/2014/REC-json-ld-api-20140116/#the-jsonldprocessor-interface
+
+    // todo: This needs to be upgraded to conform with
+    // https://w3c.github.io/json-ld-api/#the-jsonldprocessor-interface
+
+    // todo: remove
+    std::cout << "... 1.0 JsonLdProcessor::expand1()\n";
 
     // 2) TODO: better verification of DOMString IRI
     if (input.find(':') != std::string::npos) {

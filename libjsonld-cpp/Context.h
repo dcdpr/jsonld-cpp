@@ -22,6 +22,7 @@ private:
 
     static void checkEmptyKey(const nlohmann::json& map);
     static void checkEmptyKey(const StringMap& map);
+    void createTermDefinition11(nlohmann::json context, const std::string& term, std::map<std::string, bool> & defined);
     void createTermDefinition(nlohmann::json context, const std::string& term, std::map<std::string, bool> & defined);
     nlohmann::json getTermDefinition(const std::string & key);
 
@@ -34,7 +35,7 @@ public:
     Context(std::map<std::string, std::string> map, JsonLdOptions options);
     explicit Context(std::map<std::string, std::string> map);
 
-// todo: should these be static constructors?
+    Context parse11(const nlohmann::json & localContext, std::vector<std::string> & remoteContexts, bool parsingARemoteContext);
     Context parse(const nlohmann::json & localContext, std::vector<std::string> & remoteContexts, bool parsingARemoteContext);
     Context parse(const nlohmann::json & localContext, std::vector<std::string> & remoteContexts);
     Context parse(const nlohmann::json & localContext);
@@ -49,9 +50,11 @@ public:
     std::string getContainer(std::string property);
 
     std::string expandIri(std::string value, bool relative, bool vocab);
+    std::string expandIri11(std::string value, bool relative, bool vocab, const nlohmann::json& context, std::map<std::string, bool> & defined);
     std::string expandIri(std::string value, bool relative, bool vocab, const nlohmann::json& context, std::map<std::string, bool> & defined);
     nlohmann::json expandValue(const std::string & activeProperty, const nlohmann::json& value);
     bool isReverseProperty(const std::string& property);
+    bool isProcessingMode(const std::string& mode);
 
     std::string & at(const std::string& s);
     size_t erase( const std::string& key );
