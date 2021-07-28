@@ -453,83 +453,7 @@ std::string Context::getContainer(std::string property) {
 std::string Context::expandIri(
         std::string value, bool relative, bool vocab,
         const json& context, std::map<std::string, bool> & defined) {
-
-    // Comments in this function are labelled with numbers that correspond to sections
-    // from the description of the IRI expansion algorithm.
-    // See: https://www.w3.org/TR/2014/REC-json-ld-api-20140116/#iri-expansion
-
-    // todo: This needs to be upgraded to conform with
-    // https://w3c.github.io/json-ld-api/#iri-expansion
-
-    // todo: remove
-    std::cout << "... 1.0 Context::expandIri()\n";
-
-    // 1)
-        if (JsonLdUtils::isKeyword(value)) { // todo: also checked for if value was null
-            return value;
-        }
-        // 2)
-        if (!context.is_null() && context.contains(value) &&
-            defined.find(value) != defined.end() && !defined.at(value) ) {
-            createTermDefinition(context, value, defined);
-        }
-        // 3)
-        if (vocab && termDefinitions.find(value) != termDefinitions.end()) {
-            auto td = termDefinitions.at(value);
-            if (!td.is_null()) {
-                if(td.contains(JsonLdConsts::ID))
-                    return td.at(JsonLdConsts::ID);
-                else
-                    return "";
-            } else {
-                return ""; // todo: was null
-            }
-        }
-        // 4)
-        auto colIndex = value.find(':');
-        if (colIndex != std::string::npos) {
-            // 4.1)
-            std::string prefix(value, 0, colIndex);
-            std::string suffix(value, colIndex+1);
-            // 4.2)
-            if (prefix == "_" || suffix.find('/') == 0) {
-                return value;
-            }
-            // 4.3)
-            if (!context.is_null() && context.contains(prefix)
-                && (defined.find(prefix) == defined.end() || !defined.at(prefix))) {
-                createTermDefinition(context, prefix, defined);
-            }
-            // 4.4)
-            if (termDefinitions.find(prefix) != termDefinitions.end()) {
-                auto id = termDefinitions.at(prefix).at(JsonLdConsts::ID);
-                id = id.get<std::string>() + suffix;
-                return id;
-            }
-            // 4.5)
-            if(Uri::isAbsolute(value) || value.find_first_of("_:") == 0)
-                return value;
-        }
-        // 5)
-        if (vocab && contextMap.find(JsonLdConsts::VOCAB) != contextMap.end()) {
-            return contextMap.at(JsonLdConsts::VOCAB) + value;
-        }
-        // 6)
-        else if (relative) {
-            if(this->count(JsonLdConsts::BASE))
-                return JsonLdUrl::resolve(&(this->at(JsonLdConsts::BASE)), &value);
-            else
-                return JsonLdUrl::resolve(nullptr, &value);
-        } else if (!context.is_null() && JsonLdUtils::isRelativeIri(value)) {
-            throw JsonLdError(JsonLdError::InvalidIriMapping, "not an absolute IRI: " + value);
-        }
-        // 7)
-        return value;
-}
-
-std::string Context::expandIri11(
-        std::string value, bool relative, bool vocab,
-        const json& context, std::map<std::string, bool> & defined) {
+    // todo move to jsonldapi.cpp?
 
     // Comments in this function are labelled with numbers that correspond to sections
     // from the description of the IRI expansion algorithm.
@@ -546,61 +470,70 @@ std::string Context::expandIri11(
         return value;
     }
     // 2)
+    // todo: need to check is value has form of @keyword, and if so, emit a warning
+    // 3)
     if (!context.is_null() && context.contains(value) &&
         defined.find(value) != defined.end() && !defined.at(value) ) {
         createTermDefinition11(context, value, defined);
     }
-    // 3)
+    // 4)
+    if (termDefinitions.find(value) != termDefinitions.end()) {
+        auto td = termDefinitions.at(value);
+        if (!td.is_null() &&
+            td.contains(JsonLdConsts::ID) &&
+            JsonLdUtils::isKeyword(td.at(JsonLdConsts::ID)))
+            return td.at(JsonLdConsts::ID);
+    }
+    // 5)
     if (vocab && termDefinitions.find(value) != termDefinitions.end()) {
         auto td = termDefinitions.at(value);
-        if (!td.is_null()) {
-            if(td.contains(JsonLdConsts::ID))
-                return td.at(JsonLdConsts::ID);
-            else
-                return "";
-        } else {
-            return ""; // todo: was null
-        }
+        if (!td.is_null() &&
+            td.contains(JsonLdConsts::ID))
+            return td.at(JsonLdConsts::ID);
+        else
+            return ""; // todo: this return isn't in the spec, but expand_t0032 test fails without it
     }
-    // 4)
-    auto colIndex = value.find(':');
+    // 6)
+    auto colIndex = value.find(':', 1);
     if (colIndex != std::string::npos) {
-        // 4.1)
+        // 6.1)
         std::string prefix(value, 0, colIndex);
         std::string suffix(value, colIndex+1);
-        // 4.2)
-        if (prefix == "_" || suffix.find('/') == 0) {
+        // 6.2)
+        if (prefix == "_" || suffix.find("//") == 0) {
             return value;
         }
-        // 4.3)
+        // 6.3)
         if (!context.is_null() && context.contains(prefix)
             && (defined.find(prefix) == defined.end() || !defined.at(prefix))) {
             createTermDefinition11(context, prefix, defined);
         }
-        // 4.4)
+        // 6.4)
         if (termDefinitions.find(prefix) != termDefinitions.end()) {
-            auto id = termDefinitions.at(prefix).at(JsonLdConsts::ID);
-            id = id.get<std::string>() + suffix;
-            return id;
+            auto prefixDef = termDefinitions.at(prefix);
+            if (prefixDef.find(JsonLdConsts::ID) != prefixDef.end()) {
+                return prefixDef.at(JsonLdConsts::ID).get<std::string>() + suffix;
+            }
         }
-        // 4.5)
+        // 6.5)
         if(Uri::isAbsolute(value) || value.find_first_of("_:") == 0)
             return value;
     }
-    // 5)
+    // 7)
     if (vocab && contextMap.find(JsonLdConsts::VOCAB) != contextMap.end()) {
         return contextMap.at(JsonLdConsts::VOCAB) + value;
     }
-        // 6)
+    // 8)
     else if (relative) {
         if(this->count(JsonLdConsts::BASE))
             return JsonLdUrl::resolve(&(this->at(JsonLdConsts::BASE)), &value);
         else
             return JsonLdUrl::resolve(nullptr, &value);
     } else if (!context.is_null() && JsonLdUtils::isRelativeIri(value)) {
+        // todo: this isn't part of the spec--do we need it?
         throw JsonLdError(JsonLdError::InvalidIriMapping, "not an absolute IRI: " + value);
     }
-    // 7)
+    // 9)
     return value;
 }
 
@@ -921,7 +854,7 @@ void Context::createTermDefinition11(json context, const std::string& term,
 
         // 13.2)
         try {
-            typeStr = expandIri11(typeStr, false, true, context, defined);
+            typeStr = expandIri(typeStr, false, true, context, defined);
         } catch (JsonLdError &error) {
             std::string msg = error.what();
             if (msg.find(JsonLdError::InvalidIriMapping) == std::string::npos) {
@@ -954,7 +887,7 @@ void Context::createTermDefinition11(json context, const std::string& term,
         }
         std::string reverseStr = reverse.get<std::string>();
 
-        reverseStr = expandIri11(reverseStr, false, true, context, defined);
+        reverseStr = expandIri(reverseStr, false, true, context, defined);
         if (!JsonLdUtils::isAbsoluteIri(reverseStr)) {
             throw JsonLdError(JsonLdError::InvalidIriMapping,
                               "Non-absolute @reverse IRI: " + reverseStr);
@@ -987,7 +920,7 @@ void Context::createTermDefinition11(json context, const std::string& term,
 
         std::string idStr = id.get<std::string>();
 
-        idStr = expandIri11(idStr, false, true, context, defined);
+        idStr = expandIri(idStr, false, true, context, defined);
         if (JsonLdUtils::isKeyword(idStr) || JsonLdUtils::isAbsoluteIri(idStr) || BlankNode::isBlankNodeName(idStr)) {
             if (idStr == JsonLdConsts::CONTEXT) {
                 throw JsonLdError(JsonLdError::InvalidKeywordAlias, "cannot alias @context");

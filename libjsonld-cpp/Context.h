@@ -50,7 +50,6 @@ public:
     std::string getContainer(std::string property);
 
     std::string expandIri(std::string value, bool relative, bool vocab);
-    std::string expandIri11(std::string value, bool relative, bool vocab, const nlohmann::json& context, std::map<std::string, bool> & defined);
     std::string expandIri(std::string value, bool relative, bool vocab, const nlohmann::json& context, std::map<std::string, bool> & defined);
     nlohmann::json expandValue(const std::string & activeProperty, const nlohmann::json& value);
     bool isReverseProperty(const std::string& property);
