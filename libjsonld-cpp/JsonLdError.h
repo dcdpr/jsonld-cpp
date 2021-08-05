@@ -50,6 +50,16 @@ public:
 
     static const char InvalidVersionValue[];
     static const char ProcessingModeConflict[];
+    static const char InvalidProtectedValue[];
+    static const char InvalidScopedContext[];
+    static const char InvalidBaseDirection[];
+    static const char InvalidNestValue[];
+    static const char InvalidPrefixValue[];
+    static const char InvalidContextNullification[];
+    static const char ContextOverflow[];
+    static const char InvalidContextEntry[];
+    static const char InvalidImportValue[];
+    static const char InvalidPropagateValue[];
 
 private:
     nlohmann::json detail;

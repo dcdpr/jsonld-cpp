@@ -27,15 +27,15 @@ bool JsonLdUtils::isKeyword(const std::string& property) {
             property == "@requireAll";
 }
 
-bool JsonLdUtils::isAbsoluteIri(const std::string &value) {
-    std::cout << "isAbsoluteIri: " << value
-              << " " << (value.find(':') != std::string::npos)
-              << " " << Uri::isAbsolute(value) << std::endl;
-    return Uri::isAbsolute(value);
+bool JsonLdUtils::isAbsoluteIri(const std::string &iri) {
+    std::cout << "isAbsoluteIri: " << iri
+              << " " << (iri.find(':') != std::string::npos)
+              << " " << Uri::isAbsolute(iri) << std::endl;
+    return Uri::isAbsolute(iri);
 }
 
-bool JsonLdUtils::isRelativeIri(const std::string &value) {
-    return !(isKeyword(value) || isAbsoluteIri(value));
+bool JsonLdUtils::isRelativeIri(const std::string &iri) {
+    return !(isKeyword(iri) || isAbsoluteIri(iri));
 }
 
 bool JsonLdUtils::deepCompare(JsonLdUtils::json v1, JsonLdUtils::json v2) {
@@ -114,4 +114,19 @@ void JsonLdUtils::mergeValue(json & obj, const std::string& key, const json& val
     if (key == "@list" || value.contains("@list") || !deepContains(values, value)) {
         values.push_back(value);
     }
+}
+
+/**
+ * Check if the given IRI ends with a URI general delimiter character.
+ *
+ * See https://tools.ietf.org/html/rfc3986#section-2.2
+ *
+ * @param iri the IRI to check
+ * @return true if the IRI ends with a URI general delimiter character
+ */
+bool JsonLdUtils::iriEndsWithGeneralDelimiterCharacter(const std::string &iri) {
+    if(iri.empty())
+        return false;
+    char c = iri[iri.size()-1];
+    return c == ':' || c == '/' || c == '?' || c == '#' || c == '[' || c == ']' || c == '@';
 }

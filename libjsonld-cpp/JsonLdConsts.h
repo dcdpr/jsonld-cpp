@@ -67,6 +67,14 @@ namespace JsonLdConsts {
     static constexpr const char IMPORT[] = "@import";
     static constexpr const char PROPAGATE[] = "@propagate";
     static constexpr const char PROTECTED[] = "@protected";
+    static constexpr const char JSON[] = "@json";
+    static constexpr const char NEST[] = "@nest";
+    static constexpr const char PREFIX[] = "@prefix";
+
+    // various flags used for term definitions
+    static constexpr const char IS_PREFIX_FLAG[] = "@flag.prefix";
+    static constexpr const char IS_PROTECTED_FLAG[] = "@flag.protected";
+    static constexpr const char IS_REVERSE_PROPERTY_FLAG[] = "@flag.reverseproperty";
 
     enum Embed {
         ALWAYS, NEVER, ONCE, LINK

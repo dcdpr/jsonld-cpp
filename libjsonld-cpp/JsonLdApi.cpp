@@ -105,7 +105,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
 
     // 5)
     if (element.contains(JsonLdConsts::CONTEXT)) {
-        activeCtx = activeCtx.parse(element[JsonLdConsts::CONTEXT]);
+        activeCtx = activeCtx.parse(element[JsonLdConsts::CONTEXT], options.getBase());
     }
     // 6)
     json result = ObjUtils::newMap();

@@ -26,7 +26,7 @@ nlohmann::json JsonLdProcessor::expand(nlohmann::json input, JsonLdOptions opts)
         if (exCtx.contains(JsonLdConsts::CONTEXT)) {
             exCtx = exCtx[JsonLdConsts::CONTEXT];
         }
-        activeCtx = activeCtx.parse(exCtx);
+        activeCtx = activeCtx.parse(exCtx, opts.getBase());
     }
 
     // 5)

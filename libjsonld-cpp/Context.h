@@ -17,28 +17,48 @@ private:
 
     JsonLdOptions options;
     nlohmann::json termDefinitions;
-    nlohmann::json inverse;
-    StringMap contextMap;
+    std::string baseIRI;
+    std::string originalBaseURL;
+    Context *inverseContext;
+    std::string vocabularyMapping;
+    std::string defaultLanguage;
+    std::string defaultBaseDirection;
+    Context *previousContext;
+
+    StringMap contextMap; // todo: should probably replace this with several specific variables
+
+
+    std::vector<std::string> remoteContexts;
+    bool overrideProtected;
+    bool propagate;
+    bool validateScopedContext;
+
 
     static void checkEmptyKey(const nlohmann::json& map);
     static void checkEmptyKey(const StringMap& map);
-    void createTermDefinition11(nlohmann::json context, const std::string& term, std::map<std::string, bool> & defined);
     void createTermDefinition(nlohmann::json context, const std::string& term, std::map<std::string, bool> & defined);
     nlohmann::json getTermDefinition(const std::string & key);
 
     void init();
 
+    std::string & at(const std::string& s);
+    size_t erase( const std::string& key );
+    std::pair<StringMap::iterator,bool> insert( const StringMap::value_type& value );
+    size_t count( const std::string& key ) const;
+
 public:
 
     Context() = default;
     explicit Context(JsonLdOptions options);
-    Context(std::map<std::string, std::string> map, JsonLdOptions options);
-    explicit Context(std::map<std::string, std::string> map);
+//    Context(std::map<std::string, std::string> map, JsonLdOptions options);
+//    explicit Context(std::map<std::string, std::string> map);
 
-    Context parse11(const nlohmann::json & localContext, std::vector<std::string> & remoteContexts, bool parsingARemoteContext);
-    Context parse(const nlohmann::json & localContext, std::vector<std::string> & remoteContexts, bool parsingARemoteContext);
-    Context parse(const nlohmann::json & localContext, std::vector<std::string> & remoteContexts);
-    Context parse(const nlohmann::json & localContext);
+    Context parse(const nlohmann::json & localContext, const std::string & baseURL);
+    Context parse(const nlohmann::json & localContext, const std::string & baseURL,
+                  std::vector<std::string> & remoteContexts,
+                  bool overrideProtected = false,
+                  bool propagate = true,
+                  bool validateScopedContext = true);
 
     /**
      * Retrieve container mapping.
@@ -55,10 +75,6 @@ public:
     bool isReverseProperty(const std::string& property);
     bool isProcessingMode(const std::string& mode);
 
-    std::string & at(const std::string& s);
-    size_t erase( const std::string& key );
-    std::pair<StringMap::iterator,bool> insert( const StringMap::value_type& value );
-    size_t count( const std::string& key ) const;
 };
 
 #endif //LIBJSONLD_CPP_CONTEXT_H

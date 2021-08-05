@@ -18,9 +18,11 @@ namespace JsonLdUtils {
      */
     bool isKeyword(const std::string& property);
 
-    bool isAbsoluteIri(const std::string& value);
+    bool isAbsoluteIri(const std::string& iri);
 
-    bool isRelativeIri(const std::string& value);
+    bool isRelativeIri(const std::string& iri);
+
+    bool iriEndsWithGeneralDelimiterCharacter(const std::string& iri);
 
     bool isList(const json& j);
 
