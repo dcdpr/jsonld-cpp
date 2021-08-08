@@ -141,6 +141,7 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
     for (auto context : myContext) {
         // 5.1)
         if (context.is_null()) {
+            // 5.1.1)
             if (!overrideProtected) {
                 // search for any term definitions that have a protected term
                 for (auto term : termDefinitions) {
@@ -149,6 +150,7 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
                         throw JsonLdError(JsonLdError::InvalidContextNullification);
                 }
             }
+            // 5.1.2)
             Context c(options);
             c.baseIRI = originalBaseURL;
             c.originalBaseURL = originalBaseURL;
@@ -156,6 +158,7 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
                 // c.previousContext = &result;
                 throw JsonLdError(JsonLdError::NotImplemented, "need to copy result to previous context...");
             result = c;
+            // 5.1.3)
             continue;
         }
             // 5.2)
@@ -1271,5 +1274,21 @@ Context::Context(JsonLdOptions ioptions)
 
 bool Context::isProcessingMode(const std::string &mode) {
     return options.getProcessingMode() == mode;
+}
+
+const std::string &Context::getBaseIri() const {
+    return baseIRI;
+}
+
+void Context::setBaseIri(const std::string &baseIri) {
+    baseIRI = baseIri;
+}
+
+const std::string &Context::getOriginalBaseUrl() const {
+    return originalBaseURL;
+}
+
+void Context::setOriginalBaseUrl(const std::string &originalBaseUrl) {
+    originalBaseURL = originalBaseUrl;
 }
 

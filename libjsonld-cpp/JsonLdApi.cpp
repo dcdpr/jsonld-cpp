@@ -17,81 +17,85 @@ JsonLdOptions JsonLdApi::getOptions() const {
     return options;
 }
 
-json JsonLdApi::expand(Context activeCtx, json element) {
-    return expand(std::move(activeCtx), nullptr, std::move(element));
-}
-
-json JsonLdApi::expand(Context activeCtx, std::string * activeProperty, json element) {
+json JsonLdApi::expand(Context activeCtx, std::string * activeProperty, json element, const std::string & baseUrl) {
 
     // Comments in this function are labelled with numbers that correspond to sections
     // from the description of the Expansion algorithm.
-    // See: https://www.w3.org/TR/2014/REC-json-ld-api-20140116/#expansion-algorithm
-
-    // todo: This needs to be upgraded to conform with
-    // https://w3c.github.io/json-ld-api/#expansion-algorithm
+    // See: https://w3c.github.io/json-ld-api/#expansion-algorithm
 
     // todo: remove
-    std::cout << "... 1.0 JsonLdApi::expand()\n";
+    std::cout << "... 1.1 JsonLdApi::expand()\n";
 
     // 1)
     if (element.empty()) {
         return element; // todo: was null...
     }
 
+    // 2)
+    // todo: If active property is @default, initialize the frameExpansion flag to false.
+
+    // 3)
+    // todo: If active property has a term definition in active context with a local context, initialize property-scoped context to that local context.
+
+    // 5)
     if(element.is_array())
-        return expandArrayElement(activeCtx, activeProperty, element);
+        return expandArrayElement(activeCtx, activeProperty, element, baseUrl);
+    // 6)
     else if(element.is_object())
-        return expandObjectElement(activeCtx, activeProperty, element);
+        return expandObjectElement(activeCtx, activeProperty, element, baseUrl);
+    // 4)
     else // scalar
     {
-        // 2.1)
+        // 4.1)
         if (activeProperty == nullptr || *activeProperty == JsonLdConsts::GRAPH) {
-            return json(); // todo: was null
+            return nullptr;
         }
+        // 4.2)
+        // todo: ...
+        // 4.3)
         return activeCtx.expandValue(*activeProperty, element);
     }
 }
 
-json JsonLdApi::expandArrayElement(Context activeCtx, std::string * activeProperty, const json& element) {
+json JsonLdApi::expandArrayElement(Context activeCtx, std::string * activeProperty, const json& element, const std::string & baseUrl) {
 
     // Comments in this function are labelled with numbers that correspond to sections
     // from the description of the Expansion algorithm.
-    // See: https://www.w3.org/TR/2014/REC-json-ld-api-20140116/#expansion-algorithm
-
-    // todo: This needs to be upgraded to conform with
-    // https://w3c.github.io/json-ld-api/#expansion-algorithm
+    // See: https://w3c.github.io/json-ld-api/#expansion-algorithm
 
     // todo: remove
-    std::cout << "... 1.0 JsonLdApi::expandArrayElement()\n";
+    std::cout << "... 1.1 JsonLdApi::expandArrayElement()\n";
 
-    // 3.1)
+    // 5.1)
     json result = json::array();
-    // 3.2)
+
+    // 5.2)
     for (auto &item : element) {
-        // 3.2.1)
-        json v = expand(activeCtx, activeProperty, item);
-        // 3.2.2)
+        // 5.2.1)
+        json expandedItem = expand(activeCtx, activeProperty, item, baseUrl);
+        // 5.2.2)
         if(activeProperty != nullptr) {
-            if ((*activeProperty == JsonLdConsts::LIST
-                 || activeCtx.getContainer(*activeProperty) == JsonLdConsts::LIST)
-                && (v.is_array() || (v.is_object() && v.contains(JsonLdConsts::LIST)))) {
-                throw JsonLdError(JsonLdError::ListOfLists, "lists of lists are not permitted.");
+            if ((activeCtx.getContainer(*activeProperty) == JsonLdConsts::LIST) // todo: includes LIST?
+                && (expandedItem.is_array())) {
+                json tmp;
+                tmp[JsonLdConsts::LIST] = expandedItem;
+                expandedItem = tmp;
             }
         }
-        // 3.2.3)
-        if (!v.is_null()) { // != null
-            if (v.is_array()) {
-                result.insert(result.end(), v.begin(), v.end());
+        // 5.2.3)
+        if (!expandedItem.is_null()) {
+            if (expandedItem.is_array()) {
+                result.insert(result.end(), expandedItem.begin(), expandedItem.end());
             } else {
-                result.push_back(v);
+                result.push_back(expandedItem);
             }
         }
     }
-    // 3.3)
+    // 5.3)
     return result;
 }
 
-json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activeProperty, json element) {
+json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activeProperty, json element, const std::string & baseUrl) {
 
     // Comments in this function are labelled with numbers that correspond to sections
     // from the description of the Expansion algorithm.
@@ -101,7 +105,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
     // https://w3c.github.io/json-ld-api/#expansion-algorithm
 
     // todo: remove
-    std::cout << "... 1.0 JsonLdApi::expandObjectElement()\n";
+    std::cout << "... 1.1 JsonLdApi::expandObjectElement()\n";
 
     // 5)
     if (element.contains(JsonLdConsts::CONTEXT)) {

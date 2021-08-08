@@ -29,22 +29,11 @@ public:
      *            The Active Property
      * @param element
      *            The current element
+     * @param baseUrl
+     *            The base URL of the document
      * @return The expanded JSON-LD object.
      */
-    nlohmann::json expand(Context activeCtx, std::string *activeProperty, nlohmann::json element);
-
-    /**
-     * Expansion Algorithm
-     *
-     * http://json-ld.org/spec/latest/json-ld-api/#expansion-algorithm
-     *
-     * @param activeCtx
-     *            The Active Context
-     * @param element
-     *            The current element
-     * @return The expanded JSON-LD object.
-     */
-    nlohmann::json expand(Context activeCtx, nlohmann::json element);
+    nlohmann::json expand(Context activeCtx, std::string *activeProperty, nlohmann::json element, const std::string & baseUrl);
 
     /**
      * Adds RDF triples for each graph in the current node map to an RDF
@@ -67,9 +56,9 @@ public:
 
 private:
 
-    nlohmann::json expandArrayElement(Context activeCtx, std::string *activeProperty, const nlohmann::json& element);
+    nlohmann::json expandArrayElement(Context activeCtx, std::string *activeProperty, const nlohmann::json& element, const std::string & baseUrl);
 
-    nlohmann::json expandObjectElement(Context activeCtx, std::string *activeProperty, nlohmann::json element);
+    nlohmann::json expandObjectElement(Context activeCtx, std::string *activeProperty, nlohmann::json element, const std::string & baseUrl);
 
     void generateNodeMap(nlohmann::json &element, nlohmann::json &nodeMap);
 

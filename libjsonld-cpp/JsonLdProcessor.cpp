@@ -9,50 +9,67 @@ nlohmann::json JsonLdProcessor::expand(nlohmann::json input, JsonLdOptions opts)
 
     // Comments in this function are labelled with numbers that correspond to sections
     // from the description of the JsonLdProcessor interface.
-    // See: https://www.w3.org/TR/2014/REC-json-ld-api-20140116/#the-jsonldprocessor-interface
-
-    // todo: This needs to be upgraded to conform with
-    // https://w3c.github.io/json-ld-api/#the-jsonldprocessor-interface
+    // See: https://w3c.github.io/json-ld-api/#the-jsonldprocessor-interface
 
     // todo: remove
     std::cout << "... 1.0 JsonLdProcessor::expand2()\n";
 
+    // 1)
+    // todo: set promise?
+
+    // 2)
+    // todo: remoteDocument?
+
     // 3)
-    Context activeCtx(opts);
+    // todo: input is string? already handled in another version of expand
 
     // 4)
-    if (!opts.getExpandContext().empty()) {
-        json exCtx = opts.getExpandContext();
-        if (exCtx.contains(JsonLdConsts::CONTEXT)) {
-            exCtx = exCtx[JsonLdConsts::CONTEXT];
-        }
-        activeCtx = activeCtx.parse(exCtx, opts.getBase());
-    }
+    // todo: document from remote is a string ... that's kind of what this versino already is
 
     // 5)
-    // TODO: add support for getting a context from HTTP when content-type
-    // is set to a jsonld compatible format
+    Context activeCtx(opts);
+    activeCtx.setBaseIri(opts.getBase()); // todo: use documentUrl from remoteDocument if available
+    activeCtx.setOriginalBaseUrl(opts.getBase()); // todo: use documentUrl from remoteDocument if available
 
     // 6)
+    if (!opts.getExpandContext().empty()) {
+        json expandContext = opts.getExpandContext();
+        if (expandContext.contains(JsonLdConsts::CONTEXT)) {
+            expandContext = expandContext[JsonLdConsts::CONTEXT];
+        }
+        activeCtx = activeCtx.parse(expandContext, activeCtx.getOriginalBaseUrl());
+    }
+
+    // 7)
+    // todo: if remotedocument has a contextUrl ...
+
+
+    // 8)
     JsonLdApi api(opts);
-    json expanded = api.expand(activeCtx, input);
+    json expandedOutput = api.expand(
+            activeCtx,
+            nullptr,
+            input,
+            activeCtx.getOriginalBaseUrl()); // todo: use documentUrl from remoteDocument if available
 
-    // final step of Expansion Algorithm
-    if (expanded.is_object() && expanded.contains(JsonLdConsts::GRAPH)
-        && expanded.size() == 1) {
-        expanded = expanded.at(JsonLdConsts::GRAPH);
-    } else if (expanded.is_null()) {
-        expanded = json::array();
+    // 8.1)
+    if (expandedOutput.is_object() && expandedOutput.contains(JsonLdConsts::GRAPH)
+        && expandedOutput.size() == 1) {
+        expandedOutput = expandedOutput.at(JsonLdConsts::GRAPH);
+    }
+    // 8.2)
+    else if (expandedOutput.is_null()) {
+        expandedOutput = json::array();
     }
 
-    // normalize to an array
-    if (!expanded.is_array()) {
+    // 8.3)
+    if (!expandedOutput.is_array()) {
         json tmp = json::array();
-        tmp.push_back(expanded);
-        expanded = tmp;
+        tmp.push_back(expandedOutput);
+        expandedOutput = tmp;
     }
 
-    return expanded;
+    return expandedOutput;
 }
 
 nlohmann::json JsonLdProcessor::expand(const std::string& input, JsonLdOptions opts) {
@@ -183,12 +200,3 @@ std::string JsonLdProcessor::normalize(const std::string& input, const JsonLdOpt
 
 }
 
-nlohmann::json JsonLdProcessor::expand(nlohmann::json input) {
-    JsonLdOptions opts;
-    return expand(std::move(input), opts);
-}
-
-nlohmann::json JsonLdProcessor::expand(std::string input) {
-    JsonLdOptions opts;
-    return expand(std::move(input), opts);
-}

@@ -19,6 +19,16 @@ private:
     nlohmann::json termDefinitions;
     std::string baseIRI;
     std::string originalBaseURL;
+public:
+    const std::string &getBaseIri() const;
+
+    void setBaseIri(const std::string &baseIri);
+
+    const std::string &getOriginalBaseUrl() const;
+
+    void setOriginalBaseUrl(const std::string &originalBaseUrl);
+
+private:
     Context *inverseContext;
     std::string vocabularyMapping;
     std::string defaultLanguage;
