@@ -29,10 +29,21 @@ namespace JsonLdUtils {
     bool isValue(const json& j);
 
     bool isObject(const json& j);
+    bool isEmptyObject(const json& j);
+
+    bool isArray(const json& j);
+    bool isEmptyArray(const json& j);
+    bool isArrayOfStrings(const json& j);
+
+    bool isScalar(const json& j);
+    bool isArrayOfScalars(const json& j);
 
     bool deepContains(const json& values, const json& value);
 
     void mergeValue(json & obj, const std::string& key, const json& value);
+
+    void addValue(json & object, const std::string& key, const json& value, bool asArray);
+
 }
 
 #endif //LIBJSONLD_CPP_JSONLDUTILS_H

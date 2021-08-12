@@ -38,7 +38,7 @@ bool JsonLdUtils::isRelativeIri(const std::string &iri) {
     return !(isKeyword(iri) || isAbsoluteIri(iri));
 }
 
-bool JsonLdUtils::deepCompare(JsonLdUtils::json v1, JsonLdUtils::json v2) {
+bool JsonLdUtils::deepCompare(json v1, json v2) {
     if (v1.is_null()) {
         return v2.is_null();
     } else if (v2.is_null()) {
@@ -80,19 +80,47 @@ bool JsonLdUtils::deepCompare(JsonLdUtils::json v1, JsonLdUtils::json v2) {
     }
 }
 
-bool JsonLdUtils::isList(const JsonLdUtils::json& j) {
+bool JsonLdUtils::isList(const json& j) {
     return j.contains(JsonLdConsts::LIST);
 }
 
-bool JsonLdUtils::isValue(const JsonLdUtils::json& j) {
+bool JsonLdUtils::isValue(const json& j) {
     return j.contains(JsonLdConsts::VALUE);
 }
 
-bool JsonLdUtils::isObject(const JsonLdUtils::json& j) {
+bool JsonLdUtils::isObject(const json& j) {
     return j.is_object();
 }
 
-bool JsonLdUtils::deepContains(const JsonLdUtils::json& values, const JsonLdUtils::json& value) {
+bool JsonLdUtils::isEmptyObject(const json& j) {
+    return j.is_object() && j.empty();
+}
+
+bool JsonLdUtils::isArray(const json& j) {
+    return j.is_array();
+}
+
+bool JsonLdUtils::isEmptyArray(const json& j) {
+    return j.is_array() && j.empty();
+}
+
+bool JsonLdUtils::isArrayOfStrings(const json& j) {
+    if(!j.is_array())
+        return false;
+    return std::all_of(j.cbegin(), j.cend(), [](const json &v){ return v.is_string(); });
+}
+
+bool JsonLdUtils::isScalar(const json& j) {
+    return !j.is_null() && !j.is_array() && !j.is_object();
+}
+
+bool JsonLdUtils::isArrayOfScalars(const json& j) {
+    if(!j.is_array())
+        return false;
+    return std::all_of(j.cbegin(), j.cend(), [](const json &v){ return isScalar(v); });
+}
+
+bool JsonLdUtils::deepContains(const json& values, const json& value) {
     for (const auto& item : values) {
         if (deepCompare(item, value)) {
             return true;
@@ -129,4 +157,63 @@ bool JsonLdUtils::iriEndsWithGeneralDelimiterCharacter(const std::string &iri) {
         return false;
     char c = iri[iri.size()-1];
     return c == ':' || c == '/' || c == '?' || c == '#' || c == '[' || c == ']' || c == '@';
+}
+
+/**
+ * Add a value to an entry in a JSON object using a specified key.
+ *
+ * See: https://w3c.github.io/json-ld-api/#dfn-add-value
+ *
+ * @param object the object to add the value to
+ * @param key the key
+ * @param value the value
+ * @param asArray if true, and value of key in the object doesn't exist or is not an array, set key to a new array containing the value
+ */
+void JsonLdUtils::addValue(json &object, const std::string & key, const json & value, bool asArray) {
+
+    // 1)
+    // If asArray is true and the value of key in object does not exist or is not an array, set it to a new array containing any original value.
+    if(asArray) {
+        if (!object.contains(key))
+            object[key] = json::array();
+        else {
+            json origValue = object[key];
+            if (!isArray(origValue)) {
+                object[key] = json::array({origValue});
+            }
+        }
+    }
+
+    // 2)
+    // If value is an array, then for each element v in value, use addValue() recursively to add v to key in entry.
+    if(isArray(value)) {
+        for(const auto& v: value)
+            addValue(object, key, v, asArray);
+    }
+
+    // 3)
+    // Otherwise:
+    else {
+        // 3.1)
+        // If key is not an entry in object, add value as the value of key in object.
+        if(!object.contains(key))
+            object[key] = value;
+
+        // 3.2)
+        // Otherwise:
+        else {
+            // 3.2.1)
+            // If the value of the key entry in object is not an array, set it to a new array containing the original value.
+            json origValue = object[key];
+            if (!isArray(origValue)) {
+                object[key] = json::array({origValue});
+            }
+
+            // 3.2.2)
+            // Append value to the value of the key entry in object.
+            else {
+                object[key].push_back(value);
+            }
+        }
+    }
 }
