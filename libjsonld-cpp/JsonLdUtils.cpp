@@ -211,9 +211,7 @@ void JsonLdUtils::addValue(json &object, const std::string & key, const json & v
 
             // 3.2.2)
             // Append value to the value of the key entry in object.
-            else {
-                object[key].push_back(value);
-            }
+            object[key].push_back(value);
         }
     }
 }
