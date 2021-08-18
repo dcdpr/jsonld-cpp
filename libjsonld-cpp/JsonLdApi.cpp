@@ -17,7 +17,8 @@ JsonLdOptions JsonLdApi::getOptions() const {
     return options;
 }
 
-json JsonLdApi::expand(Context activeCtx, std::string * activeProperty, json element, const std::string & baseUrl) {
+json JsonLdApi::expand(Context activeCtx, std::string * activeProperty, json element, const std::string & baseUrl,
+                       bool frameExpansion, bool ordered, bool fromMap) {
 
     // Comments in this function are labelled with numbers that correspond to sections
     // from the description of the Expansion algorithm.
@@ -32,17 +33,23 @@ json JsonLdApi::expand(Context activeCtx, std::string * activeProperty, json ele
     }
 
     // 2)
-    // todo: If active property is @default, initialize the frameExpansion flag to false.
+    if (activeProperty != nullptr && *activeProperty == JsonLdConsts::DEFAULT) {
+        frameExpansion = false;
+    }
 
     // 3)
-    // todo: If active property has a term definition in active context with a local context, initialize property-scoped context to that local context.
+    json propertyScopedContext;
+    if(activeProperty != nullptr && !activeCtx.getTermDefinition(*activeProperty).is_null() &&
+       !activeCtx.getTermDefinition(*activeProperty)[JsonLdConsts::LOCALCONTEXT].is_null()) {
+        propertyScopedContext = activeCtx.getTermDefinition(*activeProperty)[JsonLdConsts::LOCALCONTEXT];
+    }
 
     // 5)
     if(element.is_array())
-        return expandArrayElement(activeCtx, activeProperty, element, baseUrl);
+        return expandArrayElement(activeCtx, activeProperty, element, baseUrl, frameExpansion, ordered, fromMap);
     // 6)
     else if(element.is_object())
-        return expandObjectElement(activeCtx, activeProperty, element, baseUrl);
+        return expandObjectElement(activeCtx, activeProperty, element, baseUrl, propertyScopedContext, frameExpansion, ordered, fromMap);
     // 4)
     else // scalar
     {
@@ -57,7 +64,8 @@ json JsonLdApi::expand(Context activeCtx, std::string * activeProperty, json ele
     }
 }
 
-json JsonLdApi::expandArrayElement(Context activeCtx, std::string * activeProperty, const json& element, const std::string & baseUrl) {
+json JsonLdApi::expandArrayElement(Context activeCtx, std::string * activeProperty, const json& element, const std::string & baseUrl,
+                                   bool frameExpansion, bool ordered, bool fromMap) {
 
     // Comments in this function are labelled with numbers that correspond to sections
     // from the description of the Expansion algorithm.
@@ -67,22 +75,34 @@ json JsonLdApi::expandArrayElement(Context activeCtx, std::string * activeProper
     std::cout << "... 1.1 JsonLdApi::expandArrayElement()\n";
 
     // 5.1)
+    // Initialize an empty array, result.
     json result = json::array();
 
     // 5.2)
+    // For each item in element:
     for (auto &item : element) {
         // 5.2.1)
-        json expandedItem = expand(activeCtx, activeProperty, item, baseUrl);
+        // Initialize expanded item to the result of using this algorithm recursively, passing
+        // active context, active property, item as element, base URL, the frameExpansion,
+        // ordered, and from map flags.
+        json expandedItem = expand(activeCtx, activeProperty, item, baseUrl, frameExpansion, ordered, fromMap);
+
         // 5.2.2)
+        // If the container mapping of active property includes @list, and expanded item is
+        // an array, set expanded item to a new map containing the entry @list where the value
+        // is the original expanded item.
         if(activeProperty != nullptr) {
-            if ((activeCtx.getContainer(*activeProperty) == JsonLdConsts::LIST) // todo: includes LIST?
-                && (expandedItem.is_array())) {
-                json tmp;
-                tmp[JsonLdConsts::LIST] = expandedItem;
-                expandedItem = tmp;
-            }
+            auto termDefinition = activeCtx.getTermDefinition(*activeProperty);
+            if(!termDefinition.is_null() &&
+               !termDefinition[JsonLdConsts::CONTAINER].is_null() &&
+               termDefinition[JsonLdConsts::CONTAINER].contains(JsonLdConsts::LIST) &&
+               expandedItem.is_array())
+                expandedItem = json::object({JsonLdConsts::LIST, expandedItem});
         }
+
         // 5.2.3)
+        // If expanded item is an array, append each of its items to result. Otherwise,
+        // if expanded item is not null, append it to result.
         if (!expandedItem.is_null()) {
             if (expandedItem.is_array()) {
                 result.insert(result.end(), expandedItem.begin(), expandedItem.end());
@@ -95,7 +115,8 @@ json JsonLdApi::expandArrayElement(Context activeCtx, std::string * activeProper
     return result;
 }
 
-json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activeProperty, json element, const std::string & baseUrl) {
+json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activeProperty, json element, const std::string & baseUrl,
+                                    nlohmann::json propertyScopedContext, bool frameExpansion, bool ordered, bool fromMap) {
 
     // Comments in this function are labelled with numbers that correspond to sections
     // from the description of the Expansion algorithm.
@@ -107,47 +128,80 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
     // todo: remove
     std::cout << "... 1.1 JsonLdApi::expandObjectElement()\n";
 
-    // 5)
-    if (element.contains(JsonLdConsts::CONTEXT)) {
-        activeCtx = activeCtx.parse(element[JsonLdConsts::CONTEXT], options.getBase());
-    }
-    // 6)
-    json result = ObjUtils::newMap();
     // 7)
+    if(activeCtx.getPreviousContext() != nullptr && !fromMap) {
+        throw JsonLdError(JsonLdError::NotImplemented, "need to copy active to previous context...");
+    }
+
+    // 8)
+    if(!propertyScopedContext.is_null()) {
+        throw JsonLdError(JsonLdError::NotImplemented, "need to add overrideProtected flag to parse()");
+        // todo: also need to check for term def for activeProperty and then get that term's baseurl
+        activeCtx = activeCtx.parse(propertyScopedContext, baseUrl);
+    }
+
+    // 9)
+    if (element.contains(JsonLdConsts::CONTEXT)) {
+        activeCtx = activeCtx.parse(element[JsonLdConsts::CONTEXT], baseUrl);
+    }
+
+    // 10)
+    Context typeScopedContext = activeCtx;
+
+    // 11), 12)
+    std::string inputType = findInputType(activeCtx, typeScopedContext, element); // only used in 13.4.7.1 and 13.4.16
+
+    json result = ObjUtils::newMap();
+    json nests = ObjUtils::newMap();
+
+    // 13)
     std::vector<std::string> element_keys;
     for (json::iterator it = element.begin(); it != element.end(); ++it) {
         element_keys.push_back(it.key());
     }
-    std::sort(element_keys.begin(), element_keys.end());
+
+    if(ordered)
+        std::sort(element_keys.begin(), element_keys.end());
+
     for (auto & key : element_keys) {
+
         auto element_value = element[key];
-        // 7.1)
+
+        // 13.1)
         if (key == JsonLdConsts::CONTEXT) {
             continue;
         }
-        // 7.2)
+
+        // 13.2)
         std::string expandedProperty = activeCtx.expandIri(key, false, true);
         json expandedValue;
-        // 7.3)
+
+        // 13.3)
         if (
                 // expandedProperty == nullptr ||
                 expandedProperty.empty() ||
                 (expandedProperty.find(':') == std::string::npos && !JsonLdUtils::isKeyword(expandedProperty))) {
             continue;
         }
-        // 7.4)
+
+        // 13.4)
         if (JsonLdUtils::isKeyword(expandedProperty)) {
-            // 7.4.1)
+            // 13.4.1)
             if (activeProperty != nullptr && *activeProperty == JsonLdConsts::REVERSE) {
                 throw JsonLdError(JsonLdError::InvalidReversePropertyMap,
                                       "a keyword cannot be used as a @reverse property");
             }
-            // 7.4.2)
+            // 13.4.2)
             if (result.contains(expandedProperty)) {
-                throw JsonLdError(JsonLdError::CollidingKeywords,
+                if (activeCtx.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
+                    throw JsonLdError(JsonLdError::CollidingKeywords,
+                                      expandedProperty + " already exists in result");
+                }
+                if(result.at(expandedProperty) != JsonLdConsts::INCLUDED && result.at(expandedProperty) != JsonLdConsts::TYPE)
+                    throw JsonLdError(JsonLdError::CollidingKeywords,
                                       expandedProperty + " already exists in result");
             }
-            // 7.4.3)
+            // 13.4.3)
             if (expandedProperty == JsonLdConsts::ID) {
                 if (element_value.is_string()) {
                     expandedValue = activeCtx.expandIri(element_value.get<std::string>(), true, false);
@@ -160,7 +214,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                         expandedValue = element_value;
                     } else if (element_value.is_array()) {
                         for ( const auto& v : element_value) {
-                            if (!(v.is_string())) {
+                            if (!v.is_string()) {
                                 throw JsonLdError(JsonLdError::InvalidIdValue,
                                                   "@id value must be a string, an array of strings or an empty dictionary");
                             }
@@ -175,11 +229,12 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                                       "value of @id must be a string");
                 }
             }
-                // 7.4.4)
+            // 13.4.4)
             else if (expandedProperty == JsonLdConsts::TYPE) {
+                // 13.4.4.1)
                 if (element_value.is_array()) {
                     for ( const auto& v : element_value) {
-                        if (!(v.is_string())) {
+                        if (!v.is_string()) {
                             throw JsonLdError(JsonLdError::InvalidTypeValue,
                                               "@type value must be a string or array of strings");
                         }
@@ -189,385 +244,725 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                 } else if (element_value.is_string()) {
                     expandedValue = activeCtx.expandIri(element_value.get<std::string>(), true, true);
                 }
-                // TODO: SPEC: no mention of empty map check
                 else if (options.getFrameExpansion() && element_value.is_object()) {
                     if (!element_value.empty()) {
                         throw JsonLdError(JsonLdError::InvalidTypeValue,
                                           "@type value must be a an empty object for framing");
                     }
-                    expandedValue = element_value;
                 } else {
                     throw JsonLdError(JsonLdError::InvalidTypeValue,
                                           "@type value must be a string or array of strings");
                 }
+
+                // 13.4.4.2)
+                if(element_value.is_object())
+                    expandedValue = element_value;
+                // 13.4.4.3)
+                else if(ObjUtils::isDefaultObject(element_value)) {
+                    expandedValue = ObjUtils::newMap();
+                    expandedValue[JsonLdConsts::DEFAULT] =
+                            typeScopedContext.expandIri(element_value.at(JsonLdConsts::DEFAULT), true, true);
+                }
+                // 13.4.4.4)
+                else {
+
+                    if(element_value.is_string()) {
+                        expandedValue =
+                                typeScopedContext.expandIri(element_value, true, true);
+                    }
+                    else if(element_value.is_array()) {
+                        expandedValue = json::array();
+                        for(const auto& v : element_value) {
+                            expandedValue.push_back(typeScopedContext.expandIri(v, true, true));
+                        }
+                    }
+
+                }
+                // 13.4.4.5)
+                if (result.contains(JsonLdConsts::TYPE)) {
+
+                    json t = json::array();
+                    auto typeValue = result.at(JsonLdConsts::TYPE);
+
+                    if (typeValue.is_array()) {
+                        t.insert(t.end(), typeValue.begin(), typeValue.end());
+                    } else {
+                        t.push_back(typeValue);
+                    }
+                    if (expandedValue.is_array()) {
+                        t.insert(t.end(), expandedValue.begin(), expandedValue.end());
+                    } else {
+                        t.push_back(expandedValue);
+                    }
+                    expandedValue = t;
+                }
             }
-                // 7.4.5)
+            // 13.4.5)
             else if (expandedProperty == JsonLdConsts::GRAPH) {
                 std::string currentProperty = JsonLdConsts::GRAPH;
-                expandedValue = expand(activeCtx, &currentProperty, element_value);
-            }
-                // 7.4.6)
-            else if (expandedProperty == JsonLdConsts::VALUE) {
-                if (!element_value.is_null() && (element_value.is_object() || element_value.is_array())) {
-                    throw JsonLdError(JsonLdError::InvalidValueObjectValue,
-                                          "value of " + expandedProperty + " must be a scalar or null");
+                expandedValue = expand(activeCtx, &currentProperty, element_value, baseUrl, frameExpansion, ordered, fromMap);
+                if(!expandedValue.is_array()) {
+                    expandedValue = json::array({expandedValue});
                 }
-                expandedValue = element_value;
+            }
+            // 13.4.6)
+            else if (expandedProperty == JsonLdConsts::INCLUDED) {
+                // 13.4.6.1)
+                if (activeCtx.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
+                    continue;
+                }
+                // 13.4.6.2)
+                expandedValue = expand(activeCtx, nullptr, element_value, baseUrl, frameExpansion, ordered, fromMap);
+                if(!expandedValue.is_array()) {
+                    expandedValue = json::array({expandedValue});
+                }
+                // 13.4.6.3)
+                for(const auto& v : expandedValue) {
+                    if(!ObjUtils::isNodeObject(v))
+                        throw JsonLdError(JsonLdError::InvalidIncludedValue);
+                }
+                // 13.4.6.4)
+                if (result.contains(JsonLdConsts::INCLUDED)) {
+
+                    json t = json::array();
+                    auto includedValue = result.at(JsonLdConsts::INCLUDED);
+
+                    if (includedValue.is_array()) {
+                        t.insert(t.end(), includedValue.begin(), includedValue.end());
+                    } else {
+                        t.push_back(includedValue);
+                    }
+                    if (expandedValue.is_array()) {
+                        t.insert(t.end(), expandedValue.begin(), expandedValue.end());
+                    } else {
+                        t.push_back(expandedValue);
+                    }
+                    expandedValue = t;
+                }
+            }
+            // 13.4.7)
+            else if (expandedProperty == JsonLdConsts::VALUE) {
+                // 13.4.7.1)
+                if(inputType == JsonLdConsts::JSON) {
+                    if (activeCtx.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
+                        throw JsonLdError(JsonLdError::InvalidValueObjectValue);
+                    }
+                    expandedValue = element_value;
+                }
+                // 13.4.7.2)
+                else if(element_value.is_null() || JsonLdUtils::isScalar(element_value) ||
+                        (frameExpansion && (JsonLdUtils::isEmptyObject(element_value) || JsonLdUtils::isArrayOfScalars(element_value)))) {
+                    // 13.4.7.3)
+                    expandedValue = element_value;
+                    if(frameExpansion) {
+                        if(!expandedValue.is_array())
+                            expandedValue = json::array({expandedValue});
+                    }
+                }
+                else {
+                    throw JsonLdError(JsonLdError::InvalidValueObjectValue);
+                }
+                // 13.4.7.4)
                 if (expandedValue.is_null()) {
-                    result[JsonLdConsts::VALUE] = expandedValue; // was null
+                    result[JsonLdConsts::VALUE] = nullptr;
                     continue;
                 }
             }
-                // 7.4.7)
+            // 13.4.8)
             else if (expandedProperty == JsonLdConsts::LANGUAGE) {
-                if (!(element_value.is_string())) {
-                    throw JsonLdError(JsonLdError::InvalidLanguageTaggedString,
-                                          "Value of " + expandedProperty + " must be a string");
+                // 13.4.8.1)
+                if (element_value.is_string() ||
+                (frameExpansion && (JsonLdUtils::isEmptyObject(element_value) ||
+                JsonLdUtils::isEmptyArray(element_value) ||
+                JsonLdUtils::isArrayOfStrings(element_value)))) {
+                    // 13.4.8.2)
+                    std::string v = element_value.get<std::string>();
+                    // todo: add warning about non-well-formed language strings
+                    std::transform(v.begin(), v.end(), v.begin(), &::tolower);
+                    expandedValue = v;
+                } else {
+                    throw JsonLdError(JsonLdError::InvalidLanguageTaggedString);
                 }
-                std::string v = element_value.get<std::string>();
-                std::transform(v.begin(), v.end(), v.begin(), &::tolower);
-                expandedValue = v;
             }
-                // 7.4.8)
+            // 13.4.9)
+            else if (expandedProperty == JsonLdConsts::DIRECTION) {
+                // 13.4.9.1)
+                if (activeCtx.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
+                    continue;
+                }
+                // 13.4.9.2)
+                if ((element_value.is_string() && (element_value == "ltr" || element_value == "rtl")) ||
+                    (frameExpansion && (JsonLdUtils::isEmptyObject(element_value) ||
+                                        JsonLdUtils::isEmptyArray(element_value) ||
+                                        JsonLdUtils::isArrayOfStrings(element_value)))) {
+                    // 13.4.9.3)
+                    expandedValue = element_value;
+                    if(frameExpansion) {
+                        if(!expandedValue.is_array()) {
+                            expandedValue = json::array({expandedValue});
+                        }
+                    }
+                } else {
+                    throw JsonLdError(JsonLdError::InvalidLanguageTaggedString);
+                }
+            }
+            // 13.4.10)
             else if (expandedProperty == JsonLdConsts::INDEX) {
-                if (!(element_value.is_string())) {
+                if (!element_value.is_string()) {
                     throw JsonLdError(JsonLdError::InvalidIndexValue,
                                           "Value of " + expandedProperty + " must be a string");
                 }
                 expandedValue = element_value;
             }
-                // 7.4.9)
+            // 13.4.11)
             else if (expandedProperty == JsonLdConsts::LIST) {
-                // 7.4.9.1)
+                // 13.4.11.1)
                 if (activeProperty == nullptr || *activeProperty == JsonLdConsts::GRAPH) {
                     continue;
                 }
-                // 7.4.9.2)
-                expandedValue = expand(activeCtx, activeProperty, element_value);
-
-                // NOTE: step not in the spec yet
-                if (!(expandedValue.is_array())) {
-                    json j;
-                    j.push_back(expandedValue);
-                    expandedValue = j;
-                }
-
-                // 7.4.9.3)
-                for ( const auto& v : expandedValue) {
-                    if (v.is_object() && v.contains(JsonLdConsts::LIST)) {
-                        throw JsonLdError(JsonLdError::ListOfLists,
-                                              "A list may not contain another list");
-                    }
+                // 13.4.11.2)
+                expandedValue = expand(activeCtx, activeProperty, element_value, baseUrl, frameExpansion, ordered);
+                if (!expandedValue.is_array()) {
+                    expandedValue = json::array({expandedValue});
                 }
             }
-                // 7.4.10)
+            // 13.4.12)
             else if (expandedProperty == JsonLdConsts::SET) {
-                expandedValue = expand(activeCtx, activeProperty, element_value);
+                expandedValue = expand(activeCtx, activeProperty, element_value, baseUrl, frameExpansion, ordered);
             }
-                // 7.4.11)
+            // 13.4.13)
             else if (expandedProperty == JsonLdConsts::REVERSE) {
-                if (!(element_value.is_object())) {
+                // 13.4.13.1)
+                if (!element_value.is_object()) {
                     throw JsonLdError(JsonLdError::InvalidReverseValue,
                                           "@reverse value must be an object");
                 }
-                // 7.4.11.1)
+                // 13.4.13.2)
                 {
                     std::string currentProperty = JsonLdConsts::REVERSE;
-                    expandedValue = expand(activeCtx, &currentProperty, element_value);
+                    expandedValue = expand(activeCtx, &currentProperty, element_value, baseUrl, frameExpansion, ordered);
                 }
-                // NOTE: algorithm assumes the result is a map
-                // 7.4.11.2)
+                // 13.4.13.3)
                 if (expandedValue.contains(JsonLdConsts::REVERSE)) {
-                    auto reverse = expandedValue[JsonLdConsts::REVERSE];
-                    std::vector<std::string> reverse_keys;
-                    for (json::iterator it = reverse.begin(); it != reverse.end(); ++it) {
-                        reverse_keys.push_back(it.key());
-                    }
-                    for (const auto &property : reverse_keys) {
-                        auto item = reverse[property];
-                        // 7.4.11.2.1)
-                        if (!result.contains(property)) {
-                            result[property] = json::array();
-                        }
-                        // 7.4.11.2.2)
-                        if (item.is_array()) {
-                            result[property].insert(result[property].end(), item.begin(), item.end());
-                        } else {
-                            result[property] += item;
-                        }
+                    // 13.4.13.3.1)
+                    for (const auto& entry : expandedValue[JsonLdConsts::REVERSE].items()) {
+                        JsonLdUtils::addValue(result, entry.key(), entry.value(), true);
                     }
                 }
-                // 7.4.11.3)
+                // 13.4.13.4)
                 if (expandedValue.size() > (expandedValue.contains(JsonLdConsts::REVERSE) ? 1 : 0)) {
-                    // 7.4.11.3.1)
+                    // 13.4.13.4.1)
                     if (!result.contains(JsonLdConsts::REVERSE)) {
                         result[JsonLdConsts::REVERSE] = json::object();
                     }
-                    // 7.4.11.3.2)
                     auto & reverseMap = result[JsonLdConsts::REVERSE];
-                    // 7.4.11.3.3)
-                    std::vector<std::string> expandedValue_keys;
-                    for (json::iterator it = expandedValue.begin(); it != expandedValue.end(); ++it) {
-                        expandedValue_keys.push_back(it.key());
-                    }
-                    for ( const auto& property : expandedValue_keys) {
-                        if (property == JsonLdConsts::REVERSE) {
+
+                    // 13.4.13.4.2)
+                    for (const auto& entry : expandedValue.items())
+                    {
+                        if(entry.key() == JsonLdConsts::REVERSE)
                             continue;
-                        }
-                        // 7.4.11.3.3.1)
-                        auto items = expandedValue[property];
-                        for ( const auto& item : items) {
-                            // 7.4.11.3.3.1.1)
-                            if (item.is_object() && (item.contains(JsonLdConsts::VALUE)
-                                || item.contains(JsonLdConsts::LIST))) {
+
+                        // 13.4.13.4.2.1)
+                        for(const auto& item : entry.value()) {
+                            // 13.4.13.4.2.1.1)
+                            // If item is a value object or list object, an invalid reverse property
+                            // value has been detected and processing is aborted.
+                            if(JsonLdUtils::isValueObject(item) || JsonLdUtils::isListObject(item))
                                 throw JsonLdError(JsonLdError::InvalidReversePropertyValue);
-                            }
-                            // 7.4.11.3.3.1.2)
-                            if (!reverseMap.contains(property)) {
-                                reverseMap[property] = json::array();
-                            }
-                            // 7.4.11.3.3.1.3)
-                            reverseMap[property] += item;
+
+                            // 13.4.13.4.2.1.2)
+                            // Use add value to add item to the property entry in reverse map using
+                            // true for as array.
+                            JsonLdUtils::addValue(reverseMap, entry.key(), item, true);
                         }
                     }
                 }
-                // 7.4.11.4)
+                // 13.4.13.5)
                 continue;
             }
-                // TODO: SPEC no mention of @explicit etc in spec
-            else if (options.getFrameExpansion() && (expandedProperty == JsonLdConsts::EXPLICIT
-                                        || expandedProperty == JsonLdConsts::DEFAULT
-                                        || expandedProperty == JsonLdConsts::EMBED
-                                        || expandedProperty == JsonLdConsts::REQUIRE_ALL
-                                        || expandedProperty == JsonLdConsts::EMBED_CHILDREN
-                                        || expandedProperty == JsonLdConsts::OMIT_DEFAULT)) {
-                expandedValue = expand(activeCtx, &expandedProperty, element_value);
+
+            // 13.4.14)
+            if (expandedProperty == JsonLdConsts::NEST) {
+                if (!nests.contains(key)) {
+                    nests[key] = json::array();
+                }
+                continue;
             }
-            // 7.4.12)
-            if (!expandedValue.is_null()) {
+
+            // 13.4.15)
+            if (frameExpansion &&
+                (expandedProperty == JsonLdConsts::DEFAULT ||
+                expandedProperty == JsonLdConsts::EMBED ||
+                expandedProperty == JsonLdConsts::EXPLICIT ||
+                expandedProperty == JsonLdConsts::REQUIRE_ALL ||
+                expandedProperty == JsonLdConsts::OMIT_DEFAULT)) {
+                expandedValue = expand(activeCtx, &expandedProperty, element_value, baseUrl, frameExpansion, ordered);
+            }
+
+            // 13.4.16)
+            if (!expandedValue.is_null() ||
+                (expandedProperty == JsonLdConsts::VALUE && inputType != JsonLdConsts::JSON)) {
                 result[expandedProperty] = expandedValue;
             }
-            // 7.4.13)
+
+            // 13.4.17
             continue;
         }
-            // 7.5
-        else if (activeCtx.getContainer(key) == JsonLdConsts::LANGUAGE && element_value.is_object()) {
-            // 7.5.1)
-            // 7.5.2)
-            for(auto& el : element_value.items()) {
-                std::string language = el.key();
-                json languageValue = el.value();
 
-                // 7.5.2.1)
-                if (!(languageValue.is_array())) {
-                    json j;
-                    j.push_back(languageValue);
-                    languageValue = j;
+        // 13.5)
+        auto keyTermDefinition = activeCtx.getTermDefinition(key);
+
+        json containerMapping;
+        if(keyTermDefinition.contains(JsonLdConsts::CONTAINER)) {
+            containerMapping = keyTermDefinition[JsonLdConsts::CONTAINER];
+        }
+
+        // 13.6)
+        if(keyTermDefinition.contains(JsonLdConsts::TYPE) &&
+           keyTermDefinition.at(JsonLdConsts::TYPE) == JsonLdConsts::JSON) {
+            expandedValue = ObjUtils::newMap();
+            expandedValue[JsonLdConsts::VALUE] = element_value;
+            expandedValue[JsonLdConsts::TYPE] = JsonLdConsts::JSON;
+        }
+        // 13.7)
+        else if (containerMapping.contains(JsonLdConsts::LANGUAGE) && element_value.is_object()) {
+            // 13.7.1)
+            expandedValue = json::array();
+            // 13.7.2)
+            std::string direction = activeCtx.getDefaultBaseDirection();
+            // 13.7.3)
+            if(keyTermDefinition.contains(JsonLdConsts::DIRECTION))
+                direction = keyTermDefinition.at(JsonLdConsts::DIRECTION);
+
+            // 13.7.4)
+            std::vector<std::string> value_keys;
+            for (json::iterator it = element_value.begin(); it != element_value.end(); ++it) {
+                value_keys.push_back(it.key());
+            }
+            if(ordered)
+                std::sort(value_keys.begin(), value_keys.end());
+
+            for(auto& language : value_keys) {
+                json languageValue = element_value[language];
+
+                // 13.7.4.1)
+                if (!languageValue.is_array()) {
+                    languageValue = json::array({languageValue});
                 }
-                // 7.5.2.2)
+
+                // 13.7.4.2)
                 for ( const auto& item : languageValue) {
-                    // 7.5.2.2.1)
-                    if (!(item.is_string())) {
+                    // 13.7.4.2.1)
+                    if(item.is_null())
+                        continue;
+                    // 13.7.4.2.2)
+                    if (!item.is_string()) {
                         std::stringstream ss;
                         ss << "Expected: " << item << " to be a string";
                         throw JsonLdError(JsonLdError::InvalidLanguageMapValue, ss.str());
                     }
-                    // 7.5.2.2.2)
+                    // 13.7.4.2.3)
                     json tmp = ObjUtils::newMap();
                     tmp[JsonLdConsts::VALUE] = item;
-                    std::transform(language.begin(), language.end(), language.begin(), &::tolower);
                     tmp[JsonLdConsts::LANGUAGE] = language;
+
+                    // 13.7.4.2.4)
+                    std::transform(language.begin(), language.end(), language.begin(), &::tolower);
+                    if(language != JsonLdConsts::NONE) {
+                        auto expandedLanguage  = activeCtx.expandIri(language, false, true);
+                        if(expandedLanguage != JsonLdConsts::NONE) {
+                            tmp[JsonLdConsts::LANGUAGE] = language;
+                            // todo: need to warn about non-well formed language values
+                        }
+                    }
+
+                    // 13.7.4.2.5)
+                    if(!direction.empty())
+                        tmp[JsonLdConsts::DIRECTION] = direction;
+
+                    // 13.7.4.2.6)
                     expandedValue.push_back(tmp);
                 }
             }
         }
-        // 7.6)
-        else if (activeCtx.getContainer(key) == JsonLdConsts::INDEX
-                 && element_value.is_object()) {
-            // 7.6.1)
-            // 7.6.2)
+        // 13.8)
+        else if (element_value.is_object() &&
+                 (containerMapping.contains(JsonLdConsts::INDEX) ||
+                  containerMapping.contains(JsonLdConsts::TYPE) ||
+                  containerMapping.contains(JsonLdConsts::ID))) {
+
+            // 13.8.1)
+            expandedValue = json::array();
+
+            // 13.8.2)
+            std::string indexKey = JsonLdConsts::INDEX;
+            if(keyTermDefinition.contains(JsonLdConsts::INDEX))
+                indexKey = keyTermDefinition.at(JsonLdConsts::INDEX).get<std::string>();
+
+            // 13.8.3)
             std::vector<std::string> indexKeys;
             for(auto& el : element_value.items()) {
                 indexKeys.push_back(el.key());
             }
-            std::sort(indexKeys.begin(), indexKeys.end());
+            if(ordered)
+                std::sort(indexKeys.begin(), indexKeys.end());
+
             for ( const auto& index : indexKeys) {
                 json indexValue = element_value[index];
-                // 7.6.2.1)
-                if (!(indexValue.is_array())) {
-                    json j;
-                    j.push_back(indexValue);
-                    indexValue = j;
+
+                // 13.8.3.1)
+                Context mapContext = activeCtx;
+                if(containerMapping.contains(JsonLdConsts::TYPE) ||
+                   containerMapping.contains(JsonLdConsts::ID)) {
+                    mapContext = *activeCtx.getPreviousContext();
                 }
-                // 7.6.2.2)
-                indexValue = expand(activeCtx, &key, indexValue);
-                // 7.6.2.3)
+
+                // 13.8.3.2)
+                if(containerMapping.contains(JsonLdConsts::TYPE)) {
+                    auto indexTermDefinition = mapContext.getTermDefinition(index);
+                    if(indexTermDefinition.contains(JsonLdConsts::LOCALCONTEXT)) {
+                        mapContext = mapContext.parse(
+                                indexTermDefinition.at(JsonLdConsts::LOCALCONTEXT),
+                                indexTermDefinition.at(JsonLdConsts::BASEURL));
+                    }
+                }
+                // 13.8.3.3)
+                else
+                    mapContext = activeCtx;
+
+                // 13.8.3.4)
+                auto expandedIndex = activeCtx.expandIri(index, false, true);
+
+                // 13.8.3.5)
+                if (!indexValue.is_array()) {
+                    indexValue = json::array({indexValue});
+                }
+
+                // 13.8.3.6)
+                indexValue = expand(activeCtx, &key, indexValue, baseUrl, frameExpansion, ordered, true);
+
+                // 13.8.3.7)
                 for ( auto item : indexValue) {
-                    // 7.6.2.3.1)
-                    if (!item.contains(JsonLdConsts::INDEX)) {
+
+                    // 13.8.3.7.1)
+                    // If container mapping includes @graph, and item is not a graph object, set
+                    // item to a new map containing the key-value pair @graph-item, ensuring that
+                    // the value is represented using an array.
+                    if(containerMapping.contains(JsonLdConsts::GRAPH) &&
+                            !JsonLdUtils::isGraphObject(item)) {
+                        if(!item.is_array())
+                            item = json::array({item});
+                        item = json::object({JsonLdConsts::GRAPH, item});
+                    }
+
+                    // 13.8.3.7.2)
+                    // If container mapping includes @index, index key is not @index, and expanded
+                    // index is not @none:
+                    if(containerMapping.contains(JsonLdConsts::GRAPH) &&
+                       indexKey != JsonLdConsts::INDEX &&
+                       expandedIndex != JsonLdConsts::NONE) {
+
+                        // 13.8.3.7.2.1)
+                        // Initialize re-expanded index to the result of calling the Value Expansion
+                        // algorithm, passing the active context, index key as active property, and
+                        // index as value.
+                        auto reExpandedIndex = activeCtx.expandValue(indexKey, index);
+
+                        // 13.8.3.7.2.2)
+                        // Initialize expanded index key to the result of IRI expanding index key.
+                        auto expandedIndexKey = activeCtx.expandIri(indexKey, false, true);
+
+                        // 13.8.3.7.2.3)
+                        // Initialize index property values to an array consisting of re-expanded
+                        // index followed by the existing values of the concatenation of expanded
+                        // index key in item, if any.
+                        json indexPropertyValues = json::array({reExpandedIndex, item[expandedIndexKey]});
+
+                        // 13.8.3.7.2.4)
+                        // Add the key-value pair (expanded index key-index property values) to item.
+                        item[expandedIndexKey] = indexPropertyValues;
+
+                        // 13.8.3.7.2.5)
+                        // If item is a value object, it MUST NOT contain any extra properties; an
+                        // invalid value object error has been detected and processing is aborted.
+                        if(JsonLdUtils::isValueObject(item) && item.size() > 1)
+                            throw JsonLdError(JsonLdError::InvalidValueObject);
+                    }
+
+                    // 13.8.3.7.3)
+                    // Otherwise, if container mapping includes @index, item does not have an
+                    // entry @index, and expanded index is not @none, add the key-value pair
+                    // (@index-index) to item.
+                    else if(containerMapping.contains(JsonLdConsts::INDEX) &&
+                            !item.contains(JsonLdConsts::INDEX) &&
+                            expandedIndex != JsonLdConsts::NONE) {
                         item[JsonLdConsts::INDEX] = index;
                     }
-                    // 7.6.2.3.2)
+
+                    // 13.8.3.7.4)
+                    // Otherwise, if container mapping includes @id, item does not have the entry
+                    // @id, and expanded index is not @none, add the key-value pair
+                    // (@id-expanded index) to item, where expanded index is set to the result
+                    // of IRI expandingindex using true for document relative and false for vocab.
+                    else if(containerMapping.contains(JsonLdConsts::ID) &&
+                            !item.contains(JsonLdConsts::ID) &&
+                            expandedIndex != JsonLdConsts::NONE) {
+                        auto expandedIndex2 = activeCtx.expandIri(index, true, false);
+                        item[JsonLdConsts::ID] = expandedIndex2;
+                    }
+
+                    // 13.8.3.7.5)
+                    // Otherwise, if container mapping includes @type and expanded index is
+                    // not @none, initialize types to a new array consisting of expanded index
+                    // followed by any existing values of @type in item. Add the key-value pair
+                    // (@type-types) to item.
+                    else if(containerMapping.contains(JsonLdConsts::TYPE) &&
+                            expandedIndex != JsonLdConsts::NONE) {
+                        auto itemTypes = item[JsonLdConsts::TYPE];
+                        json types = json::array({expandedIndex});
+                        if(!itemTypes.is_null())
+                            types.push_back(itemTypes); // todo: do I need to push each itemType separately?
+                        item[JsonLdConsts::TYPE] = types;
+                    }
+
+                    // 13.8.3.7.6)
+                    // Append item to expanded value.
                     expandedValue.push_back(item);
                 }
             }
         }
-        // 7.7)
+        // 13.9)
+        // Otherwise, initialize expanded value to the result of using this algorithm
+        // recursively, passing active context, key for active property, value for element,
+        // base URL, and the frameExpansion and ordered flags.
         else {
-            expandedValue = expand(activeCtx, &key, element_value);
+            expandedValue = expand(activeCtx, &key, element_value, baseUrl, frameExpansion, ordered, false);
         }
-        // 7.8)
+
+        // 13.10)
+        // If expanded value is null, ignore key by continuing to the next key from element.
         if (expandedValue.is_null()) {
             continue;
         }
-        // 7.9)
-        if (activeCtx.getContainer(key) == JsonLdConsts::LIST) {
-            if (!expandedValue.is_object() || !expandedValue.contains(JsonLdConsts::LIST)) {
-                json tmp = expandedValue;
-                if (!tmp.is_array()) {
-                    json j;
-                    j.push_back(expandedValue);
-                    tmp = j;
-                }
-                expandedValue = ObjUtils::newMap();
-                expandedValue[JsonLdConsts::LIST] = tmp;
-            }
+
+        // 13.11)
+        // If container mapping includes @list and expanded value is not already a list object,
+        // convert expanded value to a list object by first setting it to an array containing only
+        // expanded value if it is not already an array, and then by setting it to a map
+        // containing the key-value pair @list-expanded value.
+        if (containerMapping.contains(JsonLdConsts::LIST) &&
+            !JsonLdUtils::isListObject(expandedValue)) {
+            if(!expandedValue.is_array())
+                expandedValue = json::array({expandedValue});
+            expandedValue = json::object({JsonLdConsts::LIST, expandedValue});
         }
-        // 7.10)
+
+        // 13.12)
+        // If container mapping includes @graph, and includes neither @id nor @index, convert
+        // expanded value into an array, if necessary, then convert each value ev in expanded
+        // value into a graph object:
+        if (containerMapping.contains(JsonLdConsts::GRAPH) &&
+            !containerMapping.contains(JsonLdConsts::ID) &&
+            !containerMapping.contains(JsonLdConsts::INDEX)) {
+
+            if(!expandedValue.is_array())
+                expandedValue = json::array({expandedValue});
+
+            json t = json::array();
+
+            // 13.12.1)
+            // Convert ev into a graph object by creating a map containing the key-value
+            // pair @graph-ev where ev is represented as an array.
+            for(const auto& ev : expandedValue) {
+                if(!ev.is_array())
+                    t.push_back(json::object({JsonLdConsts::GRAPH, json::array({ev})}));
+                else
+                    t.push_back(json::object({JsonLdConsts::GRAPH, ev}));
+            }
+
+            expandedValue = t;
+        }
+
+
+
+        // 13.13)
+        // If the term definition associated to key indicates that it is a reverse property
         if (activeCtx.isReverseProperty(key)) {
-            // 7.10.1)
+            // 13.13.1)
+            // If result has no @reverse entry, create one and initialize its value to an empty map.
             if (!result.contains(JsonLdConsts::REVERSE)) {
                 result[JsonLdConsts::REVERSE] = ObjUtils::newMap();
             }
-            // 7.10.2)
+
+            // 13.13.2)
+            // Reference the value of the @reverse entry in result using the variable reverse map.
              auto & reverseMap = result[JsonLdConsts::REVERSE];
-            // 7.10.3)
-            if (!(expandedValue.is_array())) {
-                json j;
-                j.push_back(expandedValue);
-                expandedValue = j;
-            }
-            // 7.10.4)
+
+            // 13.13.3)
+            // If expanded value is not an array, set it to an array containing expanded value.
+            if (!expandedValue.is_array())
+                expandedValue = json::array({expandedValue});
+
+            // 13.13.4)
+            // For each item in expanded value
             for ( auto item : expandedValue) {
-                // 7.10.4.1)
-                if (item.is_object() && (item.contains(JsonLdConsts::VALUE) || item.contains(JsonLdConsts::LIST))) {
+                // 13.13.4.1)
+                // If item is a value object or list object, an invalid reverse property value
+                // has been detected and processing is aborted.
+                if (JsonLdUtils::isValueObject(item) || JsonLdUtils::isListObject(item)) {
                     throw JsonLdError(JsonLdError::InvalidReversePropertyValue);
                 }
-                // 7.10.4.2)
+                // 13.13.4.2)
+                // If reverse map has no expanded property entry, create one and initialize
+                // its value to an empty array.
                 if (!reverseMap.contains(expandedProperty)) {
                     reverseMap[expandedProperty] = json::array();
                 }
-                // 7.10.4.3)
-                if (item.is_array()) {
-                    reverseMap[expandedProperty].insert(reverseMap[expandedProperty].end(), item.begin(), item.end());
-                } else {
-                    reverseMap[expandedProperty] += item;
-                }
+                // 13.13.4.3)
+                // Use add value to add item to the expanded property entry in reverse map
+                // using true for as array.
+                JsonLdUtils::addValue(reverseMap, expandedProperty, item, true);
             }
         }
-            // 7.11)
+        // 13.14)
+        // Otherwise, key is not a reverse property use add value to add expanded value to
+        // the expanded property entry in result using true for as array.
         else {
-            // 7.11.1)
-            if (!result.contains(expandedProperty)) {
-                result[expandedProperty] = json::array();
-            }
-            // 7.11.2)
-            if (expandedValue.is_array()) {
-                result[expandedProperty].insert(result[expandedProperty].end(), expandedValue.begin(), expandedValue.end());
-            } else {
-                result[expandedProperty].push_back(expandedValue);
-            }
+            JsonLdUtils::addValue(result, expandedProperty, expandedValue, true);
         }
     }
-    // 8)
+
+    // 14)
+    // For each key nesting-key in nests, ordered lexicographically if ordered is true:
+    std::vector<std::string> nestKeys;
+    for(auto& el : nests.items()) {
+        nestKeys.push_back(el.key());
+    }
+    if(ordered)
+        std::sort(nestKeys.begin(), nestKeys.end());
+
+    for ( const auto& nestingKey : nestKeys) {
+
+        throw JsonLdError(JsonLdError::NotImplemented, "need to add implement @nest handling");
+
+        // 14.1)
+        // Initialize nested values to the value of nesting-key in element, ensuring
+        // that it is an array.
+        auto nestedValues = element[nestingKey];
+        if(!nestedValues.is_array())
+            nestedValues = json::array({nestedValues});
+
+        // 14.2)
+        // For each nested value in nested values:
+        for(auto nestedValue : nestedValues) {
+
+            // 14.2.1)
+            // If nested value is not a map, or any key within nested value expands to
+            // @value, an invalid @nest value error has been detected and processing is aborted.
+
+            // 14.2.2)
+            // Recursively repeat steps 3, 8, 13, and 14 using nesting-key for active
+            // property, and nested value for element.
+
+            // todo: ...
+        }
+    }
+
+    // 15)
+    // If result contains the entry @value:
     if (result.contains(JsonLdConsts::VALUE)) {
-        // 8.1)
-        // TODO: is this method faster than just using contains for each?
-        std::set<std::string> keySet;
-        for(auto& el : result.items()) {
-            keySet.insert(el.key());
+
+        // 15.1)
+        // The result must not contain any entries other than @direction, @index, @language,
+        // @type, and @value. It must not contain an @type entry if it contains either
+        // @language or @direction entries. Otherwise, an invalid value object error has
+        // been detected and processing is aborted.
+        std::set<std::string> validKeywords {
+                JsonLdConsts::DIRECTION,JsonLdConsts::INDEX,JsonLdConsts::LANGUAGE,
+                JsonLdConsts::TYPE,JsonLdConsts::VALUE
+        };
+        for (auto& el : result.items()) {
+            if(validKeywords.find(el.key()) == validKeywords.end())
+                throw JsonLdError(JsonLdError::InvalidValueObject,el.key() + " not in list of valid keywords");
         }
-        keySet.erase(JsonLdConsts::VALUE);
-        keySet.erase(JsonLdConsts::INDEX);
-         bool langRemoved = keySet.erase(JsonLdConsts::LANGUAGE) > 0;
-         bool typeRemoved = keySet.erase(JsonLdConsts::TYPE) > 0;
-        if ((langRemoved && typeRemoved) || !keySet.empty()) {
-            throw JsonLdError(JsonLdError::InvalidValueObject,
-                                  "value object has unknown keys");
-        }
-        // 8.2)
-        json rval = result[JsonLdConsts::VALUE];
-        if (rval.is_null()) {
-            // nothing else is possible with result if we set it to
-            // null, so simply return it
-            return rval;
-        }
-        // 8.3)
-        if (!rval.is_string() && result.contains(JsonLdConsts::LANGUAGE)) {
-            throw JsonLdError(JsonLdError::InvalidLanguageTaggedValue,
-                                  "when @language is used, @value must be a string");
-        }
-        // 8.4)
-        else if (result.contains(JsonLdConsts::TYPE)) {
-            // TODO: is this enough for "is an IRI"
-            json j = result[JsonLdConsts::TYPE];
-            if (!j.is_string()) {
-                throw JsonLdError(JsonLdError::InvalidTypedValue,
-                                  "value of @type must be an IRI");
-            }
-            std::string jStr = j.get<std::string>();
-            if(jStr.find("_:") == 0 || jStr.find(':') == std::string::npos) {
-                throw JsonLdError(JsonLdError::InvalidTypedValue,
-                                      "value of @type must be an IRI");
-            }
+
+        // 15.2)
+        // If the result's @type entry is @json, then the @value entry may contain any
+        // value, and is treated as a JSON literal.
+        if(result.contains(JsonLdConsts::TYPE) && result[JsonLdConsts::TYPE] != JsonLdConsts::JSON) {
+            // 15.3)
+            // Otherwise, if the value of result's @value entry is null, or an empty
+            // array, return null.
+            if(result[JsonLdConsts::VALUE].is_null() || (result[JsonLdConsts::VALUE].is_array() && result[JsonLdConsts::VALUE].empty()))
+                return json();
+
+            // 15.4)
+            // Otherwise, if the value of result's @value entry is not a string and result
+            // contains the entry @language, an invalid language-tagged value error has been
+            // detected (only strings can be language-tagged) and processing is aborted.
+            else if(!result[JsonLdConsts::VALUE].is_string() && result.contains(JsonLdConsts::LANGUAGE))
+                throw JsonLdError(JsonLdError::InvalidLanguageTaggedValue);
+
+            // 15.5)
+            // Otherwise, if the result has an @type entry and its value is not an IRI, an
+            // invalid typed value error has been detected and processing is aborted.
+            else if (result.contains(JsonLdConsts::TYPE) && !JsonLdUtils::isAbsoluteIri(result[JsonLdConsts::TYPE]))
+                throw JsonLdError(JsonLdError::InvalidTypeValue);
         }
     }
-        // 9)
+
+    // 16)
+    // Otherwise, if result contains the entry @type and its associated value is not an
+    // array, set it to an array containing only the associated value.
     else if (result.contains(JsonLdConsts::TYPE)) {
-         json rtype = result[JsonLdConsts::TYPE];
-        if (!rtype.is_array()) {
-            json j;
-            j.push_back(rtype);
-            result[JsonLdConsts::TYPE] = j;
+        if (!result[JsonLdConsts::TYPE].is_array()) {
+            result[JsonLdConsts::TYPE] = json::array({result[JsonLdConsts::TYPE]});
         }
     }
-        // 10)
+
+    // 17)
+    // Otherwise, if result contains the entry @set or @list:
     else if (result.contains(JsonLdConsts::SET) || result.contains(JsonLdConsts::LIST)) {
-        // 10.1)
-        if (result.size() > (result.contains(JsonLdConsts::INDEX) ? 2 : 1)) {
-            throw JsonLdError(JsonLdError::InvalidSetOrListObject,
-                                  "@set or @list may only contain @index");
-        }
-        // 10.2)
+        // 17.1)
+        // The result must contain at most one other entry which must be @index. Otherwise, an
+        // invalid set or list object error has been detected and processing is aborted.
+        if (result.size() > (result.contains(JsonLdConsts::INDEX) ? 2 : 1))
+            throw JsonLdError(JsonLdError::InvalidSetOrListObject);
+
+        // 17.2)
+        // If result contains the entry @set, then set result to the entry's associated value.
         if (result.contains(JsonLdConsts::SET)) {
-            // result becomes an array here, thus the remaining checks
-            // will never be true from here on
-            // so simply return the value rather than have to make
-            // result an object and cast it with every
-            // other use in the function.
-            return result[JsonLdConsts::SET];
+            result = result[JsonLdConsts::SET];
         }
     }
-    // 11)
-    if (result.contains(JsonLdConsts::LANGUAGE) && result.size() == 1) {
-        json j;
-        result = j;
+
+    // 18)
+    // If result is a map that contains only the entry @language, return null.
+    if (result.is_object() && result.contains(JsonLdConsts::LANGUAGE) && result.size() == 1) {
+        return json();
     }
-    // 12)
+
+    // 19)
+    // If active property is null or @graph, drop free-floating values as follows:
     if (activeProperty == nullptr || *activeProperty == JsonLdConsts::GRAPH) {
-        // 12.1)
+        // 19.1)
+        // If result is a map which is empty, or contains only the entries @value or @list, set result to null.
         json j;
-        if (!result.is_null() &&
+        if (!result.is_null() && result.is_object() &&
             (result.empty() || result.contains(JsonLdConsts::VALUE) || result.contains(JsonLdConsts::LIST))) {
             result = j;
         }
-            // 12.2)
+        // 19.2)
+        // Otherwise, if result is a map whose only entry is @id, set result to null. When the
+        // frameExpansion flag is set, a map containing only the @id entry is retained.
         else if (!result.is_null() && !options.getFrameExpansion() && result.contains(JsonLdConsts::ID)
                  && result.size() == 1) {
             result = j;
         }
     }
-    // 13)
+
+    // 20)
     return result;
 }
 
@@ -869,4 +1264,79 @@ std::string JsonLdApi::normalize(const RDF::RDFDataset& dataset) {
     NormalizeUtils normalizeUtils(quads, bnodes, UniqueNamer("_:c14n"), options);
     return normalizeUtils.hashBlankNodes(bnodes_insertion_order_keys);
 }
+
+std::string JsonLdApi::findInputType(Context &activeContext, Context &typeScopedContext, nlohmann::json &element) {
+
+    std::string inputType;
+    std::string typeKey;
+
+    // 11)
+    std::vector<std::string> element_keys;
+    for (json::iterator it = element.begin(); it != element.end(); ++it) {
+        element_keys.push_back(it.key());
+    }
+    std::sort(element_keys.begin(), element_keys.end());
+    for (auto & key : element_keys) {
+
+        std::string expandedKey = activeContext.expandIri(key, false, true);
+
+        if (expandedKey != JsonLdConsts::TYPE)
+            continue;
+        else if (typeKey.empty())
+            typeKey = key;
+
+        // 11.1)
+        auto element_value = element[key];
+
+        if (!element_value.is_array())
+            element_value = json::array({element_value});
+
+        // 11.2)
+        std::vector<std::string> terms;
+        for (const auto &term : element_value) {
+            if (term.is_string())
+                terms.push_back(term.get<std::string>());
+        }
+
+        std::sort(terms.begin(), terms.end());
+
+        for (auto &term : terms) {
+            if (typeScopedContext.getTermDefinition(term).contains(JsonLdConsts::LOCALCONTEXT)) {
+                auto termValue = activeContext.getTermDefinition(term);
+                auto localContext = typeScopedContext.getTermDefinition(term).at(JsonLdConsts::LOCALCONTEXT);
+                std::vector<std::string> remoteContexts;
+                activeContext = activeContext.parse(localContext, termValue.at(JsonLdConsts::BASEURL),
+                                                    remoteContexts, false, false, true);
+            }
+        }
+    }
+
+    // 12)
+    if(!typeKey.empty()) {
+
+        auto t = element.at(typeKey);
+        std::string lastValue;
+
+        if(t.is_string())
+            lastValue = t.get<std::string>();
+        else if(t.is_array()) {
+            std::vector<std::string> values;
+            for(const auto& v : t) {
+                if(v.is_string())
+                    values.push_back(v.get<std::string>());
+            }
+            if(!values.empty()) {
+                std::sort(values.begin(), values.end());
+                lastValue = values.back();
+            }
+        }
+
+        if(!lastValue.empty()) {
+            inputType = activeContext.expandIri(lastValue,false,true);
+        }
+    }
+
+    return inputType;
+}
+
 

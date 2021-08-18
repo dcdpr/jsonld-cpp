@@ -1,7 +1,9 @@
 #include <iostream>
+#include <set>
 #include "JsonLdUtils.h"
 #include "JsonLdConsts.h"
 #include "Uri.h"
+#include "JsonLdError.h"
 
 bool JsonLdUtils::isKeyword(const std::string& property) {
 
@@ -80,12 +82,29 @@ bool JsonLdUtils::deepCompare(json v1, json v2) {
     }
 }
 
-bool JsonLdUtils::isList(const json& j) {
-    return j.contains(JsonLdConsts::LIST);
+bool JsonLdUtils::isListObject(const json& j) {
+    return JsonLdUtils::isObject(j) &&
+           j.contains(JsonLdConsts::LIST) &&
+           (j.size() == 1 || (j.size() == 2 && j.contains(JsonLdConsts::INDEX))
+           );
 }
 
-bool JsonLdUtils::isValue(const json& j) {
-    return j.contains(JsonLdConsts::VALUE);
+bool JsonLdUtils::isGraphObject(const json& j) {
+    if(JsonLdUtils::isObject(j) && j.contains(JsonLdConsts::GRAPH)) {
+        std::set<std::string> validKeywords {
+                JsonLdConsts::GRAPH,JsonLdConsts::ID,JsonLdConsts::INDEX
+        };
+        for (auto& el : j.items()) {
+            if(validKeywords.find(el.key()) == validKeywords.end())
+                return false;
+        }
+        return true;
+    }
+    return false;
+}
+
+bool JsonLdUtils::isValueObject(const json& j) {
+    return JsonLdUtils::isObject(j) && j.contains(JsonLdConsts::VALUE);
 }
 
 bool JsonLdUtils::isObject(const json& j) {

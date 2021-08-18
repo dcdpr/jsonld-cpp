@@ -19,16 +19,7 @@ private:
     nlohmann::json termDefinitions;
     std::string baseIRI;
     std::string originalBaseURL;
-public:
-    const std::string &getBaseIri() const;
 
-    void setBaseIri(const std::string &baseIri);
-
-    const std::string &getOriginalBaseUrl() const;
-
-    void setOriginalBaseUrl(const std::string &originalBaseUrl);
-
-private:
     Context *inverseContext;
     std::string vocabularyMapping;
     std::string defaultLanguage;
@@ -47,7 +38,6 @@ private:
     static void checkEmptyKey(const nlohmann::json& map);
     static void checkEmptyKey(const StringMap& map);
     void createTermDefinition(nlohmann::json context, const std::string& term, std::map<std::string, bool> & defined);
-    nlohmann::json getTermDefinition(const std::string & key);
 
     void init();
 
@@ -70,6 +60,8 @@ public:
                   bool propagate = true,
                   bool validateScopedContext = true);
 
+    nlohmann::json getTermDefinition(const std::string & key);
+
     /**
      * Retrieve container mapping.
      *
@@ -84,6 +76,17 @@ public:
     nlohmann::json expandValue(const std::string & activeProperty, const nlohmann::json& value);
     bool isReverseProperty(const std::string& property);
     bool isProcessingMode(const std::string& mode);
+
+        const std::string &getDefaultBaseDirection() const;
+    Context *getPreviousContext() const;
+
+        const std::string &getBaseIri() const;
+
+    void setBaseIri(const std::string &baseIri);
+
+    const std::string &getOriginalBaseUrl() const;
+
+    void setOriginalBaseUrl(const std::string &originalBaseUrl);
 
 };
 

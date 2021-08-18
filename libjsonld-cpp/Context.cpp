@@ -80,7 +80,7 @@ Context Context::parse(const nlohmann::json & localContext, const std::string & 
  *
  * @param localContext
  *            The Local Context object.
- * @param remoteContexts
+ * @param iremoteContexts
  *            The list of Strings denoting the remote Context URLs.
  * @param parsingARemoteContext
  *            True if localContext represents a remote context that has been
@@ -126,7 +126,7 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
 
     // 3)
     if (!propagate && result.previousContext == nullptr) {
-        // result.previousContext = copy of *this
+        // result.previousContext = copy of *this, but not the Context object, just the jsonvalue ?
         throw JsonLdError(JsonLdError::NotImplemented, "need to copy active to previous context...");
     }
 
@@ -962,7 +962,6 @@ void Context::createTermDefinition(json context, const std::string& term,
         if(container.is_array())
             definition[JsonLdConsts::CONTAINER] = container;
         else {
-            std::cout << "CHECK: container was not an array\n"; // todo remove
             definition[JsonLdConsts::CONTAINER] = json::array();
             definition[JsonLdConsts::CONTAINER].push_back(container);
         }
@@ -1020,18 +1019,19 @@ void Context::createTermDefinition(json context, const std::string& term,
         auto localContext = value.at(JsonLdConsts::CONTEXT);
 
         // 21.3.
-        try {
-            // todo: need to wait on implementing this until after you update the main Context::parse() to store the
-            // remotecontexts collection within Context. Then you can use it to make a local copy here for parsing this
-            // JsonLdConsts::CONTEXT value.
-            throw JsonLdError(JsonLdError::NotImplemented);
-        } catch (JsonLdError &error) {
-            std::string msg = error.what();
-            throw JsonLdError(JsonLdError::InvalidScopedContext,msg);
-        }
+//        try {
+//            // todo: need to wait on implementing this until after you update the main Context::parse() to store the
+//            // remotecontexts collection within Context. Then you can use it to make a local copy here for parsing this
+//            // JsonLdConsts::CONTEXT value.
+//            throw JsonLdError(JsonLdError::NotImplemented);
+//        } catch (JsonLdError &error) {
+//            std::string msg = error.what();
+//            throw JsonLdError(JsonLdError::InvalidScopedContext,msg);
+//        }
 
         // 21.4.
-        // todo ...
+        definition[JsonLdConsts::LOCALCONTEXT] = localContext;
+        definition[JsonLdConsts::BASEURL] = baseIRI;
     }
 
     // 22)
@@ -1164,6 +1164,7 @@ size_t Context::count(const std::string &key) const {
 }
 
 bool Context::isReverseProperty(const std::string &property) {
+    // todo: shoul dmove this function and other slike it to a new TermDefinition class?
     if(!termDefinitions.count(property)) {
         return false;
     }
@@ -1290,5 +1291,13 @@ const std::string &Context::getOriginalBaseUrl() const {
 
 void Context::setOriginalBaseUrl(const std::string &originalBaseUrl) {
     originalBaseURL = originalBaseUrl;
+}
+
+Context *Context::getPreviousContext() const {
+    return previousContext;
+}
+
+const std::string &Context::getDefaultBaseDirection() const {
+    return defaultBaseDirection;
 }
 

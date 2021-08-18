@@ -24,9 +24,10 @@ namespace JsonLdUtils {
 
     bool iriEndsWithGeneralDelimiterCharacter(const std::string& iri);
 
-    bool isList(const json& j);
+    bool isListObject(const json& j);
+    bool isGraphObject(const json& j);
 
-    bool isValue(const json& j);
+    bool isValueObject(const json& j);
 
     bool isObject(const json& j);
     bool isEmptyObject(const json& j);

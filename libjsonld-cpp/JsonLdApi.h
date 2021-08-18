@@ -33,7 +33,8 @@ public:
      *            The base URL of the document
      * @return The expanded JSON-LD object.
      */
-    nlohmann::json expand(Context activeCtx, std::string *activeProperty, nlohmann::json element, const std::string & baseUrl);
+    nlohmann::json expand(Context activeCtx, std::string *activeProperty, nlohmann::json element, const std::string & baseUrl,
+                          bool frameExpansion=false, bool ordered=false, bool fromMap=false);
 
     /**
      * Adds RDF triples for each graph in the current node map to an RDF
@@ -56,14 +57,18 @@ public:
 
 private:
 
-    nlohmann::json expandArrayElement(Context activeCtx, std::string *activeProperty, const nlohmann::json& element, const std::string & baseUrl);
+    nlohmann::json expandArrayElement(Context activeCtx, std::string *activeProperty, const nlohmann::json& element, const std::string & baseUrl,
+                                      bool frameExpansion, bool ordered, bool fromMap);
 
-    nlohmann::json expandObjectElement(Context activeCtx, std::string *activeProperty, nlohmann::json element, const std::string & baseUrl);
+    nlohmann::json expandObjectElement(Context activeCtx, std::string *activeProperty, nlohmann::json element, const std::string & baseUrl,
+                                       nlohmann::json propertyScopedContext, bool frameExpansion, bool ordered, bool fromMap);
 
     void generateNodeMap(nlohmann::json &element, nlohmann::json &nodeMap);
 
     void generateNodeMap(nlohmann::json &element, nlohmann::json &nodeMap, std::string *activeGraph,
                          nlohmann::json *activeSubject, std::string *activeProperty, nlohmann::json *list);
+
+    std::string findInputType(Context &activeContext, Context &typeScopedContext, nlohmann::json &element);
 };
 
 #endif //LIBJSONLD_CPP_JSONLDAPI_H

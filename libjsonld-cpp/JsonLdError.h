@@ -60,6 +60,7 @@ public:
     static const char InvalidContextEntry[];
     static const char InvalidImportValue[];
     static const char InvalidPropagateValue[];
+    static const char InvalidIncludedValue[];
 
 private:
     nlohmann::json detail;
