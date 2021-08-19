@@ -93,11 +93,14 @@ json JsonLdApi::expandArrayElement(Context activeCtx, std::string * activeProper
         // is the original expanded item.
         if(activeProperty != nullptr) {
             auto termDefinition = activeCtx.getTermDefinition(*activeProperty);
-            if(!termDefinition.is_null() &&
-               !termDefinition[JsonLdConsts::CONTAINER].is_null() &&
-               termDefinition[JsonLdConsts::CONTAINER].contains(JsonLdConsts::LIST) &&
-               expandedItem.is_array())
-                expandedItem = json::object({JsonLdConsts::LIST, expandedItem});
+            if (!termDefinition.empty()) {
+                if (termDefinition.contains(JsonLdConsts::CONTAINER)) {
+                    auto containerMapping = termDefinition[JsonLdConsts::CONTAINER];
+                    if (arrayContains(containerMapping, JsonLdConsts::LIST) &&
+                        expandedItem.is_array())
+                        expandedItem = json::object({{JsonLdConsts::LIST, expandedItem}});
+                }
+            }
         }
 
         // 5.2.3)
@@ -653,7 +656,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                             !JsonLdUtils::isGraphObject(item)) {
                         if(!item.is_array())
                             item = json::array({item});
-                        item = json::object({JsonLdConsts::GRAPH, item});
+                        item = json::object({{JsonLdConsts::GRAPH, item}});
                     }
 
                     // 13.8.3.7.2)
@@ -755,7 +758,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
             !JsonLdUtils::isListObject(expandedValue)) {
             if(!expandedValue.is_array())
                 expandedValue = json::array({expandedValue});
-            expandedValue = json::object({JsonLdConsts::LIST, expandedValue});
+            expandedValue = json::object({{JsonLdConsts::LIST, expandedValue}});
         }
 
         // 13.12)
@@ -776,9 +779,9 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
             // pair @graph-ev where ev is represented as an array.
             for(const auto& ev : expandedValue) {
                 if(!ev.is_array())
-                    t.push_back(json::object({JsonLdConsts::GRAPH, json::array({ev})}));
+                    t.push_back(json::object({{JsonLdConsts::GRAPH, json::array({ev})}}));
                 else
-                    t.push_back(json::object({JsonLdConsts::GRAPH, ev}));
+                    t.push_back(json::object({{JsonLdConsts::GRAPH, ev}}));
             }
 
             expandedValue = t;
