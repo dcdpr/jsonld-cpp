@@ -526,7 +526,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
             expandedValue[JsonLdConsts::TYPE] = JsonLdConsts::JSON;
         }
         // 13.7)
-        else if (containerMapping.contains(JsonLdConsts::LANGUAGE) && element_value.is_object()) {
+        else if (arrayContains(containerMapping, JsonLdConsts::LANGUAGE) && element_value.is_object()) {
             // 13.7.1)
             expandedValue = json::array();
             // 13.7.2)
@@ -588,9 +588,9 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
         }
         // 13.8)
         else if (element_value.is_object() &&
-                 (containerMapping.contains(JsonLdConsts::INDEX) ||
-                  containerMapping.contains(JsonLdConsts::TYPE) ||
-                  containerMapping.contains(JsonLdConsts::ID))) {
+            (arrayContains(containerMapping, JsonLdConsts::INDEX) ||
+             arrayContains(containerMapping, JsonLdConsts::TYPE) ||
+             arrayContains(containerMapping, JsonLdConsts::ID))) {
 
             // 13.8.1)
             expandedValue = json::array();
@@ -613,13 +613,13 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
 
                 // 13.8.3.1)
                 Context mapContext = activeCtx;
-                if(containerMapping.contains(JsonLdConsts::TYPE) ||
-                   containerMapping.contains(JsonLdConsts::ID)) {
+                if(arrayContains(containerMapping, JsonLdConsts::TYPE) ||
+                   arrayContains(containerMapping, JsonLdConsts::ID)) {
                     mapContext = *activeCtx.getPreviousContext();
                 }
 
                 // 13.8.3.2)
-                if(containerMapping.contains(JsonLdConsts::TYPE)) {
+                if(arrayContains(containerMapping, JsonLdConsts::TYPE)) {
                     auto indexTermDefinition = mapContext.getTermDefinition(index);
                     if(indexTermDefinition.contains(JsonLdConsts::LOCALCONTEXT)) {
                         mapContext = mapContext.parse(
@@ -649,7 +649,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                     // If container mapping includes @graph, and item is not a graph object, set
                     // item to a new map containing the key-value pair @graph-item, ensuring that
                     // the value is represented using an array.
-                    if(containerMapping.contains(JsonLdConsts::GRAPH) &&
+                    if(arrayContains(containerMapping, JsonLdConsts::GRAPH) &&
                             !JsonLdUtils::isGraphObject(item)) {
                         if(!item.is_array())
                             item = json::array({item});
@@ -659,7 +659,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                     // 13.8.3.7.2)
                     // If container mapping includes @index, index key is not @index, and expanded
                     // index is not @none:
-                    if(containerMapping.contains(JsonLdConsts::GRAPH) &&
+                    if(arrayContains(containerMapping, JsonLdConsts::GRAPH) &&
                        indexKey != JsonLdConsts::INDEX &&
                        expandedIndex != JsonLdConsts::NONE) {
 
@@ -694,7 +694,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                     // Otherwise, if container mapping includes @index, item does not have an
                     // entry @index, and expanded index is not @none, add the key-value pair
                     // (@index-index) to item.
-                    else if(containerMapping.contains(JsonLdConsts::INDEX) &&
+                    else if(arrayContains(containerMapping, JsonLdConsts::INDEX) &&
                             !item.contains(JsonLdConsts::INDEX) &&
                             expandedIndex != JsonLdConsts::NONE) {
                         item[JsonLdConsts::INDEX] = index;
@@ -705,7 +705,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                     // @id, and expanded index is not @none, add the key-value pair
                     // (@id-expanded index) to item, where expanded index is set to the result
                     // of IRI expandingindex using true for document relative and false for vocab.
-                    else if(containerMapping.contains(JsonLdConsts::ID) &&
+                    else if(arrayContains(containerMapping, JsonLdConsts::ID) &&
                             !item.contains(JsonLdConsts::ID) &&
                             expandedIndex != JsonLdConsts::NONE) {
                         auto expandedIndex2 = activeCtx.expandIri(index, true, false);
@@ -717,7 +717,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                     // not @none, initialize types to a new array consisting of expanded index
                     // followed by any existing values of @type in item. Add the key-value pair
                     // (@type-types) to item.
-                    else if(containerMapping.contains(JsonLdConsts::TYPE) &&
+                    else if(arrayContains(containerMapping, JsonLdConsts::TYPE) &&
                             expandedIndex != JsonLdConsts::NONE) {
                         auto itemTypes = item[JsonLdConsts::TYPE];
                         json types = json::array({expandedIndex});
@@ -751,7 +751,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
         // convert expanded value to a list object by first setting it to an array containing only
         // expanded value if it is not already an array, and then by setting it to a map
         // containing the key-value pair @list-expanded value.
-        if (containerMapping.contains(JsonLdConsts::LIST) &&
+        if (arrayContains(containerMapping, JsonLdConsts::LIST) &&
             !JsonLdUtils::isListObject(expandedValue)) {
             if(!expandedValue.is_array())
                 expandedValue = json::array({expandedValue});
@@ -762,9 +762,9 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
         // If container mapping includes @graph, and includes neither @id nor @index, convert
         // expanded value into an array, if necessary, then convert each value ev in expanded
         // value into a graph object:
-        if (containerMapping.contains(JsonLdConsts::GRAPH) &&
-            !containerMapping.contains(JsonLdConsts::ID) &&
-            !containerMapping.contains(JsonLdConsts::INDEX)) {
+        if (arrayContains(containerMapping, JsonLdConsts::GRAPH) &&
+            !arrayContains(containerMapping, JsonLdConsts::ID) &&
+            !arrayContains(containerMapping, JsonLdConsts::INDEX)) {
 
             if(!expandedValue.is_array())
                 expandedValue = json::array({expandedValue});
@@ -964,6 +964,11 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
 
     // 20)
     return result;
+}
+
+bool JsonLdApi::arrayContains(const json &array,
+                              const std::string &value) const {
+    return array.is_array() && std::find(array.cbegin(), array.cend(), value) != array.end();
 }
 
 RDF::RDFDataset JsonLdApi::toRDF(nlohmann::json element) {

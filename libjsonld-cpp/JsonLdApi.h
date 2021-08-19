@@ -69,6 +69,8 @@ private:
                          nlohmann::json *activeSubject, std::string *activeProperty, nlohmann::json *list);
 
     std::string findInputType(Context &activeContext, Context &typeScopedContext, nlohmann::json &element);
+
+    bool arrayContains(const nlohmann::json &containerMapping, const std::string &value) const;
 };
 
 #endif //LIBJSONLD_CPP_JSONLDAPI_H
