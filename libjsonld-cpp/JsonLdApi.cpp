@@ -904,6 +904,10 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
             if(validKeywords.find(el.key()) == validKeywords.end())
                 throw JsonLdError(JsonLdError::InvalidValueObject,el.key() + " not in list of valid keywords");
         }
+        if(result.contains(JsonLdConsts::TYPE) &&
+           (result.contains(JsonLdConsts::LANGUAGE) || result.contains(JsonLdConsts::DIRECTION))) {
+            throw JsonLdError(JsonLdError::InvalidValueObject);
+        }
 
         // 15.2)
         // If the result's @type entry is @json, then the @value entry may contain any
