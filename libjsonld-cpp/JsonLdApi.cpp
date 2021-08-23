@@ -344,8 +344,12 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                 }
             }
             // 13.4.7)
+            // If expanded property is @value
             else if (expandedProperty == JsonLdConsts::VALUE) {
                 // 13.4.7.1)
+                // If input type is @json, set expanded value to value. If processing mode
+                // is json-ld-1.0, an invalid value object value error has been detected and
+                // processing is aborted.
                 if(inputType == JsonLdConsts::JSON) {
                     if (activeCtx.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
                         throw JsonLdError(JsonLdError::InvalidValueObjectValue);
@@ -353,9 +357,16 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                     expandedValue = element_value;
                 }
                 // 13.4.7.2)
+                // Otherwise, if value is not a scalar or null, an invalid value object
+                // value error has been detected and processing is aborted. When the
+                // frameExpansion flag is set, value MAY be an empty map or an array
+                // of scalar values.
                 else if(element_value.is_null() || JsonLdUtils::isScalar(element_value) ||
                         (frameExpansion && (JsonLdUtils::isEmptyObject(element_value) || JsonLdUtils::isArrayOfScalars(element_value)))) {
                     // 13.4.7.3)
+                    // Otherwise, set expanded value to value. When the frameExpansion flag
+                    // is set, expanded value will be an array of one or more string values
+                    // or an array containing an empty map.
                     expandedValue = element_value;
                     if(frameExpansion) {
                         if(!expandedValue.is_array())
@@ -366,6 +377,10 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                     throw JsonLdError(JsonLdError::InvalidValueObjectValue);
                 }
                 // 13.4.7.4)
+                // If expanded value is null, set the @value entry of result to null and
+                // continue with the next key from element. Null values need to be preserved
+                // in this case as the meaning of an @type entry depends on the existence of
+                // an @value entry.
                 if (expandedValue.is_null()) {
                     result[JsonLdConsts::VALUE] = nullptr;
                     continue;
@@ -893,7 +908,8 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
         // 15.2)
         // If the result's @type entry is @json, then the @value entry may contain any
         // value, and is treated as a JSON literal.
-        if(result.contains(JsonLdConsts::TYPE) && result[JsonLdConsts::TYPE] != JsonLdConsts::JSON) {
+        if(!result.contains(JsonLdConsts::TYPE) ||
+           (result.contains(JsonLdConsts::TYPE) && result[JsonLdConsts::TYPE] != JsonLdConsts::JSON)) {
             // 15.3)
             // Otherwise, if the value of result's @value entry is null, or an empty
             // array, return null.
