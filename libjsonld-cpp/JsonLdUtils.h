@@ -45,6 +45,7 @@ namespace JsonLdUtils {
 
     void addValue(json & object, const std::string& key, const json& value, bool asArray);
 
+    bool containsOrEquals(json & j, const std::string& value);
 }
 
 #endif //LIBJSONLD_CPP_JSONLDUTILS_H

@@ -913,7 +913,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
         // If the result's @type entry is @json, then the @value entry may contain any
         // value, and is treated as a JSON literal.
         if(!result.contains(JsonLdConsts::TYPE) ||
-           (result.contains(JsonLdConsts::TYPE) && result[JsonLdConsts::TYPE] != JsonLdConsts::JSON)) {
+           (!JsonLdUtils::containsOrEquals(result[JsonLdConsts::TYPE], JsonLdConsts::JSON))) {
             // 15.3)
             // Otherwise, if the value of result's @value entry is null, or an empty
             // array, return null.
@@ -930,7 +930,8 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
             // 15.5)
             // Otherwise, if the result has an @type entry and its value is not an IRI, an
             // invalid typed value error has been detected and processing is aborted.
-            else if (result.contains(JsonLdConsts::TYPE) && !JsonLdUtils::isAbsoluteIri(result[JsonLdConsts::TYPE]))
+            else if (result.contains(JsonLdConsts::TYPE) &&
+                     (!result[JsonLdConsts::TYPE].is_string() || !JsonLdUtils::isAbsoluteIri(result[JsonLdConsts::TYPE])))
                 throw JsonLdError(JsonLdError::InvalidTypedValue);
         }
     }

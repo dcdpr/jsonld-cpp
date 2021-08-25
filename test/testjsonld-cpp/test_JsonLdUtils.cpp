@@ -462,3 +462,29 @@ TEST(JsonLdUtilsTest, addValue_keyDoesntExist_appendsArrayOfValuesWithAsArrayFla
     EXPECT_EQ(j["key"][0], "value");
     EXPECT_EQ(j["key"][1], "value2");
 }
+
+TEST(JsonLdUtilsTest, containsOrEquals_StringVsString) {
+
+    json j = "a";
+
+    EXPECT_TRUE(JsonLdUtils::containsOrEquals(j, "a"));
+    EXPECT_FALSE(JsonLdUtils::containsOrEquals(j, "b"));
+}
+
+TEST(JsonLdUtilsTest, containsOrEquals_ArrayVsString) {
+
+    json j = json::array({"a", "b", "c"});
+
+    EXPECT_TRUE(JsonLdUtils::containsOrEquals(j, "b"));
+    EXPECT_FALSE(JsonLdUtils::containsOrEquals(j, "d"));
+}
+
+TEST(JsonLdUtilsTest, containsOrEquals_ObjectVsString) {
+
+    json j = json::object({{"a", 1}, {"b", 2}, {"c", 3}});
+
+    EXPECT_TRUE(JsonLdUtils::containsOrEquals(j, "b"));
+    EXPECT_FALSE(JsonLdUtils::containsOrEquals(j, "d"));
+}
+
+
