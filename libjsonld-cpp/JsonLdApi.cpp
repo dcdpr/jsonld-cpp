@@ -633,7 +633,8 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                 Context mapContext = activeCtx;
                 if(arrayContains(containerMapping, JsonLdConsts::TYPE) ||
                    arrayContains(containerMapping, JsonLdConsts::ID)) {
-                    mapContext = *activeCtx.getPreviousContext();
+                    if(activeCtx.getPreviousContext())
+                        mapContext = *activeCtx.getPreviousContext();
                 }
 
                 // 13.8.3.2)
