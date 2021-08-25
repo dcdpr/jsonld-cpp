@@ -498,17 +498,30 @@ std::string Context::expandIri(
     std::cout << "... 1.1 Context::expandIri()\n";
 
     // 1)
+    // If value is a keyword or null, return value as is.
     if (JsonLdUtils::isKeyword(value)) { // todo: also checked for if value was null
         return value;
     }
+
     // 2)
+    //  If value has the form of a keyword (i.e., it matches the ABNF rule "@"1*ALPHA
+    //  from [RFC5234]), a processor SHOULD generate a warning and return null.
     // todo: need to check if value has form of @keyword, and if so, emit a warning
+
     // 3)
+    // If local context is not null, it contains an entry with a key that equals value, and
+    // the value of the entry for value in defined is not true, invoke the Create Term
+    // Definition algorithm, passing active context, local context, value as term, and
+    // defined. This will ensure that a term definition is created for value in active
+    // context during Context Processing.
     if (!context.is_null() && context.contains(value) &&
         defined.find(value) != defined.end() && !defined.at(value) ) {
         createTermDefinition(context, value, defined);
     }
+
     // 4)
+    // If active context has a term definition for value, and the associated IRI mapping
+    // is a keyword, return that keyword.
     if (termDefinitions.find(value) != termDefinitions.end()) {
         auto td = termDefinitions.at(value);
         if (!td.is_null() &&
@@ -516,7 +529,10 @@ std::string Context::expandIri(
             JsonLdUtils::isKeyword(td.at(JsonLdConsts::ID)))
             return td.at(JsonLdConsts::ID);
     }
+
     // 5)
+    // If vocab is true and the active context has a term definition for value, return the
+    // associated IRI mapping.
     if (vocab && termDefinitions.find(value) != termDefinitions.end()) {
         auto td = termDefinitions.at(value);
         if (!td.is_null() &&
@@ -525,37 +541,65 @@ std::string Context::expandIri(
         else
             return ""; // todo: this return isn't in the spec, but expand_t0032 test fails without it
     }
+
     // 6)
+    // If value contains a colon (:) anywhere after the first character, it is either an IRI, a
+    // compact IRI, or a blank node identifier:
     auto colIndex = value.find(':', 1);
     if (colIndex != std::string::npos) {
         // 6.1)
+        // Split value into a prefix and suffix at the first occurrence of a colon (:).
         std::string prefix(value, 0, colIndex);
         std::string suffix(value, colIndex+1);
+
         // 6.2)
+        // If prefix is underscore (_) or suffix begins with double-forward-slash (//), return
+        // value as it is already an IRI or a blank node identifier.
         if (prefix == "_" || suffix.find("//") == 0) {
             return value;
         }
+
         // 6.3)
+        // If local context is not null, it contains a prefix entry, and the value of the prefix
+        // entry in defined is not true, invoke the Create Term Definition algorithm, passing
+        // active context, local context, prefix as term, and defined. This will ensure that a
+        // term definition is created for prefix in active context during Context Processing.
         if (!context.is_null() && context.contains(prefix)
             && (defined.find(prefix) == defined.end() || !defined.at(prefix))) {
             createTermDefinition(context, prefix, defined);
         }
+
         // 6.4)
+        // If active context contains a term definition for prefix having a non-null IRI mapping
+        // and the prefix flag of the term definition is true, return the result of concatenating
+        // the IRI mapping associated with prefix and suffix.
         if (termDefinitions.find(prefix) != termDefinitions.end()) {
             auto prefixDef = termDefinitions.at(prefix);
             if (prefixDef.find(JsonLdConsts::ID) != prefixDef.end()) {
                 return prefixDef.at(JsonLdConsts::ID).get<std::string>() + suffix;
             }
         }
+
         // 6.5)
+        // If value has the form of an IRI, return value.
         if(Uri::isAbsolute(value) || value.find_first_of("_:") == 0)
             return value;
     }
+
     // 7)
+    // If vocab is true, and active context has a vocabulary mapping, return the result of
+    // concatenating the vocabulary mapping with value.
     if (vocab && contextMap.find(JsonLdConsts::VOCAB) != contextMap.end()) {
         return contextMap.at(JsonLdConsts::VOCAB) + value;
     }
+
     // 8)
+    // Otherwise, if document relative is true set value to the result of resolving value
+    // against the base IRI from active context. Only the basic algorithm in section 5.2
+    // of [RFC3986] is used; neither Syntax-Based Normalization nor Scheme-Based Normalization
+    // are performed. Characters additionally allowed in IRI references are treated in the
+    // same way that unreserved characters are treated in URI references, per section 6.5
+    // of [RFC3987].
     else if (relative) {
         if(this->count(JsonLdConsts::BASE))
             return JsonLdUrl::resolve(&(this->at(JsonLdConsts::BASE)), &value);
@@ -565,7 +609,9 @@ std::string Context::expandIri(
         // todo: this isn't part of the spec--do we need it?
         throw JsonLdError(JsonLdError::InvalidIriMapping, "not an absolute IRI: " + value);
     }
+
     // 9)
+    // Return value as is.
     return value;
 }
 
@@ -778,17 +824,23 @@ void Context::createTermDefinition(json context, const std::string& term,
     }
 
     // 14)
+    // If value contains the entry @id and its value does not equal term
     if (value.contains(JsonLdConsts::ID) &&
         (!value.at(JsonLdConsts::ID).is_string() || term != value.at(JsonLdConsts::ID))) {
 
         auto id = value.at(JsonLdConsts::ID);
 
         // 14.1)
+        // If the @id entry of value is null, the term is not used for IRI expansion, but is
+        // retained to be able to detect future redefinitions of this term.
         if(!id.is_null()) {
 
             // 14.2)
+            // otherwise
 
             // 14.2.1)
+            // If the value associated with the @id entry is not a string, an invalid IRI
+            // mapping error has been detected and processing is aborted.
             if (!id.is_string()) {
                 throw JsonLdError(JsonLdError::InvalidIriMapping,
                                   "expected value of @id to be a string");
@@ -797,10 +849,19 @@ void Context::createTermDefinition(json context, const std::string& term,
             std::string idStr = id.get<std::string>();
 
             // 14.2.2)
+            // If the value associated with the @id entry is not a keyword, but has the
+            // form of a keyword (i.e., it matches the ABNF rule "@"1*ALPHA from [RFC5234]),
+            // return; processors SHOULD generate a warning.
             // todo: need to check if value has form of @keyword, and if so, emit a warning
 
             // 14.2.3)
+            // Otherwise, set the IRI mapping of definition to the result of IRI expanding
+            // the value associated with the @id entry, using local context, and defined.
             idStr = expandIri(idStr, false, true, context, defined);
+            // If the resulting IRI mapping is neither a keyword, nor an IRI, nor a blank node
+            // identifier, an invalid IRI mapping error has been detected and processing is
+            // aborted; if it equals @context, an invalid keyword alias error has been detected
+            // and processing is aborted.
             if (JsonLdUtils::isKeyword(idStr) || JsonLdUtils::isAbsoluteIri(idStr) ||
                 BlankNode::isBlankNodeName(idStr)) {
                 if (idStr == JsonLdConsts::CONTEXT) {
@@ -813,11 +874,19 @@ void Context::createTermDefinition(json context, const std::string& term,
             }
 
             // 14.2.4)
+            // If the term contains a colon (:) anywhere but as the first or last character
+            // of term, or if it contains a slash (/) anywhere:
             if(term.substr(0, term.size()-1).find(':',1) != std::string::npos ||
                term.find('/') != std::string::npos) {
+
                 // 14.2.4.1)
+                // Set the value associated with defined's term entry to true.
                 defined[term] = true;
+
                 // 14.2.4.2)
+                // If the result of IRI expanding term using local context, and defined, is
+                // not the same as the IRI mapping of definition, an invalid IRI mapping error
+                // has been detected and processing is aborted.
                 std::string expandedTerm = expandIri(term, false, true, context, defined);
                 if(expandedTerm.empty()) {
                     std::cout << "warning: expandedTerm.empty()\n"; // todo: remove if this doesn't happen
