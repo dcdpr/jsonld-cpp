@@ -931,7 +931,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
             // Otherwise, if the result has an @type entry and its value is not an IRI, an
             // invalid typed value error has been detected and processing is aborted.
             else if (result.contains(JsonLdConsts::TYPE) && !JsonLdUtils::isAbsoluteIri(result[JsonLdConsts::TYPE]))
-                throw JsonLdError(JsonLdError::InvalidTypeValue);
+                throw JsonLdError(JsonLdError::InvalidTypedValue);
         }
     }
 
