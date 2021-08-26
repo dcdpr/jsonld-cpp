@@ -250,9 +250,7 @@ bool JsonLdUtils::containsOrEquals(json & j, const std::string& value) {
         return j == value;
 
     else if(j.is_array()) {
-        for (const auto &e : j)
-            if (e == value)
-                return true;
+        return std::find(j.cbegin(), j.cend(), value) != j.cend();
     }
 
     else if(j.is_object()) {

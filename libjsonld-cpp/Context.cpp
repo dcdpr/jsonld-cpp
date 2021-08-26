@@ -961,12 +961,17 @@ void Context::createTermDefinition(json context, const std::string& term,
     }
 
     // 19)
+    // If value contains the entry @container:
     if (value.contains(JsonLdConsts::CONTAINER)) {
 
         // 19.1) (partial)
+        // Initialize container to the value associated with the @container entry
         auto container = value.at(JsonLdConsts::CONTAINER);
 
         // 19.2)
+        // If the container value is @graph, @id, or @type, or is otherwise not a string,
+        // generate an invalid container mapping error and abort processing if processing
+        // mode is json-ld-1.0.
         if (isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
             if (!container.is_string())
                 throw JsonLdError(JsonLdError::InvalidContainerMapping,
@@ -981,18 +986,23 @@ void Context::createTermDefinition(json context, const std::string& term,
         }
 
         // 19.1)
+        // ... container ... MUST be either @graph, @id, @index, @language, @list, @set,
+        // @type, or an array containing exactly any one of those keywords, an array
+        // containing @graph and either @id or @index optionally including @set, or an
+        // array containing a combination of @set and any of @index, @graph, @id, @type,
+        // @language in any order. Otherwise, an invalid container mapping has been
+        // detected and processing is aborted.
         if(container.is_array() && container.size() == 1)
             container = container.at(0);
 
-        if(container != JsonLdConsts::GRAPH &&
-           container != JsonLdConsts::ID &&
-           container != JsonLdConsts::INDEX &&
-           container != JsonLdConsts::LANGUAGE &&
-           container != JsonLdConsts::LIST &&
-           container != JsonLdConsts::SET &&
-           container != JsonLdConsts::TYPE) {
-            throw JsonLdError(JsonLdError::InvalidContainerMapping,
-                              "@container is an invalid keyword");
+        if(!JsonLdUtils::containsOrEquals(container, JsonLdConsts::GRAPH) &&
+           !JsonLdUtils::containsOrEquals(container, JsonLdConsts::ID) &&
+           !JsonLdUtils::containsOrEquals(container, JsonLdConsts::INDEX) &&
+           !JsonLdUtils::containsOrEquals(container, JsonLdConsts::LANGUAGE) &&
+           !JsonLdUtils::containsOrEquals(container, JsonLdConsts::LIST) &&
+           !JsonLdUtils::containsOrEquals(container, JsonLdConsts::SET) &&
+           !JsonLdUtils::containsOrEquals(container, JsonLdConsts::TYPE)) {
+            throw JsonLdError(JsonLdError::InvalidContainerMapping);
         }
 
         if(container.is_array()) {
@@ -1000,25 +1010,27 @@ void Context::createTermDefinition(json context, const std::string& term,
             if (container.size() > 3)
                 throw JsonLdError(JsonLdError::InvalidContainerMapping);
 
-            if (container.contains(JsonLdConsts::GRAPH) && container.contains(JsonLdConsts::ID)) {
-                if (container.size() != 2 || !container.contains(JsonLdConsts::SET))
+            if (JsonLdUtils::containsOrEquals(container, JsonLdConsts::GRAPH) &&
+                JsonLdUtils::containsOrEquals(container, JsonLdConsts::ID)) {
+                if (container.size() != 2 || !JsonLdUtils::containsOrEquals(container, JsonLdConsts::SET))
                     throw JsonLdError(JsonLdError::InvalidContainerMapping);
             }
 
-            if (container.contains(JsonLdConsts::GRAPH) && container.contains(JsonLdConsts::INDEX)) {
-                if (container.size() != 2 || !container.contains(JsonLdConsts::SET))
+            if (JsonLdUtils::containsOrEquals(container, JsonLdConsts::GRAPH) &&
+                JsonLdUtils::containsOrEquals(container, JsonLdConsts::INDEX)) {
+                if (container.size() != 2 || !JsonLdUtils::containsOrEquals(container, JsonLdConsts::SET))
                     throw JsonLdError(JsonLdError::InvalidContainerMapping);
             }
 
             if (container.size() > 2)
                 throw JsonLdError(JsonLdError::InvalidContainerMapping);
 
-            if (container.contains(JsonLdConsts::SET)) {
-                if (!container.contains(JsonLdConsts::GRAPH) &&
-                    !container.contains(JsonLdConsts::ID) &&
-                    !container.contains(JsonLdConsts::INDEX) &&
-                    !container.contains(JsonLdConsts::LANGUAGE) &&
-                    !container.contains(JsonLdConsts::TYPE)) {
+            if (JsonLdUtils::containsOrEquals(container, JsonLdConsts::SET)) {
+                if (!JsonLdUtils::containsOrEquals(container, JsonLdConsts::GRAPH) &&
+                    !JsonLdUtils::containsOrEquals(container, JsonLdConsts::ID) &&
+                    !JsonLdUtils::containsOrEquals(container, JsonLdConsts::INDEX) &&
+                    !JsonLdUtils::containsOrEquals(container, JsonLdConsts::LANGUAGE) &&
+                    !JsonLdUtils::containsOrEquals(container, JsonLdConsts::TYPE)) {
                     throw JsonLdError(JsonLdError::InvalidContainerMapping);
                 }
             }
@@ -1036,14 +1048,20 @@ void Context::createTermDefinition(json context, const std::string& term,
         }
 
         // 19.4)
-        if(definition[JsonLdConsts::CONTAINER].contains(JsonLdConsts::TYPE)){
+        // If the container mapping of definition includes @type:
+        if(JsonLdUtils::containsOrEquals(definition[JsonLdConsts::CONTAINER], JsonLdConsts::TYPE)){
             // 19.4.1)
-            if (definition[JsonLdConsts::CONTAINER][JsonLdConsts::TYPE].empty()) {
-                definition[JsonLdConsts::CONTAINER][JsonLdConsts::TYPE] = JsonLdConsts::ID;
-            }
+            // If type mapping in definition is undefined, set it to @id.
+            // todo this is a place where termdef having member vars like 'containermapping'
+            //  and 'typemapping' would come in handy
+            if(!definition.contains(JsonLdConsts::TYPE))
+                definition[JsonLdConsts::TYPE] = JsonLdConsts::ID;
+
             // 19.4.2)
-            if (definition[JsonLdConsts::CONTAINER][JsonLdConsts::TYPE] != JsonLdConsts::ID ||
-                    definition[JsonLdConsts::CONTAINER][JsonLdConsts::TYPE] != JsonLdConsts::VOCAB) {
+            // If type mapping in definition is neither @id nor @vocab, an invalid type
+            // mapping error has been detected and processing is aborted.
+            if (definition[JsonLdConsts::TYPE] != JsonLdConsts::ID &&
+                    definition[JsonLdConsts::TYPE] != JsonLdConsts::VOCAB) {
                 throw JsonLdError(JsonLdError::InvalidTypeMapping,"");
             }
         }
