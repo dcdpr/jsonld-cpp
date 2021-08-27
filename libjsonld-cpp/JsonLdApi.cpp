@@ -188,19 +188,25 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
         }
 
         // 13.4)
+        // If expanded property is a keyword:
         if (JsonLdUtils::isKeyword(expandedProperty)) {
             // 13.4.1)
+            // If active property equals @reverse, an invalid reverse property map error
+            // has been detected and processing is aborted.
             if (activeProperty != nullptr && *activeProperty == JsonLdConsts::REVERSE) {
                 throw JsonLdError(JsonLdError::InvalidReversePropertyMap,
                                       "a keyword cannot be used as a @reverse property");
             }
             // 13.4.2)
+            // If result already has an expanded property entry, other than @included or @type
+            // (unless processing mode is json-ld-1.0), a colliding keywords error has been
+            // detected and processing is aborted.
             if (result.contains(expandedProperty)) {
                 if (activeCtx.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
                     throw JsonLdError(JsonLdError::CollidingKeywords,
                                       expandedProperty + " already exists in result");
                 }
-                if(result.at(expandedProperty) != JsonLdConsts::INCLUDED && result.at(expandedProperty) != JsonLdConsts::TYPE)
+                if(expandedProperty != JsonLdConsts::INCLUDED && expandedProperty != JsonLdConsts::TYPE)
                     throw JsonLdError(JsonLdError::CollidingKeywords,
                                       expandedProperty + " already exists in result");
             }
