@@ -318,19 +318,27 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
         }
 
         // 5.7)
+        // If context has an @base entry and remote contexts is empty, i.e., the currently
+        // being processed context is not a remote context:
         if (remoteContexts.empty() && context.contains(JsonLdConsts::BASE)) {
             // 5.7.1)
+            // Initialize value to the value associated with the @base entry.
             auto value = context.at(JsonLdConsts::BASE);
             // 5.7.2)
+            // If value is null, remove the base IRI of result.
             if (value.is_null()) {
                 result.erase(JsonLdConsts::BASE);
             } else if (value.is_string()) {
                 // 5.7.3)
+                // Otherwise, if value is an IRI, the base IRI of result is set to value.
                 if (JsonLdUtils::isAbsoluteIri(value)) {
                     result.insert(std::make_pair(JsonLdConsts::BASE,
                                                  value.get<std::string>())); // todo: change code like this to use member vars in context?
                 } else {
                     // 5.7.4)
+                    // Otherwise, if value is a relative IRI reference and the base IRI of
+                    // result is not null, set the base IRI of result to the result of resolving
+                    // value against the current base IRI of result.
                     std::string baseUri = result.at(JsonLdConsts::BASE);
                     if (baseUri.empty())
                         throw JsonLdError(JsonLdError::InvalidBaseIri, "baseUri is empty");
@@ -339,21 +347,30 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
                 }
             } else {
                 // 5.7.5)
+                // Otherwise, an invalid base IRI error has been detected and processing is aborted.
                 throw JsonLdError(JsonLdError::InvalidBaseIri, "@base must be a string");
             }
         }
 
         // 5.8)
+        // If context has an @vocab entry:
         if (context.contains(JsonLdConsts::VOCAB)) {
             // 5.8.1)
+            // Initialize value to the value associated with the @vocab entry.
             auto value = context.at(JsonLdConsts::VOCAB);
             // 5.8.2)
+            // If value is null, remove any vocabulary mapping from result.
             if (value.is_null()) {
                 result.erase(JsonLdConsts::VOCAB);
             } else if (value.is_string()) {
                 // 5.8.3)
-                if (BlankNode::isBlankNodeName(value) || JsonLdUtils::isAbsoluteIri(value)) {
-                    std::string vocabMapping = expandIri(value.get<std::string>(), true, true);
+                // Otherwise, if value is an IRI or blank node identifier, the vocabulary
+                // mapping of result is set to the result of IRI expanding value using
+                // true for document relative. If it is not an IRI, or a blank node
+                // identifier, an invalid vocab mapping error has been detected and
+                // processing is aborted.
+                if (value.get<std::string>().empty() || BlankNode::isBlankNodeName(value) || JsonLdUtils::isAbsoluteIri(value)) {
+                    std::string vocabMapping = result.expandIri(value.get<std::string>(), true, true);
                     result.insert(std::make_pair(JsonLdConsts::VOCAB, vocabMapping));
                 } else {
                     throw JsonLdError(JsonLdError::InvalidVocabMapping,
