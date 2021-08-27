@@ -369,7 +369,7 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
                 // true for document relative. If it is not an IRI, or a blank node
                 // identifier, an invalid vocab mapping error has been detected and
                 // processing is aborted.
-                if (value.get<std::string>().empty() || BlankNode::isBlankNodeName(value) || JsonLdUtils::isAbsoluteIri(value)) {
+                if (value.get<std::string>().empty() || BlankNode::isBlankNodeName(value) || JsonLdUtils::isIri(value)) {
                     std::string vocabMapping = result.expandIri(value.get<std::string>(), true, true);
                     result.insert(std::make_pair(JsonLdConsts::VOCAB, vocabMapping));
                 } else {

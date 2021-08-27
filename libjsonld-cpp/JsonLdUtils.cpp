@@ -37,7 +37,11 @@ bool JsonLdUtils::isAbsoluteIri(const std::string &iri) {
 }
 
 bool JsonLdUtils::isRelativeIri(const std::string &iri) {
-    return !(isKeyword(iri) || isAbsoluteIri(iri));
+    return !(isKeyword(iri) || isAbsoluteIri(iri)); // todo is this a good test?
+}
+
+bool JsonLdUtils::isIri(const std::string &iri) {
+    return !isKeyword(iri) && Uri::isUri(iri); // todo is this a good test?
 }
 
 bool JsonLdUtils::deepCompare(json v1, json v2) {

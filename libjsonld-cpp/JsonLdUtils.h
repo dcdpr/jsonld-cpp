@@ -21,6 +21,7 @@ namespace JsonLdUtils {
     bool isAbsoluteIri(const std::string& iri);
 
     bool isRelativeIri(const std::string& iri);
+    bool isIri(const std::string& iri);
 
     bool iriEndsWithGeneralDelimiterCharacter(const std::string& iri);
 

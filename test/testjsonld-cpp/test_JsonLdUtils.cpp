@@ -487,4 +487,9 @@ TEST(JsonLdUtilsTest, containsOrEquals_ObjectVsString) {
     EXPECT_FALSE(JsonLdUtils::containsOrEquals(j, "d"));
 }
 
+TEST(JsonLdUtilsTest, isIri) {
+    EXPECT_FALSE(JsonLdUtils::isIri(""));
+    EXPECT_TRUE(JsonLdUtils::isIri("relative"));
+    EXPECT_TRUE(JsonLdUtils::isIri("/relative"));
+}
 
