@@ -1016,13 +1016,13 @@ void Context::createTermDefinition(json context, const std::string& term,
                     throw JsonLdError(JsonLdError::InvalidContainerMapping);
             }
 
-            if (JsonLdUtils::containsOrEquals(container, JsonLdConsts::GRAPH) &&
+            else if (JsonLdUtils::containsOrEquals(container, JsonLdConsts::GRAPH) &&
                 JsonLdUtils::containsOrEquals(container, JsonLdConsts::INDEX)) {
                 if (container.size() != 2 && !JsonLdUtils::containsOrEquals(container, JsonLdConsts::SET))
                     throw JsonLdError(JsonLdError::InvalidContainerMapping);
             }
 
-            if (container.size() > 2)
+            else if (container.size() > 2)
                 throw JsonLdError(JsonLdError::InvalidContainerMapping);
 
             if (JsonLdUtils::containsOrEquals(container, JsonLdConsts::SET)) {
