@@ -158,6 +158,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
     json nests = ObjUtils::newMap();
 
     // 13)
+    // For each key and value in element, ordered lexicographically by key if ordered is true:
     std::vector<std::string> element_keys;
     for (json::iterator it = element.begin(); it != element.end(); ++it) {
         element_keys.push_back(it.key());
@@ -171,19 +172,23 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
         auto element_value = element[key];
 
         // 13.1)
+        // If key is @context, continue to the next key.
         if (key == JsonLdConsts::CONTEXT) {
             continue;
         }
 
         // 13.2)
+        // Initialize expanded property to the result of IRI expanding key.
         std::string expandedProperty = activeCtx.expandIri(key, false, true);
         json expandedValue;
 
         // 13.3)
+        // If expanded property is null or it neither contains a colon (:) nor it is a
+        // keyword, drop key by continuing to the next key.
         if (
-                // expandedProperty == nullptr ||
                 expandedProperty.empty() ||
-                (expandedProperty.find(':') == std::string::npos && !JsonLdUtils::isKeyword(expandedProperty))) {
+                !(expandedProperty.find(':') != std::string::npos ||
+                  JsonLdUtils::isKeyword(expandedProperty))) {
             continue;
         }
 

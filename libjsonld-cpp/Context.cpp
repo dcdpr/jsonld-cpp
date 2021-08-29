@@ -99,10 +99,7 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
 
     // Comments in this function are labelled with numbers that correspond to sections
     // from the description of the context processing algorithm.
-    // See: https://www.w3.org/TR/2014/REC-json-ld-api-20140116/#context-processing-algorithm
-
-    // todo: This needs to be upgraded to conform with
-    // https://w3c.github.io/json-ld-api/#context-processing-algorithm
+    // See: https://w3c.github.io/json-ld-api/#context-processing-algorithm
 
     // todo: remove
     std::cout << "... 1.1 Context::parse()\n";
@@ -758,16 +755,21 @@ void Context::createTermDefinition(json context, const std::string& term,
     }
 
     // 12)
+    // If value contains the entry @type:
     if (value.contains(JsonLdConsts::TYPE)) {
         auto type = value.at(JsonLdConsts::TYPE);
 
         // 12.1)
+        // Initialize type to the value associated with the @type entry, which MUST be a
+        // string. Otherwise, an invalid type mapping error has been detected and processing
+        // is aborted.
         if (!(type.is_string())) {
             throw JsonLdError(JsonLdError::InvalidTypeMapping);
         }
         std::string typeStr = type.get<std::string>();
 
         // 12.2)
+        // Set type to the result of IRI expanding type, using local context, and defined.
         try {
             typeStr = expandIri(typeStr, false, true, context, defined);
         } catch (JsonLdError &error) {
@@ -779,6 +781,8 @@ void Context::createTermDefinition(json context, const std::string& term,
         }
 
         // 12.3)
+        // If the expanded type is @json or @none, and processing mode is json-ld-1.0, an invalid
+        // type mapping error has been detected and processing is aborted.
         if (isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
             if(typeStr == JsonLdConsts::JSON || typeStr == JsonLdConsts::NONE) {
                 throw JsonLdError(JsonLdError::InvalidTypeMapping, type);
@@ -786,6 +790,8 @@ void Context::createTermDefinition(json context, const std::string& term,
         }
 
         // 12.4)
+        // Otherwise, if the expanded type is neither @id, nor @json, nor @none, nor @vocab, nor
+        // an IRI, an invalid type mapping error has been detected and processing is aborted.
         if(!(typeStr == JsonLdConsts::ID ||
                 typeStr == JsonLdConsts::JSON ||
                 typeStr == JsonLdConsts::NONE ||
@@ -795,6 +801,7 @@ void Context::createTermDefinition(json context, const std::string& term,
         }
 
         // 12.5)
+        // Set the type mapping for definition to type.
         definition[JsonLdConsts::TYPE] = typeStr;
     }
 
@@ -930,7 +937,8 @@ void Context::createTermDefinition(json context, const std::string& term,
         }
     }
     // 15)
-    else if (term.find(':') != std::string::npos) {
+    // Otherwise if the term contains a colon (:) anywhere after the first character:
+    else if (term.find(':', 1) != std::string::npos) {
         // todo: maybe need a new "compact uri" class? See https://www.w3.org/TR/curie/ ...
         // 15.1)
         auto colIndex = term.find(':');
