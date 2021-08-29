@@ -530,9 +530,15 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
             }
 
             // 13.4.16)
-            if (!expandedValue.is_null() ||
+            // Unless expanded value is null, expanded property is @value, and input type is
+            // not @json, set the expanded property entry of result to expanded value.
+            if (!(expandedValue.is_null()) ||
                 (expandedProperty == JsonLdConsts::VALUE && inputType != JsonLdConsts::JSON)) {
-                result[expandedProperty] = expandedValue;
+                // note: setting null instead of empty string, since expandIRI might return that
+                if(expandedValue.is_string() && expandedValue.get<std::string>().empty())
+                    result[expandedProperty] = nullptr;
+                else
+                    result[expandedProperty] = expandedValue;
             }
 
             // 13.4.17
