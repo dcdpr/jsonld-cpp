@@ -493,3 +493,11 @@ TEST(JsonLdUtilsTest, isIri) {
     EXPECT_TRUE(JsonLdUtils::isIri("/relative"));
 }
 
+TEST(JsonLdUtilsTest, isKeywordForm) {
+    EXPECT_FALSE(JsonLdUtils::isKeywordForm(""));
+    EXPECT_FALSE(JsonLdUtils::isKeywordForm("@"));
+    EXPECT_TRUE(JsonLdUtils::isKeywordForm("@FOO"));
+    EXPECT_FALSE(JsonLdUtils::isKeywordForm("@foo.bar"));
+    EXPECT_TRUE(JsonLdUtils::isKeywordForm("@ignoreMe"));
+}
+

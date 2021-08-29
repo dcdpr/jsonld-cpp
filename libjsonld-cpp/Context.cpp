@@ -704,10 +704,15 @@ void Context::createTermDefinition(json context, const std::string& term,
 
     }
     // 5)
+    // Otherwise, since keywords cannot be overridden, term MUST NOT be a keyword and
+    // a keyword redefinition error has been detected and processing is aborted.
     else if (JsonLdUtils::isKeyword(term)) {
         throw JsonLdError(JsonLdError::KeywordRedefinition, term);
-    } else {
-        // todo: need to check if value has form of @keyword, and if so, emit a warning
+    } else if (JsonLdUtils::isKeywordForm(term)){
+        // If term has the form of a keyword (i.e., it matches the ABNF rule "@"1*ALPHA from [RFC5234]),
+        // return; processors SHOULD generate a warning.
+        return;
+        // todo: emit a warning
     }
 
     // 6)

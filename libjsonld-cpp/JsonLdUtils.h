@@ -18,6 +18,8 @@ namespace JsonLdUtils {
      */
     bool isKeyword(const std::string& property);
 
+    bool isKeywordForm(const std::string& property);
+
     bool isAbsoluteIri(const std::string& iri);
 
     bool isRelativeIri(const std::string& iri);

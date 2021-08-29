@@ -1,5 +1,6 @@
 #include <iostream>
 #include <set>
+#include <regex>
 #include "JsonLdUtils.h"
 #include "JsonLdConsts.h"
 #include "Uri.h"
@@ -27,6 +28,12 @@ bool JsonLdUtils::isKeyword(const std::string& property) {
             property == "@value" ||
             property == "@vocab" ||
             property == "@requireAll";
+}
+
+bool JsonLdUtils::isKeywordForm(const std::string& property) {
+    std::regex keywordForm(R"(@[A-Za-z]+)");
+    std::smatch match;
+    return std::regex_match(property, match, keywordForm);
 }
 
 bool JsonLdUtils::isAbsoluteIri(const std::string &iri) {
