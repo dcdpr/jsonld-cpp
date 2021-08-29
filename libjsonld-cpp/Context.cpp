@@ -520,7 +520,10 @@ std::string Context::expandIri(
     // 2)
     //  If value has the form of a keyword (i.e., it matches the ABNF rule "@"1*ALPHA
     //  from [RFC5234]), a processor SHOULD generate a warning and return null.
-    // todo: need to check if value has form of @keyword, and if so, emit a warning
+    if (JsonLdUtils::isKeywordForm(value)) { // todo: also checked for if value was null
+        // todo: emit a warning
+        return "";
+    }
 
     // 3)
     // If local context is not null, it contains an entry with a key that equals value, and
@@ -811,13 +814,18 @@ void Context::createTermDefinition(json context, const std::string& term,
     }
 
     // 13)
+    // If value contains the entry @reverse:
     if (value.contains(JsonLdConsts::REVERSE)) {
         // 13.1)
+        // If value contains @id or @nest, entries, an invalid reverse property error
+        // has been detected and processing is aborted.
         if (value.contains(JsonLdConsts::ID) || value.contains(JsonLdConsts::NEST)) {
             throw JsonLdError(JsonLdError::InvalidReverseProperty);
         }
 
         // 13.2)
+        // If the value associated with the @reverse entry is not a string, an invalid IRI
+        // mapping error has been detected and processing is aborted.
         auto reverse = value.at(JsonLdConsts::REVERSE);
         if (!(reverse.is_string())) {
             throw JsonLdError(JsonLdError::InvalidIriMapping,
@@ -826,9 +834,19 @@ void Context::createTermDefinition(json context, const std::string& term,
         std::string reverseStr = reverse.get<std::string>();
 
         // 13.3)
-        // todo: need to check if value has form of @keyword, and if so, emit a warning
+        // If the value associated with the @reverse entry is a string having the form of
+        // a keyword (i.e., it matches the ABNF rule "@"1*ALPHA from [RFC5234]), return;
+        // processors SHOULD generate a warning.
+        if(JsonLdUtils::isKeywordForm(reverseStr)) {
+            // todo: emit a warning
+            return;
+        }
 
         // 13.4)
+        // Otherwise, set the IRI mapping of definition to the result of IRI expanding
+        // the value associated with the @reverse entry, using local context, and
+        // defined. If the result does not have the form of an IRI or a blank node
+        // identifier, an invalid IRI mapping error has been detected and processing is aborted.
         reverseStr = expandIri(reverseStr, false, true, context, defined);
         if (!JsonLdUtils::isAbsoluteIri(reverseStr)) {
             throw JsonLdError(JsonLdError::InvalidIriMapping,
@@ -837,6 +855,10 @@ void Context::createTermDefinition(json context, const std::string& term,
         definition[JsonLdConsts::ID] = reverseStr;
 
         // 13.5)
+        // If value contains an @container entry, set the container mapping of definition
+        // to an array containing its value; if its value is neither @set, nor @index, nor
+        // null, an invalid reverse property error has been detected (reverse properties only
+        // support set- and index-containers) and processing is aborted.
         if (value.contains(JsonLdConsts::CONTAINER)) {
             auto container = value.at(JsonLdConsts::CONTAINER);
             if (container == JsonLdConsts::SET || container == JsonLdConsts::INDEX || container.is_null()) {
@@ -846,7 +868,14 @@ void Context::createTermDefinition(json context, const std::string& term,
                                   "reverse properties only support set- and index-containers");
             }
         }
+
+        // 13.6)
+        // Set the reverse property flag of definition to true.
         definition[JsonLdConsts::REVERSE] = true;
+
+        // 13.7)
+        // Set the term definition of term in active context to definition and the value
+        // associated with defined's entry term to true and return.
         termDefinitions[term] = definition;
         defined[term] = true;
         return;
@@ -881,7 +910,10 @@ void Context::createTermDefinition(json context, const std::string& term,
             // If the value associated with the @id entry is not a keyword, but has the
             // form of a keyword (i.e., it matches the ABNF rule "@"1*ALPHA from [RFC5234]),
             // return; processors SHOULD generate a warning.
-            // todo: need to check if value has form of @keyword, and if so, emit a warning
+            if(!JsonLdUtils::isKeyword(idStr) && JsonLdUtils::isKeywordForm(idStr)) {
+                // todo: emit a warning
+                return;
+            }
 
             // 14.2.3)
             // Otherwise, set the IRI mapping of definition to the result of IRI expanding
