@@ -111,10 +111,14 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
     validateScopedContext = ivalidateScopedContext;
 
     // 1)
+    // Initialize result to the result of cloning active context, with inverse context set to null.
     Context result = *this;
     result.inverseContext = nullptr;
 
     // 2)
+    // If local context is an object containing the member @propagate, its value MUST be
+    // boolean true or false, set propagate to that value. Note: Error handling is performed
+    // in step 5.11
     if (localContext.is_object()) {
         if (localContext.contains(JsonLdConsts::PROPAGATE)) {
             propagate = localContext.at(JsonLdConsts::PROPAGATE).get<bool>();
@@ -122,9 +126,11 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
     }
 
     // 3)
+    // If propagate is false, and result does not have a previous context, set previous
+    // context in result to active context.
     if (!propagate && result.previousContext == nullptr) {
         // result.previousContext = copy of *this, but not the Context object, just the jsonvalue ?
-        throw JsonLdError(JsonLdError::NotImplemented, "need to copy active to previous context...");
+        throw JsonLdError(JsonLdError::NotImplemented, "need to copy active to previous context1...");
     }
 
     // 4)
@@ -153,7 +159,7 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
             c.originalBaseURL = originalBaseURL;
             if (!propagate)
                 // c.previousContext = &result;
-                throw JsonLdError(JsonLdError::NotImplemented, "need to copy result to previous context...");
+                throw JsonLdError(JsonLdError::NotImplemented, "need to copy result to previous context2...");
             result = c;
             // 5.1.3)
             continue;

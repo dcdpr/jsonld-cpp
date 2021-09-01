@@ -8,26 +8,48 @@
 
 bool JsonLdUtils::isKeyword(const std::string& property) {
 
+    // todo: should add these to a container for fast search
     return
+        // See: https://www.w3.org/TR/json-ld11/#keywords for normative list.
             property == "@base" ||
-            property == "@context" ||
             property == "@container" ||
-            property == "@default" ||
-            property == "@embed" ||
-            property == "@explicit" ||
+            property == "@context" ||
+            property == "@direction" ||
             property == "@graph" ||
             property == "@id" ||
+            property == "@import" ||
+            property == "@included" ||
             property == "@index" ||
+            property == "@json" ||
             property == "@language" ||
             property == "@list" ||
-            property == "@omitDefault" ||
+            property == "@nest" ||
+            property == "@none" ||
+            property == "@prefix" ||
+            property == "@propagate" ||
+            property == "@protected" ||
             property == "@reverse" ||
-            property == "@preserve" ||
             property == "@set" ||
             property == "@type" ||
             property == "@value" ||
+            property == "@version" ||
             property == "@vocab" ||
-            property == "@requireAll";
+            // See: https://w3c.github.io/json-ld-api/#api-keywords
+            property == "@preserve" ||
+            // See: https://www.w3.org/TR/json-ld11-framing/#framing-keywords
+            property == "@default" ||
+            property == "@embed" ||
+            property == "@always" ||
+            property == "@once" ||
+            property == "@never" ||
+            property == "@explicit" ||
+            property == "@null" ||
+            property == "@omitDefault" ||
+            property == "@requireAll" ||
+            // these are other keywords found reading through the spec. Not sure why they aren't
+            // included in the above.
+            property == "@any"
+            ;
 }
 
 bool JsonLdUtils::isKeywordForm(const std::string& property) {
