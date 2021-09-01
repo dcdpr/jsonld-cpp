@@ -880,8 +880,6 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
 
     for ( const auto& nestingKey : nestKeys) {
 
-        throw JsonLdError(JsonLdError::NotImplemented, "need to add implement @nest handling");
-
         // 14.1)
         // Initialize nested values to the value of nesting-key in element, ensuring
         // that it is an array.
@@ -896,12 +894,17 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
             // 14.2.1)
             // If nested value is not a map, or any key within nested value expands to
             // @value, an invalid @nest value error has been detected and processing is aborted.
+            if(!nestedValue.is_object()) {
+                throw JsonLdError(JsonLdError::InvalidNestValue);
+            }
 
             // 14.2.2)
             // Recursively repeat steps 3, 8, 13, and 14 using nesting-key for active
             // property, and nested value for element.
 
             // todo: ...
+            throw JsonLdError(JsonLdError::NotImplemented, "need to add implement @nest handling");
+
         }
     }
 
