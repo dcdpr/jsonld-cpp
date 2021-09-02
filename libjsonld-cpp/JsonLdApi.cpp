@@ -622,20 +622,27 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
             }
         }
         // 13.8)
+        // Otherwise, if container mapping includes @index, @type, or @id and value is a
+        // map then value is expanded from an map as follows:
         else if (element_value.is_object() &&
             (arrayContains(containerMapping, JsonLdConsts::INDEX) ||
              arrayContains(containerMapping, JsonLdConsts::TYPE) ||
              arrayContains(containerMapping, JsonLdConsts::ID))) {
 
             // 13.8.1)
+            // Initialize expanded value to an empty array.
             expandedValue = json::array();
 
             // 13.8.2)
+            // Initialize index key to the key's index mapping in active context, or
+            // @index, if it does not exist.
             std::string indexKey = JsonLdConsts::INDEX;
             if(keyTermDefinition.contains(JsonLdConsts::INDEX))
                 indexKey = keyTermDefinition.at(JsonLdConsts::INDEX).get<std::string>();
 
             // 13.8.3)
+            // For each key-value pair index-index value in value, ordered lexicographically
+            // by index if ordered is true:
             std::vector<std::string> indexKeys;
             for(auto& el : element_value.items()) {
                 indexKeys.push_back(el.key());
@@ -647,6 +654,8 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                 json indexValue = element_value[index];
 
                 // 13.8.3.1)
+                // If container mapping includes @id or @type, initialize map context to the previous context
+                // from active context if it exists, otherwise, set map context to active context.
                 Context mapContext = activeCtx;
                 if(arrayContains(containerMapping, JsonLdConsts::TYPE) ||
                    arrayContains(containerMapping, JsonLdConsts::ID)) {
@@ -655,6 +664,11 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                 }
 
                 // 13.8.3.2)
+                // If container mapping includes @type and index's term definition in map
+                // context has a local context, update map context to the result of the
+                // Context Processing algorithm, passing map context as active context the
+                // value of the index's local context as local context and base URL from
+                // the term definition for index in map context.
                 if(arrayContains(containerMapping, JsonLdConsts::TYPE)) {
                     auto indexTermDefinition = mapContext.getTermDefinition(index);
                     if(indexTermDefinition.contains(JsonLdConsts::LOCALCONTEXT)) {
@@ -664,21 +678,29 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                     }
                 }
                 // 13.8.3.3)
+                // Otherwise, set map context to active context.
                 else
                     mapContext = activeCtx;
 
                 // 13.8.3.4)
+                // Initialize expanded index to the result of IRI expanding index.
                 auto expandedIndex = activeCtx.expandIri(index, false, true);
 
                 // 13.8.3.5)
+                // If index value is not an array set index value to an array containing only
+                // index value.
                 if (!indexValue.is_array()) {
                     indexValue = json::array({indexValue});
                 }
 
                 // 13.8.3.6)
+                // Initialize index value to the result of using this algorithm recursively,
+                // passing map context as active context, key as active property, index value
+                // as element, base URL, true for from map, and the frameExpansion and ordered flags.
                 indexValue = expand(activeCtx, &key, indexValue, baseUrl, frameExpansion, ordered, true);
 
                 // 13.8.3.7)
+                // For each item in index value:
                 for ( auto item : indexValue) {
 
                     // 13.8.3.7.1)
@@ -695,7 +717,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                     // 13.8.3.7.2)
                     // If container mapping includes @index, index key is not @index, and expanded
                     // index is not @none:
-                    if(arrayContains(containerMapping, JsonLdConsts::GRAPH) &&
+                    if(arrayContains(containerMapping, JsonLdConsts::INDEX) &&
                        indexKey != JsonLdConsts::INDEX &&
                        expandedIndex != JsonLdConsts::NONE) {
 
@@ -713,7 +735,9 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                         // Initialize index property values to an array consisting of re-expanded
                         // index followed by the existing values of the concatenation of expanded
                         // index key in item, if any.
-                        json indexPropertyValues = json::array({reExpandedIndex, item[expandedIndexKey]});
+                        json indexPropertyValues = json::array({reExpandedIndex});
+                        for(const auto& el : item[expandedIndexKey])
+                            indexPropertyValues.push_back(el);
 
                         // 13.8.3.7.2.4)
                         // Add the key-value pair (expanded index key-index property values) to item.

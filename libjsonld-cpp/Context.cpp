@@ -481,6 +481,7 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
  }
 
 std::string Context::getContainer(std::string property) {
+    // todo: is this function valid anymore?
 //        if (property == null) {
 //            return null;
 //        }
@@ -1155,14 +1156,21 @@ void Context::createTermDefinition(json context, const std::string& term,
     }
 
     // 20)
+    // If value contains the entry @index:
     if (value.contains(JsonLdConsts::INDEX)) {
 
         // 20.1)
-        if (isProcessingMode(JsonLdOptions::JSON_LD_1_0) || !definition[JsonLdConsts::CONTAINER].contains(JsonLdConsts::INDEX)) {
+        // If processing mode is json-ld-1.0 or container mapping does not include
+        // @index, an invalid term definition has been detected and processing is aborted.
+        if (isProcessingMode(JsonLdOptions::JSON_LD_1_0) ||
+            !JsonLdUtils::containsOrEquals(definition[JsonLdConsts::CONTAINER], JsonLdConsts::INDEX)) {
             throw JsonLdError(JsonLdError::InvalidTermDefinition,"");
         }
 
         // 20.2)
+        // Initialize index to the value associated with the @index entry. If the result of
+        // IRI expanding that value is not an IRI, an invalid term definition has been detected
+        // and processing is aborted.
         auto index = value.at(JsonLdConsts::INDEX);
 
         if (!index.is_string()) {
@@ -1178,6 +1186,7 @@ void Context::createTermDefinition(json context, const std::string& term,
         }
 
         // 20.3)
+        // Set the index mapping of definition to index
         definition[JsonLdConsts::INDEX] = indexStr;
     }
 
