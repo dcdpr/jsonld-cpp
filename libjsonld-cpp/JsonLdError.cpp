@@ -65,6 +65,6 @@ const char JsonLdError::InvalidPrefixValue[] = "invalid @prefix value";
 const char JsonLdError::InvalidContextNullification[] = "invalid context nullification";
 const char JsonLdError::ContextOverflow[] = "context overflow";
 const char JsonLdError::InvalidContextEntry[] = "invalid context entry";
-const char JsonLdError::InvalidImportValue[] = "invalid import value";
+const char JsonLdError::InvalidImportValue[] = "invalid @import value";
 const char JsonLdError::InvalidPropagateValue[] = "invalid @propagate value";
 const char JsonLdError::InvalidIncludedValue[] = "invalid @included value";

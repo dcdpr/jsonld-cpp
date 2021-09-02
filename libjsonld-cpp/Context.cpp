@@ -264,22 +264,31 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
         }
 
         // 5.6)
+        // If context has an @import entry:
         if (context.contains(JsonLdConsts::IMPORT)) {
             // 5.6.1)
+            // If processing mode is json-ld-1.0, an invalid context entry error has
+            // been detected and processing is aborted.
             if (isProcessingMode(JsonLdOptions::JSON_LD_1_0))
                 throw JsonLdError(JsonLdError::InvalidContextEntry);
 
-            auto value = context.at(JsonLdConsts::BASE);
+            auto value = context.at(JsonLdConsts::IMPORT);
 
             // 5.6.2)
+            // Otherwise, if the value of @import is not a string, an invalid @import value
+            // error has been detected and processing is aborted.
             if (!value.is_string())
                 throw JsonLdError(JsonLdError::InvalidImportValue);
 
             // 5.6.3)
+            // Initialize import to the result of resolving the value of @import
+            // against base URL.
             std::string importStr = value.get<std::string>();
             std::string importUri = JsonLdUrl::resolve(&baseURL, &importStr);
 
             // 5.6.4)
+            // Dereference import using the LoadDocumentCallback, passing import for url, and
+            // http://www.w3.org/ns/json-ld#context for profile and for requestProfile.
             if (options.getDocumentLoader() == nullptr) {
                 throw JsonLdError(JsonLdError::LoadingRemoteContextFailed, "DocumentLoader is null");
             }
@@ -296,12 +305,18 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
                 }
             }
             // 5.6.5)
+            // If import cannot be dereferenced, or cannot be transformed into the internal representation, a
+            // loading remote context failed error has been detected and processing is aborted.
             const json &document = rd->getJSONContent();
             if (!document.is_object()) {
                 throw JsonLdError(JsonLdError::LoadingRemoteContextFailed, "document is not a json document");
             }
 
             // 5.6.6)
+            // If the dereferenced document has no top-level map with an @context entry, or
+            // if the value of @context is not a context definition (i.e., it is not an map),
+            // an invalid remote context has been detected and processing is aborted; otherwise,
+            // set import context to the value of that entry.
             if (!document.contains(JsonLdConsts::CONTEXT)) {
                 throw JsonLdError(JsonLdError::InvalidRemoteContext, "document is missing @context entry");
             }
@@ -311,10 +326,14 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
             }
 
             // 5.6.7)
+            // If import context has a @import entry, an invalid context entry error
+            // has been detected and processing is aborted.
             if (importContext.contains(JsonLdConsts::IMPORT))
                 throw JsonLdError(JsonLdError::InvalidContextEntry, "@import context has an @import entry");
 
             // 5.6.8)
+            // Set context to the result of merging context into import context, replacing
+            // common entries with those from context.
             importContext.update(context);
             context = importContext;
 
