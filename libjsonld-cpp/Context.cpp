@@ -121,7 +121,8 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
     // in step 5.11
     if (localContext.is_object()) {
         if (localContext.contains(JsonLdConsts::PROPAGATE)) {
-            propagate = localContext.at(JsonLdConsts::PROPAGATE).get<bool>();
+            if(localContext.at(JsonLdConsts::PROPAGATE).is_boolean())
+                propagate = localContext.at(JsonLdConsts::PROPAGATE).get<bool>();
         }
     }
 
@@ -454,8 +455,7 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
             if (isProcessingMode(JsonLdOptions::JSON_LD_1_0))
                 throw JsonLdError(JsonLdError::InvalidContextEntry);
             // 5.11.2)
-            auto value = context.at(JsonLdConsts::PROPAGATE);
-            if (!value.is_boolean()) {
+            if (!context.at(JsonLdConsts::PROPAGATE).is_boolean()) {
                 throw JsonLdError(JsonLdError::InvalidPropagateValue,
                                   R"(@propagate must be either true or false)");
             }
