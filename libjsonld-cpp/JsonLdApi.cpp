@@ -803,8 +803,12 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                             expandedIndex != JsonLdConsts::NONE) {
                         auto itemTypes = item[JsonLdConsts::TYPE];
                         json types = json::array({expandedIndex});
-                        if(!itemTypes.is_null())
-                            types.push_back(itemTypes); // todo: do I need to push each itemType separately?
+                        if(!itemTypes.is_null()) {
+                            if(itemTypes.is_array())
+                                types.insert(types.end(), itemTypes.begin(), itemTypes.end());
+                            else
+                                types.push_back(itemTypes);
+                        }
                         item[JsonLdConsts::TYPE] = types;
                     }
 
