@@ -40,6 +40,7 @@ void Context::init() {
     overrideProtected = false;
     propagate = true;
     validateScopedContext = true;
+    defaultBaseDirection = "null";
 }
 
 /**
@@ -91,7 +92,7 @@ Context Context::parse(const nlohmann::json & localContext, const std::string & 
  * @throws JsonLdError
  *             If there is an error parsing the contexts.
  */
-Context Context::parse(const json & localContext, const std::string & baseURL,
+Context Context::parse(const json & ilocalContext, const std::string & baseURL,
                          std::vector<std::string> & iremoteContexts,
                          bool ioverrideProtected,
                          bool ipropagate,
@@ -119,10 +120,10 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
     // If local context is an object containing the member @propagate, its value MUST be
     // boolean true or false, set propagate to that value. Note: Error handling is performed
     // in step 5.11
-    if (localContext.is_object()) {
-        if (localContext.contains(JsonLdConsts::PROPAGATE)) {
-            if(localContext.at(JsonLdConsts::PROPAGATE).is_boolean())
-                propagate = localContext.at(JsonLdConsts::PROPAGATE).get<bool>();
+    if (ilocalContext.is_object()) {
+        if (ilocalContext.contains(JsonLdConsts::PROPAGATE)) {
+            if(ilocalContext.at(JsonLdConsts::PROPAGATE).is_boolean())
+                propagate = ilocalContext.at(JsonLdConsts::PROPAGATE).get<bool>();
         }
     }
 
@@ -135,17 +136,24 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
     }
 
     // 4)
-    json myContext = json::array();
-    if (!localContext.is_array())
-        myContext.push_back(localContext);
+    // If local context is not an array, set local context to an array containing only
+    // local context.
+    json localContext = json::array();
+    if (!ilocalContext.is_array())
+        localContext = json::array({ilocalContext});
     else
-        myContext.insert(myContext.end(), localContext.begin(), localContext.end());
+        localContext.insert(localContext.end(), ilocalContext.begin(), ilocalContext.end());
 
     // 5)
-    for (auto context : myContext) {
+    // For each item context in local context:
+    for (auto context : localContext) {
         // 5.1)
+        // If context is null:
         if (context.is_null()) {
             // 5.1.1)
+            // If override protected is false and active context contains any protected
+            // term definitions, an invalid context nullification has been detected and
+            // processing is aborted.
             if (!overrideProtected) {
                 // search for any term definitions that have a protected term
                 for (auto term : termDefinitions) {
@@ -154,7 +162,12 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
                         throw JsonLdError(JsonLdError::InvalidContextNullification);
                 }
             }
+
             // 5.1.2)
+            // Initialize result as a newly-initialized active context, setting both base IRI
+            // and original base URL to the value of original base URL in active context,
+            // and, if propagate is false, previous context in result to the previous value
+            // of result.
             Context c(options);
             c.baseIRI = originalBaseURL;
             c.originalBaseURL = originalBaseURL;
@@ -162,12 +175,18 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
                 // c.previousContext = &result;
                 throw JsonLdError(JsonLdError::NotImplemented, "need to copy result to previous context2...");
             result = c;
+
             // 5.1.3)
+            // Continue with the next context.
             continue;
         }
             // 5.2)
+            // If context is a string,
         else if (context.is_string()) {
             // 5.2.1)
+            // Initialize context to the result of resolving context against base URL. If base
+            // URL is not a valid IRI, then context MUST be a valid IRI, otherwise a loading
+            // document failed error has been detected and processing is aborted.
             std::string contextUri = context.get<std::string>();
 
             if (!baseURL.empty()) {  // todo: was null
@@ -181,12 +200,17 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
             }
 
             // 5.2.2)
+            // If validate scoped context is false, and remote contexts already includes
+            // context do not process context further and continue to any next context in local context.
             if (!validateScopedContext &&
                 std::find(remoteContexts.begin(), remoteContexts.end(), contextUri) != remoteContexts.end()) {
                 continue;
             }
 
             // 5.2.3)
+            // If the number of entries in the remote contexts array exceeds a processor defined
+            // limit, a context overflow error has been detected and processing is aborted;
+            // otherwise, add context to remote contexts.
             if (remoteContexts.size() > MAX_REMOTE_CONTEXTS) {
                 throw JsonLdError(JsonLdError::ContextOverflow,
                                   "Too many contexts [>" + std::to_string(MAX_REMOTE_CONTEXTS) + "].");
@@ -194,14 +218,25 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
 
             remoteContexts.push_back(contextUri);
 
-            // 5.2.4) ...
+            // 5.2.4)
+            // If context was previously dereferenced, then the processor MUST NOT do a
+            // further dereference, and context is set to the previously established
+            // internal representation: set context document to the previously dereferenced
+            // document, and set loaded context to the value of the @context entry from the
+            // document in context document.
 
             // 5.2.5)
+            // Otherwise, set context document to the RemoteDocument obtained by dereferencing
+            // context using the LoadDocumentCallback, passing context for url, and
+            // http://www.w3.org/ns/json-ld#context for profile and for requestProfile.
             if (options.getDocumentLoader() == nullptr) {
                 throw JsonLdError(JsonLdError::LoadingRemoteContextFailed, "DocumentLoader is null");
             }
 
             // 5.2.5.1)
+            // If context cannot be dereferenced, or the document from context document cannot
+            // be transformed into the internal representation , a loading remote context
+            // failed error has been detected and processing is aborted.
             std::unique_ptr<RemoteDocument> rd;
             try {
                 rd = options.getDocumentLoader()->loadDocument(contextUri);
@@ -221,22 +256,32 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
             }
 
             // 5.2.5.2)
+            // If the document has no top-level map with an @context entry, an invalid remote
+            // context has been detected and processing is aborted.
             if (!document.contains(JsonLdConsts::CONTEXT)) {
                 throw JsonLdError(JsonLdError::InvalidRemoteContext, "document is missing @context entry");
             }
 
             // 5.2.5.3)
+            // Set loaded context to the value of that entry.
             const json &loadedContext = document[JsonLdConsts::CONTEXT];
 
             // 5.2.6)
+            // Set result to the result of recursively calling this algorithm, passing
+            // result for active context, loaded context for local context, the documentUrl
+            // of context document for base URL, a copy of remote contexts, and validate
+            // scoped context.
             result = result.parse(loadedContext, rd->getDocumentUrl(), remoteContexts, overrideProtected, propagate,
                                     validateScopedContext);
 
             // 5.2.7)
+            // Continue with the next context.
             continue;
 
         } else if (!(context.is_object())) {
             // 5.3)
+            // If context is not a map, an invalid local context error has been detected
+            // and processing is aborted.
             if (context.is_string())
                 throw JsonLdError(JsonLdError::InvalidLocalContext, context);
             else
@@ -244,7 +289,11 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
         }
         checkEmptyKey(context);
 
+        // 5.4)
+        // Otherwise, context is a context definition.
+
         // 5.5)
+        // If context has an @version entry:
         if (context.contains(JsonLdConsts::VERSION)) {
             auto value = context.at(JsonLdConsts::VERSION);
             std::string str;
@@ -256,10 +305,14 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
                 str = "1.1";
 
             // 5.5.1)
+            // If the associated value is not 1.1, an invalid @version value has been
+            // detected, and processing is aborted.
             if (str != "1.1")
                 throw JsonLdError(JsonLdError::InvalidVersionValue);
 
             // 5.5.2)
+            // If processing mode is set to json-ld-1.0, a processing mode conflict error
+            // has been detected and processing is aborted.
             if (isProcessingMode(JsonLdOptions::JSON_LD_1_0))
                 throw JsonLdError(JsonLdError::ProcessingModeConflict);
         }
@@ -406,14 +459,20 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
         }
 
         // 5.9)
+        // If context has an @language entry:
         if (context.contains(JsonLdConsts::LANGUAGE)) {
             // 5.9.1)
+            // Initialize value to the value associated with the @language entry.
             auto value = context.at(JsonLdConsts::LANGUAGE);
             if (value.is_null()) {
                 // 5.9.2)
+                // If value is null, remove any default language from result.
                 result.erase(JsonLdConsts::LANGUAGE);
             } else if (value.is_string()) {
                 // 5.9.3)
+                // Otherwise, if value is a string, the default language of result is set
+                // to value. If it is not a string, an invalid default language error has
+                // been detected and processing is aborted.
                 result.insert(
                         std::make_pair(JsonLdConsts::LANGUAGE, value.get<std::string>())); // todo: value to lowercase
                 // todo: need to check if language is not well-formed, and if so, emit a warning
@@ -423,26 +482,33 @@ Context Context::parse(const json & localContext, const std::string & baseURL,
         }
 
         // 5.10)
+        // If context has an @direction entry:
         if (context.contains(JsonLdConsts::DIRECTION)) {
             // 5.10.1)
+            // If processing mode is json-ld-1.0, an invalid context entry error has been
+            // detected and processing is aborted.
             if (isProcessingMode(JsonLdOptions::JSON_LD_1_0))
                 throw JsonLdError(JsonLdError::InvalidContextEntry);
             // 5.10.2)
+            // Initialize value to the value associated with the @direction entry.
             auto value = context.at(JsonLdConsts::DIRECTION);
             if (value.is_null()) {
                 // 5.10.3)
-                result.erase(JsonLdConsts::DIRECTION);
+                // If value is null, remove any base direction from result.
+                result.setDefaultBaseDirection("null");
             } else if (value.is_string()) {
                 // 5.10.4)
+                // Otherwise, if value is a string, the base direction of result is set
+                // to value. If it is not null, "ltr", or "rtl", an invalid base direction
+                // error has been detected and processing is aborted.
                 std::string directionStr = value;
 
                 if (directionStr == "ltr" || directionStr == "rtl") {
-                    result.insert(std::make_pair(JsonLdConsts::DIRECTION, directionStr));
+                    result.setDefaultBaseDirection(directionStr);
                 } else {
                     throw JsonLdError(JsonLdError::InvalidBaseDirection,
                                       R"(@direction must be either "ltr" or "rtl")");
                 }
-
             } else {
                 throw JsonLdError(JsonLdError::InvalidBaseDirection,
                                   R"(@direction must be either null, "ltr" or "rtl")");
@@ -1382,12 +1448,19 @@ json Context::expandValue(const std::string & activeProperty, const json& value)
         std::string typeMapping = termDefinition.at(JsonLdConsts::TYPE);
 
         // 1)
+        // If the active property has a type mapping in active context that is @id, and
+        // the value is a string, return a new map containing a single entry where the key
+        // is @id and the value is the result IRI expanding value using true for document
+        // relative and false for vocab.
         if (typeMapping == JsonLdConsts::ID && value.is_string()) {
             result[JsonLdConsts::ID] = expandIri(value.get<std::string>(), true, false);
             return result;
         }
 
         // 2)
+        // If active property has a type mapping in active context that is @vocab, and the
+        // value is a string, return a new map containing a single entry where the key is @id
+        // and the value is the result of IRI expanding value using true for document relative.
         if (typeMapping == JsonLdConsts::VOCAB && value.is_string()) {
             result[JsonLdConsts::ID] = expandIri(value.get<std::string>(), true, true);
             return result;
@@ -1395,6 +1468,7 @@ json Context::expandValue(const std::string & activeProperty, const json& value)
     }
 
     // 3)
+    // Otherwise, initialize result to a map with an @value entry whose value is set to value.
     result[JsonLdConsts::VALUE] = value;
 
     if(termDefinition.contains(JsonLdConsts::TYPE)) {
@@ -1402,6 +1476,9 @@ json Context::expandValue(const std::string & activeProperty, const json& value)
         std::string typeMapping = termDefinition.at(JsonLdConsts::TYPE);
 
         // 4)
+        // If active property has a type mapping in active context, other than @id, @vocab, or
+        // @none, add @type to result and set its value to the value associated with the
+        // type mapping.
         if (typeMapping != JsonLdConsts::ID &&
             typeMapping != JsonLdConsts::VOCAB &&
             typeMapping != JsonLdConsts::NONE) {
@@ -1409,8 +1486,11 @@ json Context::expandValue(const std::string & activeProperty, const json& value)
         }
     }
     // 5)
+    // Otherwise, if value is a string:
     else if (value.is_string()) {
         // 5.1)
+        // Initialize language to the language mapping for active property in active
+        // context, if any, otherwise to the default language of active context.
         std::string language;
         if (termDefinition.contains(JsonLdConsts::LANGUAGE)) {
             if(!termDefinition.at(JsonLdConsts::LANGUAGE).is_null())
@@ -1420,19 +1500,23 @@ json Context::expandValue(const std::string & activeProperty, const json& value)
             language = contextMap.at(JsonLdConsts::LANGUAGE);
         }
         // 5.2)
+        // Initialize direction to the direction mapping for active property in active
+        // context, if any, otherwise to the default base direction of active context.
         std::string direction;
         if (termDefinition.contains(JsonLdConsts::DIRECTION)) {
             if(!termDefinition.at(JsonLdConsts::DIRECTION).is_null())
                 direction = termDefinition.at(JsonLdConsts::DIRECTION);
         }
-        else if (contextMap.count(JsonLdConsts::DIRECTION)) {
-            direction = contextMap.at(JsonLdConsts::DIRECTION);
+        else  {
+            direction = getDefaultBaseDirection();
         }
         // 5.3)
+        // If language is not null, add @language to result with the value language.
         if(!language.empty())
             result[JsonLdConsts::LANGUAGE] = language;
-        // 5.3)
-        if(!direction.empty())
+        // 5.4)
+        // If direction is not null, add @direction to result with the value direction.
+        if(!direction.empty() && direction != "null")
             result[JsonLdConsts::DIRECTION] = direction;
     }
     return result;
@@ -1480,7 +1564,10 @@ Context *Context::getPreviousContext() const {
     return previousContext;
 }
 
-const std::string &Context::getDefaultBaseDirection() const {
+std::string Context::getDefaultBaseDirection() const {
     return defaultBaseDirection;
 }
 
+void Context::setDefaultBaseDirection(const std::string & direction) {
+    defaultBaseDirection = direction;
+}

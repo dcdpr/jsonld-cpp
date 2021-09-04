@@ -561,16 +561,24 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
             expandedValue[JsonLdConsts::TYPE] = JsonLdConsts::JSON;
         }
         // 13.7)
+        // Otherwise, if container mapping includes @language and value is a map then
+        // value is expanded from a language map as follows:
         else if (arrayContains(containerMapping, JsonLdConsts::LANGUAGE) && element_value.is_object()) {
             // 13.7.1)
+            // Initialize expanded value to an empty array.
             expandedValue = json::array();
             // 13.7.2)
-            std::string direction = activeCtx.getDefaultBaseDirection();
+            // Initialize direction to the default base direction from active context.
+            json direction = activeCtx.getDefaultBaseDirection();
             // 13.7.3)
+            // If key's term definition in active context has a direction mapping, update
+            // direction with that value.
             if(keyTermDefinition.contains(JsonLdConsts::DIRECTION))
                 direction = keyTermDefinition.at(JsonLdConsts::DIRECTION);
 
             // 13.7.4)
+            // For each key-value pair language-language value in value, ordered
+            // lexicographically by language if ordered is true:
             std::vector<std::string> value_keys;
             for (json::iterator it = element_value.begin(); it != element_value.end(); ++it) {
                 value_keys.push_back(it.key());
@@ -582,42 +590,56 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                 json languageValue = element_value[language];
 
                 // 13.7.4.1)
+                // If language value is not an array set language value to an array
+                // containing only language value.
                 if (!languageValue.is_array()) {
                     languageValue = json::array({languageValue});
                 }
 
                 // 13.7.4.2)
+                // For each item in language value:
                 for ( const auto& item : languageValue) {
                     // 13.7.4.2.1)
+                    // If item is null, continue to the next entry in language value.
                     if(item.is_null())
                         continue;
                     // 13.7.4.2.2)
+                    // item must be a string, otherwise an invalid language map value error
+                    // has been detected and processing is aborted.
                     if (!item.is_string()) {
                         std::stringstream ss;
                         ss << "Expected: " << item << " to be a string";
                         throw JsonLdError(JsonLdError::InvalidLanguageMapValue, ss.str());
                     }
                     // 13.7.4.2.3)
-                    json tmp = ObjUtils::newMap();
-                    tmp[JsonLdConsts::VALUE] = item;
-                    tmp[JsonLdConsts::LANGUAGE] = language;
+                    // Initialize a new map v consisting of two key-value pairs: (@value-item)
+                    // and (@language-language). If item is neither @none nor well-formed
+                    // according to section 2.2.9 of [BCP47], processors SHOULD issue a
+                    // warning. Note: Processors MAY normalize language tags to lower case.
+                    json v = ObjUtils::newMap();
+                    std::transform(language.begin(), language.end(), language.begin(), &::tolower);
+                    v[JsonLdConsts::VALUE] = item;
+                    v[JsonLdConsts::LANGUAGE] = language;
+                    // todo: issue warnings
 
                     // 13.7.4.2.4)
-                    std::transform(language.begin(), language.end(), language.begin(), &::tolower);
+                    // If language is @none, or expands to @none, remove @language from v.
                     if(language != JsonLdConsts::NONE) {
                         auto expandedLanguage  = activeCtx.expandIri(language, false, true);
                         if(expandedLanguage != JsonLdConsts::NONE) {
-                            tmp[JsonLdConsts::LANGUAGE] = language;
-                            // todo: need to warn about non-well formed language values
+                            v[JsonLdConsts::LANGUAGE] = language;
                         }
                     }
 
                     // 13.7.4.2.5)
-                    if(!direction.empty())
-                        tmp[JsonLdConsts::DIRECTION] = direction;
+                    // If direction is not null, add an entry for @direction to v with direction.
+                    if(!direction.is_null() &&
+                       (direction.is_string() && !direction.get<std::string>().empty() && direction != "null"))
+                        v[JsonLdConsts::DIRECTION] = direction;
 
                     // 13.7.4.2.6)
-                    expandedValue.push_back(tmp);
+                    // Append v to expanded value.
+                    expandedValue.push_back(v);
                 }
             }
         }

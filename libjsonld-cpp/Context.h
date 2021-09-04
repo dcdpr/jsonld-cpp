@@ -23,7 +23,7 @@ private:
     Context *inverseContext;
     std::string vocabularyMapping;
     std::string defaultLanguage;
-    std::string defaultBaseDirection;
+    std::string defaultBaseDirection; // todo: this should be an enum
     Context *previousContext;
 
     StringMap contextMap; // todo: should probably replace this with several specific variables
@@ -77,7 +77,9 @@ public:
     bool isReverseProperty(const std::string& property);
     bool isProcessingMode(const std::string& mode);
 
-        const std::string &getDefaultBaseDirection() const;
+    void setDefaultBaseDirection(const std::string & direction);
+    std::string getDefaultBaseDirection() const;
+
     Context *getPreviousContext() const;
 
         const std::string &getBaseIri() const;
