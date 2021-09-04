@@ -624,11 +624,9 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
 
                     // 13.7.4.2.4)
                     // If language is @none, or expands to @none, remove @language from v.
-                    if(language != JsonLdConsts::NONE) {
-                        auto expandedLanguage  = activeCtx.expandIri(language, false, true);
-                        if(expandedLanguage != JsonLdConsts::NONE) {
-                            v[JsonLdConsts::LANGUAGE] = language;
-                        }
+                    if(language == JsonLdConsts::NONE ||
+                       activeCtx.expandIri(language, false, true) == JsonLdConsts::NONE) {
+                        v.erase(JsonLdConsts::LANGUAGE);
                     }
 
                     // 13.7.4.2.5)
