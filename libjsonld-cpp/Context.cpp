@@ -623,9 +623,13 @@ std::string Context::expandIri(
     // Definition algorithm, passing active context, local context, value as term, and
     // defined. This will ensure that a term definition is created for value in active
     // context during Context Processing.
-    if (!context.is_null() && context.contains(value) &&
-        defined.find(value) != defined.end() && !defined.at(value) ) {
-        createTermDefinition(context, value, defined);
+    if (!context.is_null() && context.contains(value)) {
+        auto v = context.at(value);
+        if(v.is_string() &&
+           defined.find(v.get<std::string>()) != defined.end() &&
+           !defined.at(v.get<std::string>())) {
+            createTermDefinition(context, value, defined);
+        }
     }
 
     // 4)
@@ -753,6 +757,9 @@ void Context::createTermDefinition(json context, const std::string& term,
     std::cout << "... 1.1 Context::createTermDefinition()\n";
 
     // 1)
+    // If defined contains the entry term and the associated value is true (indicating
+    // that the term definition has already been created), return. Otherwise, if the
+    // value is false, a cyclic IRI mapping error has been detected and processing is aborted.
     if (defined.find(term) != defined.end()) {
         if (defined.at(term)) {
             return;
@@ -1089,8 +1096,15 @@ void Context::createTermDefinition(json context, const std::string& term,
 
     }
     // 16)
+    // Otherwise if the term contains a slash (/):
     else if (term.find('/') != std::string::npos) {
-        // 16.1, 16.2)
+        // 16.1
+        // Term is a relative IRI reference.
+
+        // 16.2)
+        // Set the IRI mapping of definition to the result of IRI expanding term. If the
+        // resulting IRI mapping is not an IRI, an invalid IRI mapping error has been detected
+        // and processing is aborted.
         std::string expandedTerm = expandIri(term, false, true, context, defined);
         if(expandedTerm.empty()) {
             std::cout << "warning: expandedTerm.empty()\n"; // todo: remove if this doesn't happen
@@ -1348,16 +1362,23 @@ void Context::createTermDefinition(json context, const std::string& term,
     }
 
     // 25)
+    // If value contains the entry @prefix:
     if (value.contains(JsonLdConsts::PREFIX)) {
 
         // 25.1)
+        // If processing mode is json-ld-1.0, or if term contains a colon (:) or
+        // slash (/), an invalid term definition has been detected and processing
+        // is aborted.
         if (isProcessingMode(JsonLdOptions::JSON_LD_1_0) ||
             term.find(':') != std::string::npos ||
             term.find('/') != std::string::npos) {
-            throw JsonLdError(JsonLdError::InvalidTermDefinition,"");
+            throw JsonLdError(JsonLdError::InvalidTermDefinition);
         }
 
         // 25.2)
+        // Set the prefix flag to the value associated with the @prefix entry, which
+        // MUST be a boolean. Otherwise, an invalid @prefix value error has been detected
+        // and processing is aborted.
         auto prefix = value.at(JsonLdConsts::PREFIX);
 
         if(!prefix.is_boolean())
@@ -1366,6 +1387,8 @@ void Context::createTermDefinition(json context, const std::string& term,
         definition[JsonLdConsts::PREFIX] = prefix;
 
         // 25.3)
+        // If the prefix flag of definition is set to true, and its IRI mapping is a
+        // keyword, an invalid term definition has been detected and processing is aborted.
         if (definition[JsonLdConsts::PREFIX] && JsonLdUtils::isKeyword(definition[JsonLdConsts::ID])) {
             throw JsonLdError(JsonLdError::InvalidTermDefinition,"");
         }
