@@ -719,7 +719,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                 // Initialize index value to the result of using this algorithm recursively,
                 // passing map context as active context, key as active property, index value
                 // as element, base URL, true for from map, and the frameExpansion and ordered flags.
-                indexValue = expand(activeCtx, &key, indexValue, baseUrl, frameExpansion, ordered, true);
+                indexValue = expand(mapContext, &key, indexValue, baseUrl, frameExpansion, ordered, true);
 
                 // 13.8.3.7)
                 // For each item in index value:
