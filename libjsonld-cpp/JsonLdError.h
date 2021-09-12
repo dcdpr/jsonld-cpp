@@ -61,6 +61,7 @@ public:
     static const char InvalidImportValue[];
     static const char InvalidPropagateValue[];
     static const char InvalidIncludedValue[];
+    static const char ProtectedTermRedefinition[];
 
 private:
     nlohmann::json detail;

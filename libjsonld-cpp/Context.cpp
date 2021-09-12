@@ -538,7 +538,10 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
                 key == JsonLdConsts::VERSION || key == JsonLdConsts::VOCAB) {
                 continue;
             }
-            result.createTermDefinition(context, key, defined);
+            bool isProtected = false;
+            if(context.contains(JsonLdConsts::PROTECTED))
+                isProtected = context[JsonLdConsts::PROTECTED];
+            result.createTermDefinition(context, key, defined, baseURL, isProtected, overrideProtected, remoteContexts);
         }
 
     }
@@ -747,8 +750,16 @@ std::string Context::expandIri(
  * @param defined map of defined values
  * @throws JsonLdError
  */
-void Context::createTermDefinition(json context, const std::string& term,
-                                   std::map<std::string, bool> & defined) {
+void Context::createTermDefinition(
+        nlohmann::json context,
+        const std::string& term,
+        std::map<std::string, bool> & defined,
+        std::string baseURL,
+        bool isProtected,
+        bool overrideProtected,
+        std::vector<std::string> remoteContexts,
+        bool validateScopedContext) {
+
     // Comments in this function are labelled with numbers that correspond to sections
     // from the description of the create term definition algorithm.
     // See: https://w3c.github.io/json-ld-api/#create-term-definition
@@ -768,19 +779,32 @@ void Context::createTermDefinition(json context, const std::string& term,
     }
 
     // 2)
+    // If term is the empty string (""), an invalid term definition error has been detected
+    // and processing is aborted.
     if (term.empty())
         throw JsonLdError(JsonLdError::InvalidTermDefinition, term);
 
+    // 2)
+    // Otherwise, set the value associated with defined's term entry to false. This indicates
+    // that the term definition is now being created but is not yet complete.
     defined[term] = false;
 
     // 3)
+    // Initialize value to a copy of the value associated with the entry term in local context.
     auto value = context.at(term);
 
     // 4)
+    // If term is @type, and processing mode is json-ld-1.0, a keyword redefinition error has
+    // been detected and processing is aborted.
     if(term == JsonLdConsts::TYPE) {
         if(isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
             throw JsonLdError(JsonLdError::KeywordRedefinition, term);
         }
+        // At this point, value MUST be a map with only either or both of the following entries:
+        // * An entry for @container with value @set.
+        // * An entry for @protected.
+        // Any other value means that a keyword redefinition error has been detected and
+        // processing is aborted.
         if(value.is_object()) {
             if(value.size() == 1 &&
                value.contains(JsonLdConsts::CONTAINER)) {
@@ -818,6 +842,8 @@ void Context::createTermDefinition(json context, const std::string& term,
     }
 
     // 6)
+    // Initialize previous definition to any existing term definition for term in
+    // active context, removing that term definition from active context.
     json previousDefinition;
     if (termDefinitions.count(term)) {
         previousDefinition = termDefinitions[term];
@@ -827,18 +853,24 @@ void Context::createTermDefinition(json context, const std::string& term,
     bool simpleTerm = false;
 
     // 7)
+    // If value is null, convert it to a map consisting of a single entry whose key
+    // is @id and whose value is null.
     if(value.is_null()) {
         value = ObjUtils::newMap(JsonLdConsts::ID, nullptr);
     }
 
     // 8)
-    if (value.is_string()) {
+    // Otherwise, if value is a string, convert it to a map consisting of a single entry whose
+    // key is @id and whose value is value. Set simple term to true.
+    else if (value.is_string()) {
         value = ObjUtils::newMap(JsonLdConsts::ID, value);
         simpleTerm = true;
     }
 
     // 9)
-    if (!(value.is_object())) {
+    // Otherwise, value MUST be a map, if not, an invalid term definition error has been
+    // detected and processing is aborted. Set simple term to false.
+    else if (!(value.is_object())) {
         throw JsonLdError(JsonLdError::InvalidTermDefinition);
     }
 
@@ -846,7 +878,7 @@ void Context::createTermDefinition(json context, const std::string& term,
     auto definition = ObjUtils::newMap();
     definition[JsonLdConsts::IS_PREFIX_FLAG] = false;
     definition[JsonLdConsts::IS_REVERSE_PROPERTY_FLAG] = false;
-    definition[JsonLdConsts::IS_PROTECTED_FLAG] = false; // todo: I will need to add accessors for these flags when building the context
+    definition[JsonLdConsts::IS_PROTECTED_FLAG] = isProtected;
 
     // 11)
     if (value.contains(JsonLdConsts::PROTECTED)) {
@@ -1077,6 +1109,9 @@ void Context::createTermDefinition(json context, const std::string& term,
     else if (term.find(':', 1) != std::string::npos) {
         // todo: maybe need a new "compact uri" class? See https://www.w3.org/TR/curie/ ...
         // 15.1)
+        // If term is a compact IRI with a prefix that is an entry in local context
+        // a dependency has been found. Use this algorithm recursively passing active
+        // context, local context, the prefix as term, and defined.
         auto colIndex = term.find(':');
         std::string prefix(term, 0, colIndex);
         std::string suffix(term, colIndex + 1);
@@ -1084,16 +1119,20 @@ void Context::createTermDefinition(json context, const std::string& term,
             createTermDefinition(context, prefix, defined);
         }
         // 15.2)
+        // If term's prefix has a term definition in active context, set the IRI mapping of
+        // definition to the result of concatenating the value associated with the prefix's
+        // IRI mapping and the term's suffix.
         if (termDefinitions.find(prefix) != termDefinitions.end()) {
             auto id = termDefinitions.at(prefix).at(JsonLdConsts::ID);
             id = id.get<std::string>() + suffix;
             definition[JsonLdConsts::ID] = id;
         }
         // 15.3)
+        // Otherwise, term is an IRI or blank node identifier. Set the IRI mapping of
+        // definition to term.
         else {
             definition[JsonLdConsts::ID] = term;
         }
-
     }
     // 16)
     // Otherwise if the term contains a slash (/):
@@ -1271,28 +1310,41 @@ void Context::createTermDefinition(json context, const std::string& term,
     }
 
     // 21)
+    // If value contains the entry @context:
     if (value.contains(JsonLdConsts::CONTEXT)) {
 
         // 21.1)
+        // If processing mode is json-ld-1.0, an invalid term definition has been detected
+        // and processing is aborted.
         if (isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
             throw JsonLdError(JsonLdError::InvalidTermDefinition,"");
         }
 
         // 21.2)
+        // Initialize context to the value associated with the @context entry, which is treated
+        // as a local context.
         auto localContext = value.at(JsonLdConsts::CONTEXT);
 
-        // 21.3.
-//        try {
-//            // todo: need to wait on implementing this until after you update the main Context::parse() to store the
-//            // remotecontexts collection within Context. Then you can use it to make a local copy here for parsing this
-//            // JsonLdConsts::CONTEXT value.
-//            throw JsonLdError(JsonLdError::NotImplemented);
-//        } catch (JsonLdError &error) {
-//            std::string msg = error.what();
-//            throw JsonLdError(JsonLdError::InvalidScopedContext,msg);
-//        }
+        // 21.3)
+        // Invoke the Context Processing algorithm using the active context, context as local
+        // context, base URL, true for override protected, a copy of remote contexts, and false
+        // for validate scoped context. If any error is detected, an invalid scoped context
+        // error has been detected and processing is aborted.
+        try {
+            Context activeContext = *this;
+            activeContext = activeContext.parse(localContext, baseURL, remoteContexts, true, propagate, false);
 
-        // 21.4.
+            // todo: need to wait on implementing this until after you update the main Context::parse() to store the
+            // remotecontexts collection within Context. Then you can use it to make a local copy here for parsing this
+            // JsonLdConsts::CONTEXT value.
+            //throw JsonLdError(JsonLdError::NotImplemented);
+        } catch (JsonLdError &error) {
+            std::string msg = error.what();
+            throw JsonLdError(JsonLdError::InvalidScopedContext,msg);
+        }
+
+        // 21.4)
+        // Set the local context of definition to context, and base URL to base URL.
         definition[JsonLdConsts::LOCALCONTEXT] = localContext;
         definition[JsonLdConsts::BASEURL] = baseIRI;
     }
@@ -1406,7 +1458,28 @@ void Context::createTermDefinition(json context, const std::string& term,
     }
 
     // 27)
-    // todo: need to implement "override protected" logic
+    // If override protected is false and previous definition exists and is protected;
+    if(!overrideProtected &&
+       !previousDefinition.is_null() &&
+       previousDefinition.contains(JsonLdConsts::IS_PROTECTED_FLAG) &&
+       previousDefinition[JsonLdConsts::IS_PROTECTED_FLAG]) {
+        // 27.1)
+        // If definition is not the same as previous definition (other than the value
+        // of protected), a protected term redefinition error has been detected, and
+        // processing is aborted.
+        json copyOfDefinition = definition;
+        json copyOfPrevious = previousDefinition;
+        std::cout << copyOfDefinition.dump() << std::endl;
+        std::cout << copyOfPrevious.dump() << std::endl;
+        copyOfDefinition.erase(JsonLdConsts::IS_PROTECTED_FLAG);
+        copyOfPrevious.erase(JsonLdConsts::IS_PROTECTED_FLAG);
+        if(copyOfDefinition != copyOfPrevious)
+            throw JsonLdError(JsonLdError::ProtectedTermRedefinition);
+
+        // 27.2)
+        // Set definition to previous definition to retain the value of protected.
+        definition = previousDefinition;
+    }
 
     // 28)
     termDefinitions[term] = definition;

@@ -37,7 +37,16 @@ private:
 
     static void checkEmptyKey(const nlohmann::json& map);
     static void checkEmptyKey(const StringMap& map);
-    void createTermDefinition(nlohmann::json context, const std::string& term, std::map<std::string, bool> & defined);
+    void createTermDefinition(
+            nlohmann::json context,
+            const std::string& term,
+            std::map<std::string, bool> & defined,
+            std::string baseURL = "",
+            bool isProtected = false,
+            bool overrideProtected = false,
+            std::vector<std::string> remoteContexts = std::vector<std::string>(),
+            bool validateScopedContext = true
+            );
 
     void init();
 

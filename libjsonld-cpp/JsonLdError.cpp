@@ -68,3 +68,4 @@ const char JsonLdError::InvalidContextEntry[] = "invalid context entry";
 const char JsonLdError::InvalidImportValue[] = "invalid @import value";
 const char JsonLdError::InvalidPropagateValue[] = "invalid @propagate value";
 const char JsonLdError::InvalidIncludedValue[] = "invalid @included value";
+const char JsonLdError::ProtectedTermRedefinition[] = "protected term redefinition";

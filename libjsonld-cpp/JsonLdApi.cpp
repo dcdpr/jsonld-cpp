@@ -28,16 +28,20 @@ json JsonLdApi::expand(Context activeCtx, std::string * activeProperty, json ele
     std::cout << "... 1.1 JsonLdApi::expand()\n";
 
     // 1)
+    // If element is null, return null.
     if (element.empty()) {
         return element; // todo: was null...
     }
 
     // 2)
+    // If active property is @default, initialize the frameExpansion flag to false.
     if (activeProperty != nullptr && *activeProperty == JsonLdConsts::DEFAULT) {
         frameExpansion = false;
     }
 
     // 3)
+    // If active property has a term definition in active context with a local
+    // context, initialize property-scoped context to that local context.
     json propertyScopedContext;
     if(activeProperty != nullptr && !activeCtx.getTermDefinition(*activeProperty).is_null() &&
        !activeCtx.getTermDefinition(*activeProperty)[JsonLdConsts::LOCALCONTEXT].is_null()) {
@@ -132,15 +136,46 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
     std::cout << "... 1.1 JsonLdApi::expandObjectElement()\n";
 
     // 7)
+    // If active context has a previous context, the active context is not propagated. If
+    // from map is undefined or false, and element does not contain an entry expanding to
+    // @value, and element does not consist of a single entry expanding to @id (where entries
+    // are IRI expanded, set active context to previous context from active context, as the
+    // scope of a term-scoped context does not apply when processing new node objects.
     if(activeCtx.getPreviousContext() != nullptr && !fromMap) {
-        throw JsonLdError(JsonLdError::NotImplemented, "need to copy active to previous context...");
+
+        bool usePrevious = true;
+        std::vector<std::string> element_keys;
+        for (json::iterator it = element.begin(); it != element.end(); ++it) {
+            element_keys.push_back(it.key());
+        }
+
+        for (auto & key : element_keys) {
+
+            std::string expandedKey = activeCtx.expandIri(key, false, true);
+
+            if(expandedKey == JsonLdConsts::VALUE ||
+               (element.size() == 1 && expandedKey == JsonLdConsts::ID)) {
+                usePrevious = false;
+                break;
+            }
+        }
+        if(usePrevious)
+            activeCtx = * activeCtx.getPreviousContext();
+
     }
 
     // 8)
+    // If property-scoped context is defined, set active context to the result of the
+    // Context Processing algorithm, passing active context, property-scoped context as
+    // local context, base URL from the term definition for active property, in active
+    // context and true for override protected.
     if(!propertyScopedContext.is_null()) {
-        throw JsonLdError(JsonLdError::NotImplemented, "need to add overrideProtected flag to parse()");
-        // todo: also need to check for term def for activeProperty and then get that term's baseurl
-        activeCtx = activeCtx.parse(propertyScopedContext, baseUrl);
+        auto termDef = activeCtx.getTermDefinition(*activeProperty);
+        std::string baseUrl;
+        if(termDef.contains(JsonLdConsts::BASEURL))
+            baseUrl = termDef[JsonLdConsts::BASEURL];
+        std::vector<std::string> remoteContexts;
+        activeCtx = activeCtx.parse(propertyScopedContext, baseUrl, remoteContexts, true);
     }
 
     // 9)
@@ -1369,6 +1404,8 @@ std::string JsonLdApi::findInputType(Context &activeContext, Context &typeScoped
     std::string typeKey;
 
     // 11)
+    // For each key and value in element ordered lexicographically by key where key
+    // IRI expands to @type:
     std::vector<std::string> element_keys;
     for (json::iterator it = element.begin(); it != element.end(); ++it) {
         element_keys.push_back(it.key());
@@ -1384,12 +1421,18 @@ std::string JsonLdApi::findInputType(Context &activeContext, Context &typeScoped
             typeKey = key;
 
         // 11.1)
+        // Convert value into an array, if necessary.
         auto element_value = element[key];
 
         if (!element_value.is_array())
             element_value = json::array({element_value});
 
         // 11.2)
+        // For each term which is a value of value ordered lexicographically, if term is a
+        // string, and term's term definition in type-scoped context has a local context, set
+        // active context to the result Context Processing algorithm, passing active
+        // context, the value of the term's local context as local context, base URL from
+        // the term definition for value in active context, and false for propagate.
         std::vector<std::string> terms;
         for (const auto &term : element_value) {
             if (term.is_string())
@@ -1410,6 +1453,9 @@ std::string JsonLdApi::findInputType(Context &activeContext, Context &typeScoped
     }
 
     // 12)
+    // Initialize two empty maps, result and nests. Initialize input type to expansion of the
+    // last value of the first entry in element expanding to @type (if any), ordering entries
+    // lexicographically by key. Both the key and value of the matched entry are IRI expanded.
     if(!typeKey.empty()) {
 
         auto t = element.at(typeKey);
