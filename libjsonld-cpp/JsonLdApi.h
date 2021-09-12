@@ -61,7 +61,7 @@ private:
                                       bool frameExpansion, bool ordered, bool fromMap);
 
     nlohmann::json expandObjectElement(Context activeCtx, std::string *activeProperty, nlohmann::json element, const std::string & baseUrl,
-                                       nlohmann::json propertyScopedContext, bool frameExpansion, bool ordered, bool fromMap);
+                                       nlohmann::json * propertyScopedContext, bool frameExpansion, bool ordered, bool fromMap);
 
     void generateNodeMap(nlohmann::json &element, nlohmann::json &nodeMap);
 

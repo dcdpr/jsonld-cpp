@@ -42,10 +42,11 @@ json JsonLdApi::expand(Context activeCtx, std::string * activeProperty, json ele
     // 3)
     // If active property has a term definition in active context with a local
     // context, initialize property-scoped context to that local context.
-    json propertyScopedContext;
-    if(activeProperty != nullptr && !activeCtx.getTermDefinition(*activeProperty).is_null() &&
-       !activeCtx.getTermDefinition(*activeProperty)[JsonLdConsts::LOCALCONTEXT].is_null()) {
-        propertyScopedContext = activeCtx.getTermDefinition(*activeProperty)[JsonLdConsts::LOCALCONTEXT];
+    std::unique_ptr<json> propertyScopedContext;
+    if(activeProperty != nullptr &&
+       !activeCtx.getTermDefinition(*activeProperty).is_null() &&
+       activeCtx.getTermDefinition(*activeProperty).contains(JsonLdConsts::LOCALCONTEXT) ) {
+        propertyScopedContext.reset(new json(activeCtx.getTermDefinition(*activeProperty)[JsonLdConsts::LOCALCONTEXT]));
     }
 
     // 5)
@@ -53,7 +54,7 @@ json JsonLdApi::expand(Context activeCtx, std::string * activeProperty, json ele
         return expandArrayElement(activeCtx, activeProperty, element, baseUrl, frameExpansion, ordered, fromMap);
     // 6)
     else if(element.is_object())
-        return expandObjectElement(activeCtx, activeProperty, element, baseUrl, propertyScopedContext, frameExpansion, ordered, fromMap);
+        return expandObjectElement(activeCtx, activeProperty, element, baseUrl, propertyScopedContext.get(), frameExpansion, ordered, fromMap);
     // 4)
     else // scalar
     {
@@ -123,7 +124,7 @@ json JsonLdApi::expandArrayElement(Context activeCtx, std::string * activeProper
 }
 
 json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activeProperty, json element, const std::string & baseUrl,
-                                    nlohmann::json propertyScopedContext, bool frameExpansion, bool ordered, bool fromMap) {
+                                    nlohmann::json * propertyScopedContext, bool frameExpansion, bool ordered, bool fromMap) {
 
     // Comments in this function are labelled with numbers that correspond to sections
     // from the description of the Expansion algorithm.
@@ -169,13 +170,13 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
     // Context Processing algorithm, passing active context, property-scoped context as
     // local context, base URL from the term definition for active property, in active
     // context and true for override protected.
-    if(!propertyScopedContext.is_null()) {
+    if(propertyScopedContext != nullptr) {
         auto termDef = activeCtx.getTermDefinition(*activeProperty);
         std::string baseUrl;
         if(termDef.contains(JsonLdConsts::BASEURL))
             baseUrl = termDef[JsonLdConsts::BASEURL];
         std::vector<std::string> remoteContexts;
-        activeCtx = activeCtx.parse(propertyScopedContext, baseUrl, remoteContexts, true);
+        activeCtx = activeCtx.parse(*propertyScopedContext, baseUrl, remoteContexts, true);
     }
 
     // 9)
