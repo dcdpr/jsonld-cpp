@@ -171,8 +171,7 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
             c.baseIRI = originalBaseURL;
             c.originalBaseURL = originalBaseURL;
             if (!propagate)
-                // c.previousContext = &result;
-                throw JsonLdError(JsonLdError::NotImplemented, "need to copy result to previous context2...");
+                c.previousContext = &result;
             result = c;
 
             // 5.1.3)
