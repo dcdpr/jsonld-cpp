@@ -131,8 +131,7 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
     // If propagate is false, and result does not have a previous context, set previous
     // context in result to active context.
     if (!propagate && result.previousContext == nullptr) {
-        // result.previousContext = copy of *this, but not the Context object, just the jsonvalue ?
-        throw JsonLdError(JsonLdError::NotImplemented, "need to copy active to previous context1...");
+        result.previousContext = this;
     }
 
     // 4)
