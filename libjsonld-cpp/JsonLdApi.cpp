@@ -1447,8 +1447,12 @@ std::string JsonLdApi::findInputType(Context &activeContext, Context &typeScoped
                 auto termValue = activeContext.getTermDefinition(term);
                 auto localContext = typeScopedContext.getTermDefinition(term).at(JsonLdConsts::LOCALCONTEXT);
                 std::vector<std::string> remoteContexts;
-                activeContext = activeContext.parse(localContext, termValue.at(JsonLdConsts::BASEURL),
-                                                    remoteContexts, false, false, true);
+                if(termValue.contains(JsonLdConsts::BASEURL))
+                    activeContext = activeContext.parse(localContext, termValue.at(JsonLdConsts::BASEURL),
+                                                        remoteContexts, false, false, true);
+                else
+                    activeContext = activeContext.parse(localContext, "",
+                                                        remoteContexts, false, false, true);
             }
         }
     }
