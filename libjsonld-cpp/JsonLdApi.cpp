@@ -59,12 +59,28 @@ json JsonLdApi::expand(Context activeCtx, std::string * activeProperty, json ele
     else // scalar
     {
         // 4.1)
+        // If active property is null or @graph, drop the free-floating scalar by returning null.
         if (activeProperty == nullptr || *activeProperty == JsonLdConsts::GRAPH) {
             return nullptr;
         }
+
         // 4.2)
-        // todo: ...
+        // If property-scoped context is defined, set active context to the result of the
+        // Context Processing algorithm, passing active context, property-scoped context
+        // as local context, and base URL from the term definition for active property in
+        // active context.
+        if(propertyScopedContext != nullptr) {
+            auto termDef = activeCtx.getTermDefinition(*activeProperty);
+            std::string baseUrl;
+            if(termDef.contains(JsonLdConsts::BASEURL))
+                baseUrl = termDef[JsonLdConsts::BASEURL];
+            std::vector<std::string> remoteContexts;
+            activeCtx = activeCtx.parse(*propertyScopedContext, baseUrl, remoteContexts, true);
+        }
+
         // 4.3)
+        // Return the result of the Value Expansion algorithm, passing the active
+        // context, active property, and element as value.
         return activeCtx.expandValue(*activeProperty, element);
     }
 }
