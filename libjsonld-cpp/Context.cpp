@@ -4,6 +4,7 @@
 #include "Uri.h"
 #include "BlankNode.h"
 #include <iostream>
+#include <memory>
 #include <utility>
 #include <set>
 
@@ -131,7 +132,7 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
     // If propagate is false, and result does not have a previous context, set previous
     // context in result to active context.
     if (!propagate && result.previousContext == nullptr) {
-        result.previousContext = this;
+        result.previousContext = std::make_shared<Context>(*this);
     }
 
     // 4)
@@ -171,7 +172,7 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
             c.baseIRI = originalBaseURL;
             c.originalBaseURL = originalBaseURL;
             if (!propagate)
-                c.previousContext = &result;
+                c.previousContext = std::make_shared<Context>(result);
             result = c;
 
             // 5.1.3)
@@ -413,11 +414,17 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
                     // Otherwise, if value is a relative IRI reference and the base IRI of
                     // result is not null, set the base IRI of result to the result of resolving
                     // value against the current base IRI of result.
+                    std::cout << "DEBUG: within context parse 5.7.4\n";
                     std::string baseUri = result.at(JsonLdConsts::BASE);
+                    std::cout << "DEBUG: baseUri = [" << baseUri << "]\n";
+
                     if (baseUri.empty())
                         throw JsonLdError(JsonLdError::InvalidBaseIri, "baseUri is empty");
                     std::string tmpIri = value.get<std::string>();
-                    result.insert(std::make_pair(JsonLdConsts::BASE, JsonLdUrl::resolve(&baseUri, &tmpIri)));
+                    std::cout << "DEBUG: tmpIri = [" << tmpIri << "]\n";
+                    std::string resolvedIri = JsonLdUrl::resolve(&baseUri, &tmpIri);
+                    std::cout << "DEBUG: resolvedIri = [" << resolvedIri << "]\n";
+                    result.insert(std::make_pair(JsonLdConsts::BASE, resolvedIri));
                 }
             } else {
                 // 5.7.5)
@@ -689,14 +696,16 @@ std::string Context::expandIri(
         // the IRI mapping associated with prefix and suffix.
         if (termDefinitions.find(prefix) != termDefinitions.end()) {
             auto prefixDef = termDefinitions.at(prefix);
-            if (prefixDef.find(JsonLdConsts::ID) != prefixDef.end()) {
+            if (prefixDef.find(JsonLdConsts::ID) != prefixDef.end() &&
+                prefixDef.contains(JsonLdConsts::IS_PREFIX_FLAG) &&
+                prefixDef.at(JsonLdConsts::IS_PREFIX_FLAG)) {
                 return prefixDef.at(JsonLdConsts::ID).get<std::string>() + suffix;
             }
         }
 
         // 6.5)
         // If value has the form of an IRI, return value.
-        if(Uri::isAbsolute(value) || value.find_first_of("_:") == 0)
+        if(Uri::isAbsolute(value))
             return value;
     }
 
@@ -1330,12 +1339,7 @@ void Context::createTermDefinition(
         // error has been detected and processing is aborted.
         try {
             Context activeContext = *this;
-            activeContext = activeContext.parse(localContext, baseURL, remoteContexts, true, propagate, false);
-
-            // todo: need to wait on implementing this until after you update the main Context::parse() to store the
-            // remotecontexts collection within Context. Then you can use it to make a local copy here for parsing this
-            // JsonLdConsts::CONTEXT value.
-            //throw JsonLdError(JsonLdError::NotImplemented);
+            activeContext.parse(localContext, baseURL, remoteContexts, true, propagate, false);
         } catch (JsonLdError &error) {
             std::string msg = error.what();
             throw JsonLdError(JsonLdError::InvalidScopedContext,msg);
@@ -1434,12 +1438,12 @@ void Context::createTermDefinition(
         if(!prefix.is_boolean())
             throw JsonLdError(JsonLdError::InvalidPrefixValue,"");
 
-        definition[JsonLdConsts::PREFIX] = prefix;
+        definition[JsonLdConsts::IS_PREFIX_FLAG] = prefix;
 
         // 25.3)
         // If the prefix flag of definition is set to true, and its IRI mapping is a
         // keyword, an invalid term definition has been detected and processing is aborted.
-        if (definition[JsonLdConsts::PREFIX] && JsonLdUtils::isKeyword(definition[JsonLdConsts::ID])) {
+        if (definition[JsonLdConsts::IS_PREFIX_FLAG] && JsonLdUtils::isKeyword(definition[JsonLdConsts::ID])) {
             throw JsonLdError(JsonLdError::InvalidTermDefinition,"");
         }
     }
@@ -1655,7 +1659,7 @@ void Context::setOriginalBaseUrl(const std::string &originalBaseUrl) {
 }
 
 Context *Context::getPreviousContext() const {
-    return previousContext;
+    return previousContext.get();
 }
 
 std::string Context::getDefaultBaseDirection() const {

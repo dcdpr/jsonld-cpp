@@ -24,7 +24,7 @@ private:
     std::string vocabularyMapping;
     std::string defaultLanguage;
     std::string defaultBaseDirection; // todo: this should be an enum
-    Context *previousContext;
+    std::shared_ptr<Context> previousContext;
 
     StringMap contextMap; // todo: should probably replace this with several specific variables
 

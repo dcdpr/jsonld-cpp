@@ -268,7 +268,14 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                                       expandedProperty + " already exists in result");
             }
             // 13.4.3)
+            // If expanded property is @id:
             if (expandedProperty == JsonLdConsts::ID) {
+                // 13.4.3.2)
+                // [If expanded property is a string], set expanded value to the result of
+                // IRI expanding value using true for document relative and false for
+                // vocab. When the frameExpansion flag is set, expanded value will be an array
+                // of one or more of the values, with string values expanded using the IRI
+                // Expansion algorithm as above.
                 if (element_value.is_string()) {
                     expandedValue = activeCtx.expandIri(element_value.get<std::string>(), true, false);
                 } else if (options.getFrameExpansion()) {
@@ -284,8 +291,12 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                                 throw JsonLdError(JsonLdError::InvalidIdValue,
                                                   "@id value must be a string, an array of strings or an empty dictionary");
                             }
-                            expandedValue.push_back(activeCtx.expandIri(v.get<std::string>(), true, true));
+                            expandedValue.push_back(activeCtx.expandIri(v.get<std::string>(), true, false));
                         }
+                        // 13.4.3.1)
+                        // If value is not a string, an invalid @id value error has been
+                        // detected and processing is aborted. When the frameExpansion flag
+                        // is set, value MAY be an empty map, or an array of one or more strings.
                     } else {
                         throw JsonLdError(JsonLdError::InvalidIdValue,
                                           "value of @id must be a string, an array of strings or an empty dictionary");
@@ -296,40 +307,51 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                 }
             }
             // 13.4.4)
+            // If expanded property is @type:
             else if (expandedProperty == JsonLdConsts::TYPE) {
                 // 13.4.4.1)
-                if (element_value.is_array()) {
-                    for ( const auto& v : element_value) {
-                        if (!v.is_string()) {
-                            throw JsonLdError(JsonLdError::InvalidTypeValue,
-                                              "@type value must be a string or array of strings");
-                        }
-                        expandedValue.push_back(
-                                activeCtx.expandIri(v.get<std::string>(), true, true));
-                    }
-                } else if (element_value.is_string()) {
-                    expandedValue = activeCtx.expandIri(element_value.get<std::string>(), true, true);
-                }
-                else if (options.getFrameExpansion() && element_value.is_object()) {
-                    if (!element_value.empty()) {
-                        throw JsonLdError(JsonLdError::InvalidTypeValue,
-                                          "@type value must be a an empty object for framing");
-                    }
-                } else {
+                // If value is neither a string nor an array of strings, an invalid type
+                // value error has been detected and processing is aborted. When the
+                // frameExpansion flag is set, value MAY be an empty map, or a default
+                // object where the value of @default is restricted to be an IRI. All
+                // other values mean that invalid type value error has been detected
+                // and processing is aborted.
+                if(
+                        (!frameExpansion &&
+                         !element_value.is_string() &&
+                         !JsonLdUtils::isArrayOfStrings(element_value))
+                        ||
+                        (frameExpansion &&
+                         !element_value.is_string() &&
+                         !JsonLdUtils::isArrayOfStrings(element_value) &&
+                         !(element_value.is_object() && element_value.empty()) &&
+                         !(ObjUtils::isDefaultObject(element_value) &&
+                           element_value[JsonLdConsts::DEFAULT].is_string() &&
+                           JsonLdUtils::isIri(element_value[JsonLdConsts::DEFAULT]))
+                        )
+                        ) {
                     throw JsonLdError(JsonLdError::InvalidTypeValue,
-                                          "@type value must be a string or array of strings");
+                                      "@type value must be a string or array of strings, or empty object or default object");
                 }
 
                 // 13.4.4.2)
+                // If value is an empty map, set expanded value to value.
                 if(element_value.is_object())
                     expandedValue = element_value;
+
                 // 13.4.4.3)
+                // Otherwise, if value is a default object, set expanded value to a new default
+                // object with the value of @default set to the result of IRI expanding value
+                // using type-scoped context for active context, and true for document relative.
                 else if(ObjUtils::isDefaultObject(element_value)) {
                     expandedValue = ObjUtils::newMap();
                     expandedValue[JsonLdConsts::DEFAULT] =
                             typeScopedContext.expandIri(element_value.at(JsonLdConsts::DEFAULT), true, true);
                 }
                 // 13.4.4.4)
+                // Otherwise, set expanded value to the result of IRI expanding each of its
+                // values using type-scoped context for active context, and true for document
+                // relative.
                 else {
 
                     if(element_value.is_string()) {
@@ -345,6 +367,8 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
 
                 }
                 // 13.4.4.5)
+                // If result already has an entry for @type, prepend the value of @type in
+                // result to expanded value, transforming it into an array, if necessary.
                 if (result.contains(JsonLdConsts::TYPE)) {
 
                     json t = json::array();
