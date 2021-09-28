@@ -1,0 +1,156 @@
+<html>
+    <head>
+        <title>Description Of A Project (DOAP) generator</title>
+        <script src="configuration.js" ></script>
+        <link rel=”stylesheet” href=”configuration.css”>
+<style>
+ 
+.result-area {
+    font-family: monospace;
+    width: 50%;
+    min-height: 200px;
+    background-color: lightgrey;
+    padding: 5px;
+}
+
+.span.prefix-input {
+    background-color: #FFF;
+    color: #888;
+    line-height:20px;
+    height:20px;
+    padding:3px;
+    border:1px #888 solid;
+    font-size:9pt;
+}
+
+.span.prefix-input input {
+    border: 0px;
+    background-color: #FFF;
+}
+
+label {
+    display: block;
+    margin-top: 20px;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+form.template-form {
+    display: flex;
+}
+
+form.template-form div{
+    display: block;
+    float: left;
+    margin-right: 10px;
+}
+
+form.template-form button{
+    display: inline-block;
+    height: 32px;
+    margin-top: auto;
+    margin-bottom: 3px;
+    margin-right: 10px;
+}
+
+.template-form label {
+    display: none;
+}
+.template-form:first-of-type label{
+    display: block;
+}
+
+</style>
+    </head>
+    <body onload="update()">
+        <div class="container">
+            <div>
+                <form id="project" onchange="doap()">
+                    <label for="uri">Project URI</label>
+                    <span class="prefixed-input">
+                        <input id="project_uri" name="uri" />
+                    </span>
+                    <br />
+
+                    <label for="name">Project Name</label>
+                    <input id="project_name" name="name" />
+                    <br />
+
+                    <label for="desc">Description</label>
+                    <input id="desc" name="desc" />
+                    <br />
+
+                    <label for="homepage">Homepage</label>
+                    <input id="homepage" name="homepage" />
+                    <br />
+                </form>
+                <div id="developers">
+                    <h3>Developers</h3>
+                    <button type="button" onclick="addDeveloper()">Add</button>
+                </div>
+                <div id="testsuites">
+                    <h3>Testsuites</h3>
+                    <button type="button" onclick="addTestsuite()">Add</button>
+                </div>
+            </div>
+        </div>
+        <div id="result" class="result-area">
+            <p id="prefix">
+        @prefix dc: &lt;http://purl.org/dc/terms/&gt; .<br />
+        @prefix earl: &lt;http://www.w3.org/ns/earl#&gt; .<br />
+        @prefix doap: &lt;http://usefulinc.com/ns/doap#&gt; .<br />
+        @prefix foaf: &lt;http://xmlns.com/foaf/0.1/&gt; .<br />
+        @prefix xsd: &lt;http://www.w3.org/2001/XMLSchema#&gt; .<br />
+            <p id="foaf-primary"></p>
+            <p id="doap"></p>
+            <p id="foaf"></p>
+        </div>
+        <button onclick="download()">Create Turtle File</button>
+        <a href="" id="download" target="_blank">Click to download turtle</a>
+        <button onclick="download_json()">Create JSON File</button>
+        <a href="" id="download-json" target="_blank">Click to download json</a>
+
+        <template id="developer-template" hidden>
+            <form class="template-form" onchange="update()" >
+                <div>
+                <label for="github-profile">Github Profile</label>
+                <span class="prefix-input">
+                    <input name="github-profile" class="github-profile" />
+                </span>
+                </div>
+                <div>
+                <label for="developer-name">Developer Name</label>
+                <input name="developer-name" class="developer-name" />
+                </div>
+                <div>
+                <label for="title">Title</label>
+                <select name="title" class="developer-type">
+                    <option name="maker" value="1">maker</option>
+                    <option name="maintainer" value="2">maintainer</option>
+                    <option name="developer" value="3">developer</option>
+                    <option name="documenter" value="4">documenter</option>
+                    <option name="creator" value="5">creator</option>
+                </select>
+                </div>
+                <button type="button" class="dev-update-button">Update</button>
+                <button type="button" class="dev-del-button">Delete</button>
+            </form>
+        </template>
+
+        <template id="testsuite-template" hidden>
+            <form class="template-form" onchange="update()" >
+                <div>
+                <label for="testsuite">Testsuite</label>
+                <input name="testsuite" type="file" />
+                </div>
+                <div>
+                <label for="manifest-name">Manifest Name</label>
+                <input name="manifest-name" />
+                </div>
+                <button type="button" class="dev-update-button">Update</button>
+                <button type="button" class="dev-del-button">Delete</button>
+            </form>
+        </template>
+    </body>
+
+</html>

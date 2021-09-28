@@ -1,0 +1,47 @@
+.result-area {
+    font-family: monospace;
+    width: 50%;
+    min-height: 200px;
+    background-color: lightgrey;
+    padding: 5px;
+}
+
+.span.prefix-input {
+    background-color: #FFF;
+    color: #888;
+    line-height:20px;
+    height:20px;
+    padding:3px;
+    border:1px #888 solid;
+    font-size:9pt;
+}
+
+.span.prefix-input input {
+    border: 0px;
+    background-color: #FFF;
+}
+
+label {
+    display: block;
+    margin-top: 20px;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+form.developer-form {
+    display: flex;
+}
+
+form.developer-form div{
+    display: block;
+    float: left;
+    margin-right: 10px;
+}
+
+form.developer-form button{
+    display: inline-block;
+    height: 32px;
+    margin-top: auto;
+    margin-bottom: 3px;
+    margin-right: 10px;
+}

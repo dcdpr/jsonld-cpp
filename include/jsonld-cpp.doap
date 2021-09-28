@@ -1,0 +1,28 @@
+<Project xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns="http://usefulinc.com/ns/doap#"
+    xmlns:foaf="http://xmlns.com/foaf/0.1/"
+    xmlns:admin="http://webns.net/mvcb/">
+ <name>jsonld-cpp</name>
+ <shortdesc>JSON-LD Implementation for C++</shortdesc>
+ <homepage rdf:resource="https://github.com/runcrypto/jsonld-cpp" />
+ <download-page rdf:resource="https://github.com/dcdpr/jsonld-cpp" />
+ <bug-database rdf:resource="https://github.com/dcdpr/jsonld-cpp/issues" />
+ <programming-language>C++</programming-language>
+ <license rdf:resource="http://usefulinc.com/doap/licenses/bsd" />
+ <maintainer>
+  <foaf:Person>
+     <foaf:name>Dan Pape</foaf:name>
+     <foaf:homepage rdf:resource="https://contract.design/"/>
+     <foaf:mbox_sha1sum>7da5f100d9b0b95d24a54eafa2a2913d3500d916</foaf:mbox_sha1sum>
+  </foaf:Person>
+ </maintainer>
+ <developer>
+  <foaf:Person>
+     <foaf:name>Michael Hawkins</foaf:name>
+     <foaf:homepage rdf:resource="https://hawkmauk.com"/>
+     <foaf:mbox_sha1sum>70439b095ef23f3493215c33c4dba0714c3ab2b1</foaf:mbox_sha1sum>
+  </foaf:Person>
+ </developer>
+ 
+</Project>
