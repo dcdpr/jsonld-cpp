@@ -1,6 +1,15 @@
 #include <ctime>
 #include "EarlFormatter.h"
 
+EarlFormatter::EarlFormatter()
+{
+    // insert initial namespace
+    RdfNamespace ns;
+    ns.uri = "http://www.w3.org/ns/earl#";
+    ns.prefix = "earl";
+    namespaces.insert( ns );
+}
+
 std::string EarlFormatter::assertion(
         const std::string& subject,
         const std::string& user,
@@ -30,32 +39,29 @@ std::string EarlFormatter::assertion(
     return ss.str();
 }
 
-std::string EarlFormatter::format( RdfData& data )
+std::string EarlFormatter::format( RdfData* data )
 {
    std::stringstream ss;
    // check if RdfData has a subject, if not then this is the subject and
    // needs to be encapsulated in square brackets
-   if ( data.triplet.subject == "" )
+   if ( data->subject.name == "" )
    {
        ss << "[ ";
    } else {
-       ss << data.triplet.subject;
+       ss << data->subject.name;
+       addNamespace( data->subject.ns );
+   }
+   // process children
+   for ( auto o : data->objects )
+   {
+       format( o );
+   };
+   // finalize
+   if ( data->objects.empty() )
+   {
+       ss << " ]";
    }
    // complete the triplet declaration
-   ss << data.triplet.subject << " ";
-   appendRdfObject( ss, data.triplet.predictate );
-   ss << " ";
-   appendRdfObject( ss, data.triplet.object.at(0) ); // TODO handle multiple objects
-   ss << ";" << std::endl; 
-   // add the attributes
-   for ( auto att : data.attributes )
-   {
-       appendRdfObject( ss, att.attribute );
-       ss << " " << att.value << ";" << std::endl;
-   }
-   // close the encapsulation if there is no subject
-   if (data.triplet.subject == "" ) ss << "]";
-   // mark the end of the data with a .
    ss << " .";
 
    return ss.str();
@@ -63,6 +69,61 @@ std::string EarlFormatter::format( RdfData& data )
 
 void EarlFormatter::appendRdfObject( std::stringstream& ss, RdfObject& obj )
 {
-    if ( obj.ns.prefix != "" ) ss << obj.ns.prefix << ".";
+    if ( obj.ns.prefix != "" ){
+        ss << obj.ns.prefix << ".";
+        // save the namespaces to be used in the prefix
+        namespaces.insert( obj.ns );
+    }
     ss << obj.name;
 }
+
+std::string EarlFormatter::prefix( )
+{
+    std::stringstream ss;
+    for ( auto ns : namespaces )
+    {
+        if ( ns.uri != "" )
+            ss << "@prefix " << ns.prefix << ": <" << ns.uri << "> ." << std::endl;
+    }
+    return ss.str();
+}
+
+void EarlFormatter::addRdfData( RdfData* rd )
+{
+    // parse the subject
+    parseRdfData( rd );
+    data.insert( rd );
+}
+
+void EarlFormatter::parseRdfData( RdfData* d )
+{
+    // process subject
+    if ( d->subject.ns.uri != "" )
+    {
+        namespaces.insert( d->subject.ns );
+    }
+    // recursively process children
+    for ( auto c : d->objects )
+    {
+        parseRdfData( c );
+    }
+}
+
+void EarlFormatter::addNamespace( RdfNamespace& p )
+{
+    namespaces.insert( p );
+}
+
+std::string EarlFormatter::str()
+{
+    std::stringstream ss;
+    // add prefix data
+    ss << prefix();
+    // add rdf data
+    for ( auto d : data )
+    {
+        ss << format(d);
+    }
+    return ss.str();
+}
+

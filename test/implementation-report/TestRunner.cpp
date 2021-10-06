@@ -1,10 +1,9 @@
 #include <iostream>
-#include <string>
 #include <sstream>
 #include <regex>
 #include "TestRunner.h"
 #include "CommandRunner.h"
-#include "EarlFormatter.h"
+#include "RdfData.h"
 
 TestRunner::TestRunner(
         std::string project,
@@ -12,11 +11,12 @@ TestRunner::TestRunner(
         std::string path,
         std::set<std::vector<std::string>> exe)
     : project{project}, user{user}, path{path}, executables{exe}{}
-void TestRunner::run()
+
+std::set<TestResult> TestRunner::run()
 {
     CommandRunner cr;
-    EarlFormatter ef;
-    
+    std::set<TestResult> resultset;
+
     for(auto it = executables.begin(); it != executables.end(); ++it)
     {
         auto exe = *it;
@@ -34,15 +34,14 @@ void TestRunner::run()
                 std::regex_search( o, result, std::regex( "([A-Z]+)") );
                 std::smatch id;
                 std::regex_search( o, id, std::regex( "[A-Za-z0-9]*(?= \\()") );
-
-                std::stringstream ss;
-                ss << "https://w3c.github.io/json-ld-api/tests/"
-                   << exe.at(1) << "_manifest#" << id[0];
-                std::string test(ss.str());
-                std::string passed(result[0]);
-
-                std::cout << ef.assertion( project, user, test, passed ) << std::endl;
+                // create the TestResult object
+                TestResult tr;
+                tr.manifest = exe.at(1);
+                tr.test = id[0];
+                tr.result = result[0];
+                resultset.insert( tr );
             };
         } while (o != "");
     }
+    return resultset;
 }

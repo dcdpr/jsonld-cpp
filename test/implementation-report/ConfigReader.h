@@ -16,6 +16,7 @@ class ConfigReader
         std::set<std::vector<std::string>> getTestsuites();
         std::string getProject();
         std::string getMaker();
+        nlohmann::json getSubjects();
 };
 
 #endif //IMPL_REPORT_CONFIG

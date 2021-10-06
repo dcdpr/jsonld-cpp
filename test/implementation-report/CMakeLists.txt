@@ -17,6 +17,10 @@ add_executable(
     ConfigReader.h
     ConfigReader.cpp
     RdfData.h
+    RdfData.cpp
+    RdfDataBuilder.h
+    RdfDataBuilder.cpp
+    TestResult.h
 )
 target_compile_features(
     implementation-report

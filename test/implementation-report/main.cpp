@@ -3,9 +3,10 @@
 #include <iostream>
 
 #include "ReportWriter.h"
-#include "FolderScanner.h"
 #include "TestRunner.h"
 #include "ConfigReader.h"
+#include "EarlFormatter.h"
+#include "RdfDataBuilder.h"
 
 std::string usage(std::string name)
 {
@@ -32,21 +33,38 @@ int main(int argc, char **argv)
 
     // parse the configuration file
     ConfigReader cr ( argv[1] );
+    
+    // create the output formatter
+    EarlFormatter ef;
 
-    // write the report header
-//    rw.header(config.header)
+    // create RdfDataBuilder
+    RdfDataBuilder db;
+
+    // parse the configuration header
+    for ( auto j : cr.getSubjects() )
+    {
+        auto d = db.parse( j );
+        ef.addRdfData( d );
+    }
 
     // run the testsuites
-    //FolderScanner fs = FolderScanner(argv[1]);
-    //fs.scan();
-    //auto executables = fs.getFileNames();
     TestRunner tr (
             cr.getProject(),
             cr.getMaker(),
             argv[2],
             cr.getTestsuites());
-    tr.run();
+    auto results = tr.run();
 
+    // parse the results
+    for (auto r : results )
+    {
+        auto rdf = db.parse( r );
+        // add results to formatter
+        ef.addRdfData( rdf );
+    }
+
+    // output the results
+    rw.write ( ef.str() );
     return 0;
 }
 

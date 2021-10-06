@@ -4,6 +4,8 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <set>
+#include "TestResult.h"
 
 class TestRunner
 {
@@ -14,6 +16,6 @@ class TestRunner
         std::set<std::vector<std::string>> executables;
     public:
         TestRunner(std::string, std::string, std::string, std::set<std::vector<std::string>>);
-        void run();
+        std::set<TestResult> run();
 };
 #endif // IMPL_REPORT_TESTRUNNER

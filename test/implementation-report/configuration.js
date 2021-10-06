@@ -15,21 +15,21 @@ function init_state()
 function doap()
 {
     init_state()
-    let uri = "<" + document.getElementById("project_uri").value + ">"
+    let uri = document.getElementById("project_uri").value
     let doap = document.getElementById("doap")
     let primary = document.getElementById("foaf-primary")
     let prefix = document.getElementById("prefix")
 
-    if (uri !== "<>") {
+    if (uri !== "") {
         doap.innerHTML = `${uri} a doap:Project;`
         let today = new Date();
 
-        primary.innerHTML = `&lt;&gt; foaf:primaryTopic ${uri}<br
+        primary.innerHTML = ` foaf:primaryTopic ${uri}<br
             />&nbsp;&nbsp;dc:issued "${today.toISOString()}"^^csd:dateTime;`
         state.header.subject = []
         state.header.subject[0] =
             { "id" : "<>",
-              "type": "foaf:primaryTopic",
+              "type": "http://xmlns.com/foaf/0.1/primaryTopic",
               "value": uri }
         state.header.subject[0].properties = []
 
@@ -43,9 +43,9 @@ function doap()
            doap.innerHTML += `<br />&nbsp;&nbsp;doap:name "${name}";`
            state.header.subject[1] = { "id": uri,
                 "type": "a",
-                "value": "doap:project",
+                "value": "http://usefulinc.com/ns/doap#project",
                 "properties": [
-                    { "type": "doap:name", "value": name }
+                    { "type": "http://usefulinc.com/ns/doap#name", "value": name }
                 ]
            }
     }
@@ -53,14 +53,17 @@ function doap()
     let desc = document.getElementById("desc").value
     if (desc !== "") {
            doap.innerHTML += `<br />&nbsp;&nbsp;doap:description"${desc}"@en;`
-                    state.header.subject[1].properties.push({ "type":
-                                    "doap:description", "vale": desc})
+           state.header.subject[1].properties.push({
+               "type": "http://usefulinc.com/ns/doap#description",
+               "value": desc})
     }
 
     let homepage = document.getElementById("homepage").value
     if (homepage !== "") {
            doap.innerHTML += `<br />&nbsp;&nbsp;doap:homepage "${homepage}"`
-           state.header.subject[1].properties.push({ "type": "doap:homepage", "value": homepage})
+           state.header.subject[1].properties.push({
+               "type": "http://usefulinc.com/ns/doap#homepage",
+               "value": homepage})
     }
     let developers = document.getElementById("developers")
     let developer_list = developers.getElementsByTagName("form")
@@ -69,14 +72,16 @@ function doap()
         let select = developer_list[i].getElementsByClassName("developer-type")[0]
         let developer_type = select.options[select.selectedIndex].text
         if ( developer_uri !== "") {
-            doap.innerHTML += `<br />&nbsp;&nbsp;doap:${developer_type} &lt;${developer_uri}&gt;`
+            doap.innerHTML += `<br />&nbsp;&nbsp;doap:${developer_type} ${developer_uri}`
             if ( developer_type == "maker"){
-                primary.innerHTML +=`<br/>&nbsp;&nbsp;foaf:${developer_type} &lt;${developer_uri}&gt;`
-                state.header.subject[0].properties.push({ "type": `foaf:maker`,
-                                "value": developer_uri })
+                primary.innerHTML +=`<br/>&nbsp;&nbsp;foaf:${developer_type} ${developer_uri}`
+                state.header.subject[0].properties.push({
+                    "type": `http://xmlns.com/foaf/0.1/maker`,
+                    "value": developer_uri })
             } else {
-                state.header.subject[1].properties.push({ "type": `doap:${developer_type}`,
-                                "value": developer_uri })
+                state.header.subject[1].properties.push({
+                    "type": `http://usefulinc.com/ns/doap#${developer_type}`,
+                    "value": developer_uri })
             }
         }
 
@@ -149,9 +154,13 @@ function foaf()
             let developer_uri = developer_list[i].getElementsByClassName("github-profile")[0].value
             let developer_name = developer_list[i].getElementsByClassName("developer-name")[0].value
             if (developer_name !== "") {
-                developer.innerHTML += `&lt;${developer_uri}&gt; a foaf:Person; <br
+                developer.innerHTML += `${developer_uri} a foaf:Person; <br
                     />\&nbsp;&nbsp;foaf:name "${developer_name}";<br />&nbsp;&nbsp;.`
-                state.header.subject.push({ "id": developer_uri, "type": "a", "value": "foaf:Person", "properties": [ { "type": "foaf:name", "value": developer_name } ] })
+                state.header.subject.push({
+                    "id": developer_uri,
+                    "type": "a", "value": "http://xmlns.com/foaf/0.1/Person",
+                    "properties": [ { "type": "http://xmlns.com/foaf/0.1/name",
+                        "value": developer_name } ] })
             }
         }
     }
