@@ -6,7 +6,7 @@
 
 ConfigReader::ConfigReader(std::string  filename)
 {
-    std::ifstream myfile ( filename );
+    std::ifstream myfile( filename );
 
     if  ( myfile.is_open() ){
         std::cout << "Reading config " << filename << std::endl;
@@ -31,12 +31,14 @@ std::set<std::vector<std::string>> ConfigReader::getTestsuites()
 
 std::string ConfigReader::getProject()
 {
-    return "project";
+    //TODO make this better
+    return document["header"]["subject"][1]["properties"][0]["value"];
 }
 
 std::string ConfigReader::getMaker()
 {
-    return "maker";
+    //TODO make this better
+    return document["header"]["subject"][0]["properties"][0]["value"];
 }
 
 nlohmann::json ConfigReader::getSubjects()

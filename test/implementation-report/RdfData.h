@@ -4,7 +4,6 @@
 #include <ostream>
 #include <string>
 #include <vector>
-#include <set>
 
 class RdfNamespace
 {
@@ -85,7 +84,7 @@ class RdfData
 {
     public:
         RdfObject subject;
-        std::set<RdfData*> objects;
+        std::vector<RdfData*> objects;
 
         RdfData(){};
         RdfData( std::string s ) : subject{ RdfObject( s ) }{};

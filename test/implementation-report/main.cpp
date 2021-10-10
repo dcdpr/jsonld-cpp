@@ -46,6 +46,7 @@ int main(int argc, char **argv)
         auto d = db.parse( j );
         ef.addRdfData( d );
     }
+    rw.write ( ef.str() );
 
     // run the testsuites
     TestRunner tr (
@@ -64,7 +65,7 @@ int main(int argc, char **argv)
     }
 
     // output the results
-    rw.write ( ef.str() );
+//    rw.write ( ef.str() );
     return 0;
 }
 

@@ -19,7 +19,7 @@ class EarlFormatter
 
         //methods
         std::string prefix (  );
-        std::string format( RdfData* );
+        void format( std::stringstream&, RdfData*, int = 0 );
         void addRdfData( RdfData* );
         std::string str();
 

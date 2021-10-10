@@ -72,7 +72,6 @@ RdfData* RdfDataBuilder::parse( const nlohmann::json& json )
         auto v = parseObject( p["value"] );
         d->addChild( t, new RdfData( v ) );
     }
-    std::cout << d << std::endl;
     return d;
 }
 
@@ -110,9 +109,14 @@ RdfObject RdfDataBuilder::parseObject( const std::string& s )
     {
         o.ns = parseNamespace( s );
     }
+    
+    if ( words.size() > 0 )
+    {
+        o.name = words.back();
+    } else {
+        o.name = "";
+    }
     // set the name
-    o.name = words.back();
-
     return o;
 }
 

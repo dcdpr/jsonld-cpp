@@ -1,3 +1,4 @@
+#include <iostream>
 #include <ctime>
 #include "EarlFormatter.h"
 
@@ -39,32 +40,51 @@ std::string EarlFormatter::assertion(
     return ss.str();
 }
 
-std::string EarlFormatter::format( RdfData* data )
+void EarlFormatter::format( std::stringstream& ss, RdfData* data, int depth )
 {
-   std::stringstream ss;
-   // check if RdfData has a subject, if not then this is the subject and
-   // needs to be encapsulated in square brackets
-   if ( data->subject.name == "" )
-   {
-       ss << "[ ";
-   } else {
-       ss << data->subject.name;
-       addNamespace( data->subject.ns );
-   }
-   // process children
-   for ( auto o : data->objects )
-   {
-       format( o );
-   };
-   // finalize
-   if ( data->objects.empty() )
-   {
-       ss << " ]";
-   }
-   // complete the triplet declaration
-   ss << " .";
+    // check if RdfData has a subject, if not then this is the subject and
+    // needs to be encapsulated in square brackets
 
-   return ss.str();
+    // get the main object
+    auto& obj = data->subject;
+    // is the object empty? If so begin an array
+    if ( obj.name == "" )
+    {
+        ss << "[ ";
+    }
+    else
+    {
+        // check for a namespace
+        if ( obj.ns.prefix != "" )
+        {
+            addNamespace( obj.ns );
+            ss << obj.ns.prefix << ':' << obj.name;
+        } else {
+            // check for last element in data
+            // TODO: better way of handling "a"
+            if ( data->objects.empty() && obj.name != "a" )
+            {
+                ss << '"' << obj.name << '"';
+            } else {
+                ss << obj.name;
+            }
+        }
+        ss << ' ';
+    }
+    // process children
+    for ( auto o : data->objects )
+    {
+        format( ss, o, depth++ );
+    };
+    // finalize
+    if ( data->objects.empty() )
+    {
+        if ( depth > 0 )
+        {
+            ss << ";" << std::endl;
+        }
+    }
+
 }
 
 void EarlFormatter::appendRdfObject( std::stringstream& ss, RdfObject& obj )
@@ -122,7 +142,8 @@ std::string EarlFormatter::str()
     // add rdf data
     for ( auto d : data )
     {
-        ss << format(d);
+        format( ss, d );
+        ss << '.' << std::endl;
     }
     return ss.str();
 }

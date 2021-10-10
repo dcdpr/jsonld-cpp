@@ -2,7 +2,7 @@
 
 void RdfData::addChild( RdfData* d )
 {
-    objects.insert( d );
+    objects.push_back( d );
 }
 
 void RdfData::addChild( RdfObject& o )
@@ -12,6 +12,6 @@ void RdfData::addChild( RdfObject& o )
 
 void RdfData::addChild( RdfObject& o, RdfData* d )
 {
-    objects.insert( new RdfData( o, d ) );
+    objects.push_back( new RdfData( o, d ) );
 }
 
