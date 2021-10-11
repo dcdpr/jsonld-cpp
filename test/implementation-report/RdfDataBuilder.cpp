@@ -13,7 +13,7 @@ std::string RdfDataBuilder::getTime()
     return buf;
 }
 
-RdfData* RdfDataBuilder::parse( const TestResult& tr )
+void RdfDataBuilder::parse( const TestResult& tr )
 {
     RdfNamespace ns( "http://www.w3.org/ns/earl#", "earl");
     //subject is this so should be blank
@@ -22,39 +22,38 @@ RdfData* RdfDataBuilder::parse( const TestResult& tr )
     // define the object
     RdfObject o( ns, "Assertion" );
     // define the attributes
-    RdfData* assertion = new RdfData( RdfObject ( "a" ) );
+    RdfData* data = new RdfData( RdfObject ( "a" ) );
 
     RdfObject subject( ns, "subject" );
-    assertion->addChild(
+    data->addChild(
             subject,
             new RdfData( "project" )
-    );
+            );
     RdfObject test( ns, "test" );
-    assertion->addChild(
+    data->addChild(
             test,
             new RdfData( tr.manifest + "#" + tr.test )
-    );
+            );
     RdfObject assertedBy( ns, "assertedBy" );
-    assertion->addChild(
+    data->addChild(
             assertedBy,
             new RdfData( "maker" )
-    );
+            );
     RdfObject mode( ns, "mode" );
-    assertion->addChild(
+    data->addChild(
             mode,
             new RdfData( "automatic" )
-    );
+            );
     RdfObject result( ns, "result" );
-    assertion->addChild(
+    data->addChild(
             result,
             new RdfData( "project" )
-    );
+            );
 
-    return assertion;
-
+    this->database.push_back(data);
 }
 
-RdfData* RdfDataBuilder::parse( const nlohmann::json& json )
+void RdfDataBuilder::parse( const nlohmann::json& json )
 {
     RdfData* d = new RdfData();
     // convert the id
@@ -72,7 +71,7 @@ RdfData* RdfDataBuilder::parse( const nlohmann::json& json )
         auto v = parseObject( p["value"] );
         d->addChild( t, new RdfData( v ) );
     }
-    return d;
+    this->database.push_back( d );
 }
 
 RdfObject RdfDataBuilder::parseObject( const std::string& s )
@@ -109,7 +108,7 @@ RdfObject RdfDataBuilder::parseObject( const std::string& s )
     {
         o.ns = parseNamespace( s );
     }
-    
+
     if ( words.size() > 0 )
     {
         o.name = words.back();
@@ -125,7 +124,7 @@ RdfNamespace RdfDataBuilder::parseNamespace( const std::string& s )
     //get the uri of the namespace
     std::smatch uri;
     std::regex_search( s, uri, std::regex( "^.*[//#]" ) );
-    
+
     // split the string and add to a set in reverse order
     // so that we can find the first sensible word to use
     // as the prefix
@@ -166,7 +165,7 @@ RdfNamespace RdfDataBuilder::parseNamespace( const std::string& s )
             }
         }
     }
-    
+
     RdfNamespace ns( uri[0], prefix[0] );
     return ns;
 }

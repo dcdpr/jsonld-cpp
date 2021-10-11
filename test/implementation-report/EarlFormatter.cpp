@@ -105,28 +105,8 @@ std::string EarlFormatter::prefix( )
         if ( ns.uri != "" )
             ss << "@prefix " << ns.prefix << ": <" << ns.uri << "> ." << std::endl;
     }
+    ss << std::endl;
     return ss.str();
-}
-
-void EarlFormatter::addRdfData( RdfData* rd )
-{
-    // parse the subject
-    parseRdfData( rd );
-    data.insert( rd );
-}
-
-void EarlFormatter::parseRdfData( RdfData* d )
-{
-    // process subject
-    if ( d->subject.ns.uri != "" )
-    {
-        namespaces.insert( d->subject.ns );
-    }
-    // recursively process children
-    for ( auto c : d->objects )
-    {
-        parseRdfData( c );
-    }
 }
 
 void EarlFormatter::addNamespace( RdfNamespace& p )
@@ -134,17 +114,22 @@ void EarlFormatter::addNamespace( RdfNamespace& p )
     namespaces.insert( p );
 }
 
-std::string EarlFormatter::str()
+std::string EarlFormatter::str( std::vector<RdfData*> data )
 {
     std::stringstream ss;
-    // add prefix data
-    ss << prefix();
     // add rdf data
     for ( auto d : data )
     {
+        // process subject
+        if ( d->subject.ns.uri != "" )
+        {
+            namespaces.insert( d->subject.ns );
+        }
+        // add Rdf to output
         format( ss, d );
         ss << '.' << std::endl;
     }
-    return ss.str();
+    // add prefix data
+    return prefix() + ss.str();
 }
 

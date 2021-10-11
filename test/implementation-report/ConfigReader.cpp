@@ -29,19 +29,12 @@ std::set<std::vector<std::string>> ConfigReader::getTestsuites()
     return testsuites;
 }
 
-std::string ConfigReader::getProject()
-{
-    //TODO make this better
-    return document["header"]["subject"][1]["properties"][0]["value"];
-}
-
-std::string ConfigReader::getMaker()
-{
-    //TODO make this better
-    return document["header"]["subject"][0]["properties"][0]["value"];
-}
-
 nlohmann::json ConfigReader::getSubjects()
 {
-    return document["header"]["subject"];
+    nlohmann::json j;
+    if ( document["header"].contains("subject") )
+    {
+        j = document["header"]["subject"];
+    }
+    return j;
 }

@@ -8,10 +8,11 @@
 class RdfDataBuilder
 {
     public:
-        RdfData* parse( const TestResult& );
-        RdfData* parse( const nlohmann::json& );
+        void parse( const TestResult& );
+        void parse( const nlohmann::json& );
         RdfObject parseObject( const std::string& );
         RdfNamespace parseNamespace( const std::string& );
+        std::vector<RdfData*> database;
     private:
         std::string getTime();
 };

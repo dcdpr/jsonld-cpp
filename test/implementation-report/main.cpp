@@ -23,6 +23,7 @@ std::string usage(std::string name)
 
 int main(int argc, char **argv)
 {
+
     if ( argc < 2 )
     {
         std::cerr << usage(argv[0]) << std::endl;
@@ -43,15 +44,13 @@ int main(int argc, char **argv)
     // parse the configuration header
     for ( auto j : cr.getSubjects() )
     {
-        auto d = db.parse( j );
-        ef.addRdfData( d );
+        db.parse( j );
     }
-    rw.write ( ef.str() );
 
     // run the testsuites
     TestRunner tr (
-            cr.getProject(),
-            cr.getMaker(),
+            "project",
+            "maker",
             argv[2],
             cr.getTestsuites());
     auto results = tr.run();
@@ -59,13 +58,11 @@ int main(int argc, char **argv)
     // parse the results
     for (auto r : results )
     {
-        auto rdf = db.parse( r );
-        // add results to formatter
-        ef.addRdfData( rdf );
+        db.parse( r );
     }
 
     // output the results
-//    rw.write ( ef.str() );
+    rw.write ( ef.str( db.database ) );
     return 0;
 }
 

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <sstream>
+#include <vector>
 #include <set>
 #include "RdfData.h"
 
@@ -20,13 +21,11 @@ class EarlFormatter
         //methods
         std::string prefix (  );
         void format( std::stringstream&, RdfData*, int = 0 );
-        void addRdfData( RdfData* );
-        std::string str();
+        std::string str( std::vector<RdfData*> );
 
     private:
         // members
         std::set<RdfNamespace> namespaces;
-        std::set<RdfData*> data;
         // methods
         void appendRdfObject( std::stringstream&, RdfObject& );
         void addNamespace( RdfNamespace& );
