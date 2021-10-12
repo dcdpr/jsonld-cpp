@@ -15,29 +15,46 @@ std::string RdfDataBuilder::getTime()
 
 void RdfDataBuilder::parse( const TestResult& tr )
 {
+    // start of an array like object with now subject
+    // subject is this so should be blank
+    RdfData* data = new RdfData( );
+    // define the namespace
     RdfNamespace ns( "http://www.w3.org/ns/earl#", "earl");
-    //subject is this so should be blank
-    //odefine the predicate
+
+    // define the predicate
     RdfObject p("a");
+    RdfData* predictate = new RdfData( p );
     // define the object
     RdfObject o( ns, "Assertion" );
-    // define the attributes
-    RdfData* data = new RdfData( RdfObject ( "a" ) );
+    predictate->addChild( new RdfData( o ) );
+    // add to the data object
+    data->addChild( predictate );
+   
+    //set the subject
+//    RdfObject s( ns, "subject" );
+//    RdfData* subject = new RdfData( s );
+    // find the project
+//    RdfData* project = get( "project" );
+//    RdfObject project_obj = project->getValue();
+//    subject->addChild( project_obj );
+    // add to the data object
+//    data->addChild( subject );
 
-    RdfObject subject( ns, "subject" );
-    data->addChild(
-            subject,
-            new RdfData( "project" )
-            );
+    // set the assertedBy
+    RdfObject a( ns, "assertedBy" );
+    RdfData* assertedBy = new RdfData( a ); 
+    // find the maker
+    RdfData* maker = get( "maker" );
+    RdfObject maker_obj = maker->getValue();
+    assertedBy->addChild( maker_obj );
+    // add to the data object
+    data->addChild( assertedBy );
+
+
     RdfObject test( ns, "test" );
     data->addChild(
             test,
             new RdfData( tr.manifest + "#" + tr.test )
-            );
-    RdfObject assertedBy( ns, "assertedBy" );
-    data->addChild(
-            assertedBy,
-            new RdfData( "maker" )
             );
     RdfObject mode( ns, "mode" );
     data->addChild(
@@ -47,7 +64,7 @@ void RdfDataBuilder::parse( const TestResult& tr )
     RdfObject result( ns, "result" );
     data->addChild(
             result,
-            new RdfData( "project" )
+            new RdfData( tr.result )
             );
 
     this->database.push_back(data);
@@ -168,4 +185,36 @@ RdfNamespace RdfDataBuilder::parseNamespace( const std::string& s )
 
     RdfNamespace ns( uri[0], prefix[0] );
     return ns;
+}
+
+RdfData* RdfDataBuilder::get( std::string s )
+{
+    // recursively search database for search string
+    
+    for ( std::vector<RdfData*>::iterator it = this->database.begin(); it != this->database.end() ; ++it )
+    {
+        auto i= *it;
+        auto d = search( i, s );
+        if ( d != nullptr )
+            return d;
+    }
+    return nullptr;
+}
+
+RdfData* RdfDataBuilder::search( RdfData* data, std::string s )
+{
+    for ( auto d : data->objects )
+    {
+        if ( d->subject.name == s )
+        {
+            return d;
+        }
+        else
+        {
+            // recursively search
+            auto r = search( d, s );
+            if ( r != nullptr ) return r;
+        }
+    }
+    return nullptr;
 }

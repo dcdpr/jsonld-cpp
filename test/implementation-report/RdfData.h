@@ -106,6 +106,7 @@ class RdfData
         void addChild( RdfData* );
         void addChild( RdfObject& );
         void addChild( RdfObject&, RdfData* );
+        RdfObject getValue();
         // overload the equality operator
         friend int operator== ( const RdfData& lhs, const RdfData& rhs)
         {

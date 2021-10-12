@@ -12,11 +12,6 @@ class EarlFormatter
     public:
         //constructors
         EarlFormatter();
-        std::string assertion(
-                const std::string& subject,
-                const std::string& user,
-                const std::string& test,
-                const std::string& result);
 
         //methods
         std::string prefix (  );

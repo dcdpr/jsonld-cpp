@@ -1,5 +1,15 @@
 #include "RdfData.h"
 
+RdfObject RdfData::getValue()
+{
+    RdfObject result;
+    for ( auto o : objects )
+    {
+        if ( o->objects.empty() )
+            return o->subject;
+    }
+    return result;
+}
 void RdfData::addChild( RdfData* d )
 {
     objects.push_back( d );

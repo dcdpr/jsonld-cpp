@@ -11,35 +11,6 @@ EarlFormatter::EarlFormatter()
     namespaces.insert( ns );
 }
 
-std::string EarlFormatter::assertion(
-        const std::string& subject,
-        const std::string& user,
-        const std::string& test,
-        const std::string& result)
-{
-    time_t now;
-    time(&now);
-    char buf[sizeof "2011-10-08T07:07:09Z"];
-    strftime(buf, sizeof buf, "%FT%TZ", gmtime(&now));
-
-    std::string outcome;
-    ( result == "OK" ) ? outcome = "passed" : outcome = "failed";
-    std::stringstream ss;
-    ss  << "["
-        << std:: endl << "  a <http://www.w3.org/ns/earl#Assertion>;"
-        << std:: endl << "  <http://www.w3.org/ns/earl#assertedBy> <" << user << ">;"
-        << std:: endl << "  <http://www.w3.org/ns/earl#mode> <http://www.w3.org/ns/earl#automatic>;" 
-        << std:: endl << "  <http://www.w3.org/ns/earl#result> ["
-        << std:: endl << "    a <http://www.w3.org/ns/earl#TestResult>;"
-        << std:: endl << "    dc:date \"" << buf << "\"^^xsd:date;"
-        << std:: endl << "    <http://www.w3.org/ns/earl#outcome> <http://www.w3.org/ns/earl#" << outcome << ">"
-        << std:: endl << "  ];"
-        << std:: endl << "  <http://www.w3.org/ns/earl#subject> <" << subject << ">;"
-        << std:: endl << "  <http://www.w3.org/ns/earl#test> <" << test << ">"
-        << std:: endl << "] .";
-    return ss.str();
-}
-
 void EarlFormatter::format( std::stringstream& ss, RdfData* data, int depth )
 {
     // check if RdfData has a subject, if not then this is the subject and
@@ -51,6 +22,7 @@ void EarlFormatter::format( std::stringstream& ss, RdfData* data, int depth )
     if ( obj.name == "" )
     {
         ss << "[ ";
+        depth++;
     }
     else
     {
@@ -84,7 +56,6 @@ void EarlFormatter::format( std::stringstream& ss, RdfData* data, int depth )
             ss << ";" << std::endl;
         }
     }
-
 }
 
 void EarlFormatter::appendRdfObject( std::stringstream& ss, RdfObject& obj )
