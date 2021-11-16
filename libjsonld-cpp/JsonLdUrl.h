@@ -6,7 +6,7 @@
 class JsonLdUrl {
 
 public:
-    static std::string resolve(std::string * baseUri, std::string * pathToResolve);
+    static std::string resolve(const std::string * baseUri, const std::string * pathToResolve);
 
 };
 

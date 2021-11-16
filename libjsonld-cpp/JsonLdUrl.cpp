@@ -1,7 +1,7 @@
 #include "JsonLdUrl.h"
 #include "Uri.h"
 
-std::string JsonLdUrl::resolve(std::string *baseUri, std::string *pathToResolve) {
+std::string JsonLdUrl::resolve(const std::string *baseUri, const std::string *pathToResolve) {
     if (baseUri == nullptr) {
         return *pathToResolve;
     }

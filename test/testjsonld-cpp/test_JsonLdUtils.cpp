@@ -349,3 +349,155 @@ TEST(JsonLdUtilsTest, test_iteration_order) {
     EXPECT_EQ("d", *it);
 
 }
+
+TEST(JsonLdUtilsTest, null_insertions) {
+
+    json j = json::object();
+
+    // test that different ways of inserting null into the json object produce the same result
+    j["a"] = nullptr;
+    j["b"] = json();
+
+    EXPECT_TRUE(j["a"].is_null());
+    EXPECT_TRUE(j["b"].is_null());
+}
+
+TEST(JsonLdUtilsTest, addValue_keyDoesntExist_createsKeyWithSingleStringValue) {
+
+    json j = json::object();
+
+    JsonLdUtils::addValue(j, "key", "value", false);
+
+    EXPECT_TRUE(!j["key"].is_null());
+    EXPECT_TRUE(j["key"].is_string());
+    EXPECT_EQ(j["key"], "value");
+}
+
+TEST(JsonLdUtilsTest, addValue_keyDoesExistWithSingleStringValue_createsArrayAndAppendsValue) {
+
+    json j = json::object();
+
+    JsonLdUtils::addValue(j, "key", "value", false);
+
+    EXPECT_TRUE(j["key"].is_string());
+    EXPECT_EQ(j["key"], "value");
+
+    JsonLdUtils::addValue(j, "key", "value2", false);
+
+    EXPECT_TRUE(j["key"].is_array());
+    EXPECT_EQ(j["key"].size(), 2);
+    EXPECT_EQ(j["key"][0], "value");
+    EXPECT_EQ(j["key"][1], "value2");
+}
+
+TEST(JsonLdUtilsTest, addValue_keyDoesExistWithArrayOfValues_appendsValue) {
+
+    json j = json::object();
+
+    JsonLdUtils::addValue(j, "key", "value", false);
+
+    JsonLdUtils::addValue(j, "key", "value2", false);
+
+    EXPECT_TRUE(j["key"].is_array());
+    EXPECT_EQ(j["key"].size(), 2);
+
+    JsonLdUtils::addValue(j, "key", "value3", false);
+
+    EXPECT_TRUE(j["key"].is_array());
+    EXPECT_EQ(j["key"].size(), 3);
+    EXPECT_EQ(j["key"][0], "value");
+    EXPECT_EQ(j["key"][1], "value2");
+    EXPECT_EQ(j["key"][2], "value3");
+}
+
+TEST(JsonLdUtilsTest, addValue_keyDoesntExist_createsArrayWithAsArrayFlag) {
+
+    json j = json::object();
+
+    JsonLdUtils::addValue(j, "key", "value", true);
+
+    EXPECT_TRUE(!j["key"].is_null());
+    EXPECT_TRUE(j["key"].is_array());
+    EXPECT_EQ(j["key"].size(), 1);
+    EXPECT_EQ(j["key"][0], "value");
+}
+
+TEST(JsonLdUtilsTest, addValue_keyDoesExist_appendsValueWithAsArrayFlag) {
+
+    json j = json::object();
+
+    JsonLdUtils::addValue(j, "key", "value", false);
+
+    JsonLdUtils::addValue(j, "key", "value2", true);
+
+    EXPECT_TRUE(!j["key"].is_null());
+    EXPECT_TRUE(j["key"].is_array());
+    EXPECT_EQ(j["key"].size(), 2);
+    EXPECT_EQ(j["key"][0], "value");
+    EXPECT_EQ(j["key"][1], "value2");
+}
+
+TEST(JsonLdUtilsTest, addValue_keyDoesntExist_appendsArrayOfValues) {
+
+    json j = json::object();
+
+    JsonLdUtils::addValue(j, "key", json::array({"value", "value2"}), false);
+
+    EXPECT_TRUE(!j["key"].is_null());
+    EXPECT_TRUE(j["key"].is_array());
+    EXPECT_EQ(j["key"].size(), 2);
+    EXPECT_EQ(j["key"][0], "value");
+    EXPECT_EQ(j["key"][1], "value2");
+}
+
+TEST(JsonLdUtilsTest, addValue_keyDoesntExist_appendsArrayOfValuesWithAsArrayFlag) {
+
+    json j = json::object();
+
+    JsonLdUtils::addValue(j, "key", json::array({"value", "value2"}), true);
+
+    EXPECT_TRUE(!j["key"].is_null());
+    EXPECT_TRUE(j["key"].is_array());
+    EXPECT_EQ(j["key"].size(), 2);
+    EXPECT_EQ(j["key"][0], "value");
+    EXPECT_EQ(j["key"][1], "value2");
+}
+
+TEST(JsonLdUtilsTest, containsOrEquals_StringVsString) {
+
+    json j = "a";
+
+    EXPECT_TRUE(JsonLdUtils::containsOrEquals(j, "a"));
+    EXPECT_FALSE(JsonLdUtils::containsOrEquals(j, "b"));
+}
+
+TEST(JsonLdUtilsTest, containsOrEquals_ArrayVsString) {
+
+    json j = json::array({"a", "b", "c"});
+
+    EXPECT_TRUE(JsonLdUtils::containsOrEquals(j, "b"));
+    EXPECT_FALSE(JsonLdUtils::containsOrEquals(j, "d"));
+}
+
+TEST(JsonLdUtilsTest, containsOrEquals_ObjectVsString) {
+
+    json j = json::object({{"a", 1}, {"b", 2}, {"c", 3}});
+
+    EXPECT_TRUE(JsonLdUtils::containsOrEquals(j, "b"));
+    EXPECT_FALSE(JsonLdUtils::containsOrEquals(j, "d"));
+}
+
+TEST(JsonLdUtilsTest, isIri) {
+    EXPECT_FALSE(JsonLdUtils::isIri(""));
+    EXPECT_TRUE(JsonLdUtils::isIri("relative"));
+    EXPECT_TRUE(JsonLdUtils::isIri("/relative"));
+}
+
+TEST(JsonLdUtilsTest, isKeywordForm) {
+    EXPECT_FALSE(JsonLdUtils::isKeywordForm(""));
+    EXPECT_FALSE(JsonLdUtils::isKeywordForm("@"));
+    EXPECT_TRUE(JsonLdUtils::isKeywordForm("@FOO"));
+    EXPECT_FALSE(JsonLdUtils::isKeywordForm("@foo.bar"));
+    EXPECT_TRUE(JsonLdUtils::isKeywordForm("@ignoreMe"));
+}
+

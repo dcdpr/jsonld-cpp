@@ -31,21 +31,10 @@ namespace JsonLdProcessor {
      *             If there is an error while expanding.
      */
     nlohmann::json expand(nlohmann::json input, JsonLdOptions opts);
+    // todo: need this version where we pass a RemoteDocument to be loaded
+    // nlohmann::json expand(RemoteDocument input, JsonLdOptions opts);
     nlohmann::json expand(const std::string& input, JsonLdOptions opts);
 
-    /**
-     * Expands the given input according to the steps in the
-     * <a href="http://www.w3.org/TR/json-ld-api/#expansion-algorithm">Expansion
-     * algorithm</a>, using the default {@link JsonLdOptions}.
-     *
-     * @param input
-     *            The input JSON-LD object.
-     * @return The expanded JSON-LD document
-     * @throws JsonLdError
-     *             If there is an error while expanding.
-     */
-    nlohmann::json expand(nlohmann::json input);
-    nlohmann::json expand(std::string input);
 
     RDF::RDFDataset toRDF(const std::string& input, const JsonLdOptions& options);
     std::string toRDFString(const std::string& input, const JsonLdOptions& options);
