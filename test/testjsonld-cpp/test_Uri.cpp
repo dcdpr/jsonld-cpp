@@ -252,4 +252,8 @@ TEST(UriTest, resolveUri_otherExamples) {
 
 }
 
-
+TEST(UriTest, resolveUri_isUri) {
+    EXPECT_FALSE(Uri::isUri(""));
+    EXPECT_TRUE(Uri::isUri("relative"));
+    EXPECT_TRUE(Uri::isUri("/relative"));
+}

@@ -61,6 +61,26 @@ namespace JsonLdConsts {
     static constexpr const char BASE[] = "@base";
     static constexpr const char REQUIRE_ALL[] = "@requireAll";
 
+    // v1.1
+    static constexpr const char VERSION[] = "@version";
+    static constexpr const char DIRECTION[] = "@direction";
+    static constexpr const char IMPORT[] = "@import";
+    static constexpr const char PROPAGATE[] = "@propagate";
+    static constexpr const char PROTECTED[] = "@protected";
+    static constexpr const char JSON[] = "@json";
+    static constexpr const char NEST[] = "@nest";
+    static constexpr const char PREFIX[] = "@prefix";
+    static constexpr const char INCLUDED[] = "@included";
+
+    // various flags used for term definitions
+    static constexpr const char IS_PREFIX_FLAG[] = "@flag.prefix";
+    static constexpr const char IS_PROTECTED_FLAG[] = "@flag.protected";
+    static constexpr const char IS_REVERSE_PROPERTY_FLAG[] = "@flag.reverseproperty";
+
+    // used to store other json values in the term definitions
+    static constexpr const char LOCALCONTEXT[] = "@td.localcontext";
+    static constexpr const char BASEURL[] = "@td.baseurl";
+
     enum Embed {
         ALWAYS, NEVER, ONCE, LINK
     };

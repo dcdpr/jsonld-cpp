@@ -107,7 +107,7 @@ namespace RDF {
 
                 for (auto item : *values) {
                     // convert @list to triples
-                    if (JsonLdUtils::isList(item)) {
+                    if (JsonLdUtils::isListObject(item)) {
                         auto & list = item["@list"];
                         std::shared_ptr<Node> last;
                         std::shared_ptr<Node> firstBNode = rdf_nil;
@@ -151,7 +151,7 @@ namespace RDF {
 
     std::shared_ptr<RDF::Node> RDF::RDFDataset::objectToRDF(json item) {
         // convert value object to RDF
-        if (JsonLdUtils::isValue(item)) {
+        if (JsonLdUtils::isValueObject(item)) {
             json value = item["@value"];
             json datatype = item["@type"];
             std::string datatypeStr;

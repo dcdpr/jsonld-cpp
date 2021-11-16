@@ -12,7 +12,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
   set(DCD_CXX_FLAGS -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-padded -Wno-missing-prototypes)
 endif()
 
-find_package(Boost 1.70 REQUIRED COMPONENTS  filesystem)
+find_package(Boost 1.65 REQUIRED COMPONENTS  filesystem)
 
 option(URIPARSER_BUILD_DOCS "Build API documentation" OFF)
 option(URIPARSER_BUILD_TESTS "Build test suite" OFF)
