@@ -16,15 +16,15 @@ ConfigReader::ConfigReader(std::string  filename)
     }
 }
 
-std::set<std::vector<std::string>> ConfigReader::getTestsuites()
+std::vector<std::vector<std::string>> ConfigReader::getTestsuites()
 {
-    std::set<std::vector<std::string>> testsuites;
+    std::vector<std::vector<std::string>> testsuites;
     for ( const auto s : document["testsuites"])
     {
         std::vector<std::string> ts;
         ts.push_back(s["file"]);
         ts.push_back(s["manifest"]);
-        testsuites.insert(ts);
+        testsuites.push_back(ts);
     }
     return testsuites;
 }

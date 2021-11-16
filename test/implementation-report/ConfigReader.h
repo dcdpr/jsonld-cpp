@@ -13,7 +13,7 @@ class ConfigReader
 
     public:
         ConfigReader(std::string filename);
-        std::set<std::vector<std::string>> getTestsuites();
+        std::vector<std::vector<std::string>> getTestsuites();
         std::string getProject();
         std::string getMaker();
         nlohmann::json getSubjects();

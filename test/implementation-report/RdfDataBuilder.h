@@ -16,7 +16,7 @@ class RdfDataBuilder
         RdfData* get( std::string );
         RdfData* search( RdfData*, std::string );
     private:
-        std::string getTime();
+        std::string get_time();
 };
 
 #endif //IMPL_REPORT_RDFDATABUILDER_H

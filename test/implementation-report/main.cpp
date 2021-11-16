@@ -53,12 +53,13 @@ int main(int argc, char **argv)
             "maker",
             argv[2],
             cr.getTestsuites());
-    auto results = tr.run();
+
+    tr.start();
 
     // parse the results
-    for (auto r : results )
+    while ( tr.has_next() )
     {
-        db.parse( r );
+        db.parse( tr.next_result() );
     }
 
     // output the results

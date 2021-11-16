@@ -51,9 +51,19 @@ void EarlFormatter::format( std::stringstream& ss, RdfData* data, int depth )
     // finalize
     if ( data->objects.empty() )
     {
+
         if ( depth > 0 )
         {
             ss << ";" << std::endl;
+        }
+    }
+    else
+    {
+        // close the array for empty name
+        if ( obj.name == "" )
+        {
+            ss << "]" << std::endl;
+            depth--;
         }
     }
 }

@@ -4,6 +4,7 @@
 #include <string>
 #include <array>
 #include "CommandRunner.h"
+#include <sstream>
 
 class CommandRunner
 {
@@ -11,13 +12,11 @@ class CommandRunner
         static constexpr int BUFFER_SIZE = 128;
         CommandRunner();
         CommandRunner(std::string);
-        int start();
-        int stop();
-        std::string getNextOutput();
-        void setCommand(std::string s){ command = s; };
+        std::string run();
+        void set_command(std::string s){ command = s; };
     private:
-        FILE* pipe;
         std::string command;
         std::array<char, BUFFER_SIZE> buffer;
+        std::stringstream output;
 };
 #endif // IMPL_REPORT_COMMANDRUNNER

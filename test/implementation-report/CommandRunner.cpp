@@ -5,28 +5,19 @@
 CommandRunner::CommandRunner(){}
 CommandRunner::CommandRunner(std::string command) : command{command}{}
 
-int CommandRunner::start()
+std::string CommandRunner::run()
 {
-    pipe = popen(command.c_str(), "r");
-    if ( !pipe )
+    FILE* pipe;
+    pipe = popen( command.c_str(), "r" );
+    if ( ! pipe )
     {
         std::cerr << "Could not run command: " << command << std::endl;
-        return 1;
-    }
-    return 0;
-}
-
-int CommandRunner::stop()
-{
-    std::cout << "Command completed" << std::endl;
-    return pclose( pipe );
-}
-
-std::string CommandRunner::getNextOutput()
-{
-    if ( fgets( buffer.data(), BUFFER_SIZE, pipe ) == NULL )
-    {
         return "";
     }
-    return buffer.data();
+    while ( fgets( buffer.data(), BUFFER_SIZE, pipe ) )
+    {
+        output << buffer.data();
+    }
+    pclose( pipe );
+    return output.str();
 }

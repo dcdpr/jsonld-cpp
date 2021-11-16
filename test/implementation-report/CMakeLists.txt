@@ -6,8 +6,6 @@ add_executable(
     main.cpp
     CommandRunner.h
     CommandRunner.cpp
-    FolderScanner.h
-    FolderScanner.cpp
     TestRunner.h
     TestRunner.cpp
     ReportWriter.h

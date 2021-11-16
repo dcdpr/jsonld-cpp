@@ -4,7 +4,7 @@
 
 #include "RdfDataBuilder.h"
 
-std::string RdfDataBuilder::getTime()
+std::string RdfDataBuilder::get_time()
 {
     time_t now;
     time(&now);
@@ -15,11 +15,13 @@ std::string RdfDataBuilder::getTime()
 
 void RdfDataBuilder::parse( const TestResult& tr )
 {
+    //std::cout << "RdfDataBuilder::parse(TestResult)" << std::endl;
     // start of an array like object with now subject
     // subject is this so should be blank
     RdfData* data = new RdfData( );
     // define the namespace
     RdfNamespace ns( "http://www.w3.org/ns/earl#", "earl");
+    RdfNamespace dc( "http://purl.org/dc/terms/", "dc");
 
     // define the predicate
     RdfObject p("a");
@@ -31,24 +33,26 @@ void RdfDataBuilder::parse( const TestResult& tr )
     data->addChild( predictate );
    
     //set the subject
-//    RdfObject s( ns, "subject" );
-//    RdfData* subject = new RdfData( s );
+    RdfObject s( ns, "subject" );
+    RdfData* subject = new RdfData( s );
     // find the project
-//    RdfData* project = get( "project" );
-//    RdfObject project_obj = project->getValue();
-//    subject->addChild( project_obj );
+    RdfData* project = get( "project" );
+    auto project_name = search( project, "name" );
+//    std::cout << *project << std::endl;
+//    std::cout << *project_name << std::endl;
+    subject->addChild( project_name );
     // add to the data object
-//    data->addChild( subject );
+    data->addChild( subject );
 
     // set the assertedBy
-    RdfObject a( ns, "assertedBy" );
-    RdfData* assertedBy = new RdfData( a ); 
+//    RdfObject a( ns, "assertedBy" );
+//    RdfData* assertedBy = new RdfData( a ); 
     // find the maker
-    RdfData* maker = get( "maker" );
-    RdfObject maker_obj = maker->getValue();
-    assertedBy->addChild( maker_obj );
+    //auto project_maker = search( project, "maker" );
+    //std::cout << *project_maker << std::endl;
+//    assertedBy->addChild( "" );
     // add to the data object
-    data->addChild( assertedBy );
+//    data->addChild( assertedBy );
 
 
     RdfObject test( ns, "test" );
@@ -61,17 +65,34 @@ void RdfDataBuilder::parse( const TestResult& tr )
             mode,
             new RdfData( "automatic" )
             );
-    RdfObject result( ns, "result" );
-    data->addChild(
-            result,
-            new RdfData( tr.result )
-            );
 
+    // create the result sub data
+    RdfData* result_data = new RdfData( );
+    RdfData* result_predicate = new RdfData( p );
+    RdfObject result_object( ns, "TestResult" );
+    result_predicate->addChild( new RdfData( result_object ) );
+    result_data->addChild( result_predicate );
+
+    RdfObject result_key( ns, "outcome" );
+    RdfObject result_value;
+    result_value.ns = ns;
+    ( tr.result == "OK" ) ? result_value.name = "passed" : result_value.name = "failed"; 
+    result_data->addChild(
+            result_key,
+            new RdfData( result_value )
+            );
+    RdfObject date( dc, "date" );
+    result_data->addChild(
+            date,
+            new RdfData( get_time() )
+            );
+    data->addChild( result_data );
     this->database.push_back(data);
 }
 
 void RdfDataBuilder::parse( const nlohmann::json& json )
 {
+    //std::cout << "RdfDataBuilder::parse(JSON)" << std::endl;
     RdfData* d = new RdfData();
     // convert the id
     d->subject = parseObject( json["id"] );
@@ -93,6 +114,7 @@ void RdfDataBuilder::parse( const nlohmann::json& json )
 
 RdfObject RdfDataBuilder::parseObject( const std::string& s )
 {
+    //std::cout << "RdfDataBuilder::parseObject(string)" << std::endl;
     //get the last delimited value of the string
     // split the string and add to a vector
     // so that we can find the last element as the name
@@ -138,6 +160,7 @@ RdfObject RdfDataBuilder::parseObject( const std::string& s )
 
 RdfNamespace RdfDataBuilder::parseNamespace( const std::string& s )
 {
+    //std::cout << "RdfDataBuilder::parseNamespace(string)" << std::endl;
     //get the uri of the namespace
     std::smatch uri;
     std::regex_search( s, uri, std::regex( "^.*[//#]" ) );
@@ -190,13 +213,12 @@ RdfNamespace RdfDataBuilder::parseNamespace( const std::string& s )
 RdfData* RdfDataBuilder::get( std::string s )
 {
     // recursively search database for search string
-    
     for ( std::vector<RdfData*>::iterator it = this->database.begin(); it != this->database.end() ; ++it )
     {
         auto i= *it;
         auto d = search( i, s );
         if ( d != nullptr )
-            return d;
+            return i;
     }
     return nullptr;
 }

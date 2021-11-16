@@ -1,4 +1,5 @@
 #include "RdfData.h"
+#include <iostream>
 
 RdfObject RdfData::getValue()
 {
