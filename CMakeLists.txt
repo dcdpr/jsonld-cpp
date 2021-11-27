@@ -14,21 +14,34 @@ endif()
 
 find_package(Boost 1.65 REQUIRED COMPONENTS  filesystem)
 
+# Add subdirectories for external dependencies
+
+option(CPR_BUILD_TESTS "Set to ON to build cpr tests." OFF)
+add_subdirectory(external/cpr EXCLUDE_FROM_ALL)
+
+add_subdirectory(external/http-link-header-cpp EXCLUDE_FROM_ALL)
+
 option(URIPARSER_BUILD_DOCS "Build API documentation" OFF)
 option(URIPARSER_BUILD_TESTS "Build test suite" OFF)
 option(URIPARSER_BUILD_TOOLS "Build tools" OFF)
 option(URIPARSER_BUILD_CHAR "Build code supporting data type 'char'" ON)
 option(URIPARSER_BUILD_WCHAR_T "Build code supporting data type 'wchar_t'" ON)
 option(URIPARSER_ENABLE_INSTALL "Enable installation of uriparser" OFF)
-add_subdirectory(external/uriparser)
+add_subdirectory(external/uriparser EXCLUDE_FROM_ALL)
+add_library(uriparser::uriparser ALIAS uriparser)
+
+
+# Add local subdirectories
 
 add_subdirectory(libjsonld-cpp)
 add_subdirectory(examples)
+
 
 enable_testing()
 
 # Set options so we build googletest and rapidcheck. Other projects that
 # embed libjsonld-cpp should set these options to OFF
+# todo: can we detect that with toplevel?
 option(LIBJSONLDCPP_BUILD_GOOGLETEST "Build googletest" ON)
 option(LIBJSONLDCPP_BUILD_RAPIDCHECK "Build rapidcheck" ON)
 
