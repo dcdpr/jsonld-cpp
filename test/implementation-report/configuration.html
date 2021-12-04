@@ -65,35 +65,72 @@ form.template-form button{
     <body onload="update()">
         <div class="container">
             <div>
+                <div>
+                    <h2>Configuration Tool</h2>
+                    <p>This page is used to create a configuration file for the
+                    implementation report writer.  Fill in the form below and
+                    select <b>Create JSON File</b> then use the <b>Click to
+                        download json</b> link to download the configuration
+                    file</p>
+                    <p>To run the implementation report writer navigate to the
+                    build folder and run
+                    <pre>./test/implementation-report/implementation-report [json config file] [location of the test executables]</pre>
+                    this willl output the result to the console from where you
+                    can redirect to a file.  For example:
+                    <pre>./test/implementation-report/implementation-report jsonld-cpp.json test/testjsonld-cpp/ &gt; test_results.turtle</pre>
+                </div>
                 <form id="project" onchange="doap()">
+                    <p>This form is used to populate the Description Of A
+                    Project (DOAP) section of the output</p>
                     <label for="uri">Project URI</label>
+                    <p>The project URI is the location where the project can be
+                    found</p>
                     <span class="prefixed-input">
-                        <input id="project_uri" name="uri" />
+                        <input id="project_uri"
+                               name="uri"
+                               value="https://github.com/dcdpr/jsonld-cpp"/>
                     </span>
                     <br />
 
                     <label for="name">Project Name</label>
-                    <input id="project_name" name="name" />
+                    <p>The name given to the project</p>
+                    <input id="project_name"
+                           name="name"
+                           value="jsonld-cpp" />
                     <br />
 
                     <label for="desc">Description</label>
-                    <input id="desc" name="desc" />
+                    <p>A descriptioon of the project</p>
+                    <input id="desc"
+                           name="desc"
+                           value="A C++ library implementing the JSONLD API" />
                     <br />
 
                     <label for="homepage">Homepage</label>
-                    <input id="homepage" name="homepage" />
+                    <p>Where to go to find information on the project</p>
+                    <input id="homepage"
+                           name="homepage"
+                           value="https://github.com/dcdpr/jsonld-cpp"/>
                     <br />
                 </form>
                 <div id="developers">
                     <h3>Developers</h3>
+                    <p>Click the <b>Add</b> button to add one or more developer
+                    and their contribution to the DOAP</p>
                     <button type="button" onclick="addDeveloper()">Add</button>
                 </div>
                 <div id="testsuites">
                     <h3>Testsuites</h3>
+                    <p>Click the <b>Add</b> button to add one or more testsuites
+                    to the implementation report.  Browse to and select the test
+                    executable to run and add the name of the manifest
+                    associated with the testsuite to be added to the test
+                    results section</p>
                     <button type="button" onclick="addTestsuite()">Add</button>
                 </div>
             </div>
         </div>
+        <h3>Preview</h3>
         <div id="result" class="result-area">
             <p id="prefix">
         @prefix dc: http://purl.org/dc/terms/ .<br />
@@ -105,8 +142,10 @@ form.template-form button{
             <p id="doap"></p>
             <p id="foaf"></p>
         </div>
+        <!--
         <button onclick="download()">Create Turtle File</button>
         <a href="" id="download" target="_blank">Click to download turtle</a>
+        -->
         <button onclick="download_json()">Create JSON File</button>
         <a href="" id="download-json" target="_blank">Click to download json</a>
 

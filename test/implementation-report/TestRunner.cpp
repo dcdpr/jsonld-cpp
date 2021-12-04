@@ -72,6 +72,7 @@ TestResult TestRunner::next_result()
     tr.test = id[0];
     tr.result = result[0];
     tr.time = time(0);
+    // std::cout << tr << std::endl;
     return tr;
 }
 
@@ -83,7 +84,7 @@ void TestRunner::find_next_result()
     while ( std::getline( ss, line, '\n' ) )
     {
         // find the next result output
-        if ( ! line.find("[    ",0) )
+        if ( ! line.find("[  ",0) )
         {
             next_output = line;
             return;
