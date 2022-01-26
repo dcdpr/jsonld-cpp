@@ -14,7 +14,6 @@ TestRunner::TestRunner(
         std::vector<std::vector<std::string>> exe)
     : project{project}, user{user}, path{path}, executables{exe}
 {
-//    std::cout << "Creating TestRunner" << std::endl;
     executable_iterator = 0;
     auto command = executables.at(executable_iterator);
     std::string fullpath ( path + command.at(0) );
@@ -26,14 +25,12 @@ TestRunner::TestRunner(
 
 void TestRunner::start()
 {
-//    std::cout << "TestRunner::start" << std::endl;
     has_next_output = true;
 }
 
 bool TestRunner::next_executable()
 {
     has_next_output = false;
-//    std::cout << "executable: " << executable_iterator << " of " << executables.size() << std::endl;
     if ( executable_iterator < executables.size() )
     {
         auto command = executables.at(executable_iterator);
@@ -53,7 +50,6 @@ bool TestRunner::next_executable()
 
 TestResult TestRunner::next_result()
 {
-//    std::cout << "TestRunner::next_result" << std::endl;
     // prepare result
     TestResult tr;
     if ( ! has_next_output )
@@ -72,13 +68,11 @@ TestResult TestRunner::next_result()
     tr.test = id[0];
     tr.result = result[0];
     tr.time = time(0);
-    // std::cout << tr << std::endl;
     return tr;
 }
 
 void TestRunner::find_next_result()
 {
-//    std::cout << "TestRunner::find_next_result" << std::endl;
 
     std::string line;
     while ( std::getline( ss, line, '\n' ) )
@@ -95,6 +89,5 @@ void TestRunner::find_next_result()
 
 bool TestRunner::has_next()
 {
-//    std::cout << "TestRunner::has_next" << std::endl;
     return has_next_output;
 }

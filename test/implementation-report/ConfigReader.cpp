@@ -9,7 +9,6 @@ ConfigReader::ConfigReader(std::string  filename)
     std::ifstream myfile( filename );
 
     if  ( myfile.is_open() ){
-    //    std::cout << "Reading config " << filename << std::endl;
         myfile >> document;
     } else {
         std::cout << "Could not read config " << filename << std::endl;

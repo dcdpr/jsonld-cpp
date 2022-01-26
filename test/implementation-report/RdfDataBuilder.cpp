@@ -15,7 +15,6 @@ std::string RdfDataBuilder::get_time()
 
 void RdfDataBuilder::parse( const TestResult& tr )
 {
-    //std::cout << "RdfDataBuilder::parse(TestResult)" << std::endl;
     // start of an array like object with now subject
     // subject is this so should be blank
     RdfData* data = new RdfData( );
@@ -38,22 +37,9 @@ void RdfDataBuilder::parse( const TestResult& tr )
     // find the project
     RdfData* project = get( "project" );
     auto project_name = search( project, "name" );
-//    std::cout << *project << std::endl;
-//    std::cout << *project_name << std::endl;
     subject->addChild( project_name );
     // add to the data object
     data->addChild( subject );
-
-    // set the assertedBy
-//    RdfObject a( ns, "assertedBy" );
-//    RdfData* assertedBy = new RdfData( a ); 
-    // find the maker
-    //auto project_maker = search( project, "maker" );
-    //std::cout << *project_maker << std::endl;
-//    assertedBy->addChild( "" );
-    // add to the data object
-//    data->addChild( assertedBy );
-
 
     RdfObject test( ns, "test" );
     data->addChild(
@@ -92,7 +78,6 @@ void RdfDataBuilder::parse( const TestResult& tr )
 
 void RdfDataBuilder::parse( const nlohmann::json& json )
 {
-    //std::cout << "RdfDataBuilder::parse(JSON)" << std::endl;
     RdfData* d = new RdfData();
     // convert the id
     d->subject = parseObject( json["id"] );
@@ -114,7 +99,6 @@ void RdfDataBuilder::parse( const nlohmann::json& json )
 
 RdfObject RdfDataBuilder::parseObject( const std::string& s )
 {
-    //std::cout << "RdfDataBuilder::parseObject(string)" << std::endl;
     //get the last delimited value of the string
     // split the string and add to a vector
     // so that we can find the last element as the name
@@ -160,7 +144,6 @@ RdfObject RdfDataBuilder::parseObject( const std::string& s )
 
 RdfNamespace RdfDataBuilder::parseNamespace( const std::string& s )
 {
-    //std::cout << "RdfDataBuilder::parseNamespace(string)" << std::endl;
     //get the uri of the namespace
     std::smatch uri;
     std::regex_search( s, uri, std::regex( "^.*[//#]" ) );

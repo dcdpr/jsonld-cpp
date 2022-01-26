@@ -1,5 +1,5 @@
 #
-# Build common testfiled into lib so they only need to be compiled once
+# Build common testfiles into lib so they only need to be compiled once
 #
 add_library(
     libjsonld-cpp_test STATIC

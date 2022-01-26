@@ -12,7 +12,7 @@ struct TestResult
     std::string result;
     std::time_t time;
 
-    // overlad the equality operator
+    // overload the equality operator
     friend int operator== ( const TestResult& lhs, const TestResult& rhs)
     {
         // can't have two prefixes that are the same
@@ -23,7 +23,7 @@ struct TestResult
     {
         return ( lhs.manifest < rhs.manifest && lhs.test < rhs.test );
     }
-    // overlad the output operator
+    // overload the output operator
     friend std::ostream& operator<< ( std::ostream& os, const TestResult& t)
     {
         os << "TEST RESULT: "

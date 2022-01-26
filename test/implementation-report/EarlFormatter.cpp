@@ -33,7 +33,6 @@ void EarlFormatter::format( std::stringstream& ss, RdfData* data, int depth )
             ss << obj.ns.prefix << ':' << obj.name;
         } else {
             // check for last element in data
-            // TODO: better way of handling "a"
             if ( data->objects.empty() && obj.name != "a" )
             {
                 ss << '"' << obj.name << '"';

@@ -24,7 +24,6 @@ class EarlFormatter
         // methods
         void appendRdfObject( std::stringstream&, RdfObject& );
         void addNamespace( RdfNamespace& );
-        void parseRdfData( RdfData* );
 };
 
 #endif //IMPL_REPORT_EARLFORMATTER

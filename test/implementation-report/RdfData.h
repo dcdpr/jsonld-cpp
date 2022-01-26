@@ -1,5 +1,5 @@
-#ifndef INPL_REPORT_RDFDATA
-#define INPL_REPORT_RDFDATA
+#ifndef IMPL_REPORT_RDFDATA
+#define IMPL_REPORT_RDFDATA
 
 #include <ostream>
 #include <string>
@@ -19,7 +19,7 @@ class RdfNamespace
 
         ~RdfNamespace(){};
 
-        // overlad the equality operator
+        // overload the equality operator
         friend int operator== ( const RdfNamespace& lhs, const RdfNamespace& rhs)
         {
             // can't have two prefixes that are the same
@@ -30,7 +30,7 @@ class RdfNamespace
         {
             return lhs.prefix < rhs.prefix;
         }
-        // overlad the stream output operator
+        // overload the stream output operator
         friend std::ostream& operator<< ( std::ostream& os, const RdfNamespace& ns)
         {
             os << "NAMESPACE  "
@@ -69,7 +69,7 @@ class RdfObject
             return ( lhs.ns < rhs.ns &&
                     lhs.name == rhs.name );
         }
-        // overlad the stream output operator
+        // overload the stream output operator
         friend std::ostream& operator<< ( std::ostream& os, const RdfObject& o )
         {
             os << "OBJECT  "
@@ -118,7 +118,7 @@ class RdfData
         {
             return lhs.subject < rhs.subject;
         }
-        // overlad the stream output operator
+        // overload the stream output operator
         friend std::ostream& operator<< ( std::ostream& os, const RdfData& d )
         {
             os << "DATA  "
@@ -132,4 +132,4 @@ class RdfData
 };
 
 
-#endif //INPL_REPORT_RDFDATA
+#endif //IMPL_REPORT_RDFDATA
