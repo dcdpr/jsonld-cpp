@@ -16,6 +16,9 @@ void EarlFormatter::format( std::stringstream& ss, RdfData* data, int depth )
     // check if RdfData has a subject, if not then this is the subject and
     // needs to be encapsulated in square brackets
 
+    // check for nullptr and do nothing if found
+    if ( data == nullptr ) return;
+
     // get the main object
     auto& obj = data->subject;
     // is the object empty? If so begin an array
@@ -100,6 +103,9 @@ std::string EarlFormatter::str( std::vector<RdfData*> data )
     // add rdf data
     for ( auto d : data )
     {
+        //check for nullptr and skip this iteration
+        if ( d == nullptr ) continue;
+
         // process subject
         if ( d->subject.ns.uri != "" )
         {

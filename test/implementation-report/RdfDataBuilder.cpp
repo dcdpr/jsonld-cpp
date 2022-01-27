@@ -208,6 +208,9 @@ RdfData* RdfDataBuilder::get( std::string s )
 
 RdfData* RdfDataBuilder::search( RdfData* data, std::string s )
 {
+    // check for null pointer
+    if ( data == nullptr ) return data;
+
     for ( auto d : data->objects )
     {
         if ( d->subject.name == s )
