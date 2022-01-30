@@ -35,3 +35,6 @@
 cmake-build-debug
 build
 scratch
+
+# Vim tempfiles
+*.swp

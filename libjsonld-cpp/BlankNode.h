@@ -7,7 +7,7 @@
 namespace BlankNode {
 
     bool isBlankNodeName(const std::string & name);
-};
+}
 
 
 #endif //LIBJSONLD_CPP_BLANKNODE_H

@@ -23,3 +23,4 @@ if(LIBJSONLDCPP_BUILD_RAPIDCHECK)
 endif()
 
 add_subdirectory(testjsonld-cpp)
+add_subdirectory(implementation-report)
