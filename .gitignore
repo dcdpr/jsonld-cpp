@@ -38,3 +38,4 @@ scratch
 
 # Vim tempfiles
 *.swp
+.vimrc
