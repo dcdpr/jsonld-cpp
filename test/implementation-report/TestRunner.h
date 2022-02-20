@@ -20,12 +20,11 @@ class TestRunner
         size_t executable_iterator;
         CommandRunner cr;
         std::string command_output;
-        std::string next_output;
         std::stringstream ss;
         bool has_next_output;
         //helper methods
         bool next_executable();
-        void find_next_result();
+        std::string find_next_result();
 
     public:
         // constructor

@@ -71,5 +71,11 @@ cb92d57d8b7abf09e4642338049bd9ee91a0ee0fe327e0a6061a8bbc2f4314bf  -
 ```
 
 
+### Debugging
+To include debugging symbols for gdb and compile_commands.json file, run cmake
+with the following arguments:
 
+```
+cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+```
 
