@@ -2,6 +2,7 @@
 #include <sstream>
 #include <regex>
 #include <iomanip>
+#include <limits>
 
 std::string DoubleFormatter::format(double d) {
     std::stringstream ss;

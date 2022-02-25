@@ -6,6 +6,10 @@ This is a C++ implementation of JSON-LD (http://json-ld.org)
 Development is still in progress--currently it only supports the
 expand(), toRdf() and normalize() functions.
 
+jsonld-cpp uses [http-link-header-cpp](https://github.com/danpape/http-link-header-cpp.git)
+and includes it as a submodule.  When cloning, use ```git clone --recursive```
+to include the submodule.  See repo documentation for dependencies.
+
 ## Building jsonld-cpp
 
 To build jsonld-cpp, you will need:
@@ -48,6 +52,7 @@ make
 sudo make install
 ```
 
+
 Now you can again try to build jsonld-cpp.
 
 ## Examples
@@ -66,5 +71,11 @@ cb92d57d8b7abf09e4642338049bd9ee91a0ee0fe327e0a6061a8bbc2f4314bf  -
 ```
 
 
+### Debugging
+To include debugging symbols for gdb and compile_commands.json file, run cmake
+with the following arguments:
 
+```
+cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+```
 
