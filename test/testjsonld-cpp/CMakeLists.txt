@@ -3,7 +3,6 @@
 #
 add_library(
     libjsonld-cpp_test STATIC
-    test_FileLoader.cpp
     main.cpp
     testHelpers.cpp
     testHelpers.h
@@ -39,6 +38,7 @@ target_link_libraries(
 #
 add_executable(
     UnitTests_jsonld-cpp
+    test_FileLoader.cpp
     test_JsonLdApi.cpp
     test_JsonLdUtils.cpp
     test_NodeComparisons.cpp

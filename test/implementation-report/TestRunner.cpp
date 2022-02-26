@@ -25,7 +25,7 @@ TestRunner::TestRunner(
     {
         path = path + '/';
     }
-            
+
     // initialise the executable iterator
     executable_iterator = 0;
     // get the command from the executables array
@@ -36,10 +36,6 @@ TestRunner::TestRunner(
     manifest = command.at(1);
     // prime the command runner
     cr.set_command( fullpath );
-    // get command runner to execute
-    command_output = cr.run();
-    // direct the command output to the output stream
-    ss << command_output;
 }
 
 /**
@@ -110,6 +106,11 @@ bool TestRunner::next_executable()
 
     if ( executable_iterator < executables.size() )
     {
+        // clear any error states on the stringstream
+        ss.clear();
+        // set the stringstream position to the beginning
+        ss.seekg(0);
+
         // get the next command
         auto command = executables.at(executable_iterator);
         // format the full path to the command
@@ -122,10 +123,6 @@ bool TestRunner::next_executable()
         command_output = cr.run();
         // direct the output to the istream
         ss << command_output;
-        // clear any error states on the stringstream
-        ss.clear();
-        // set the stringstream position to the beginning
-        ss.seekg(0);
         // flag that there is a next output
         has_next_output = true;
         // increment the iterator
@@ -147,11 +144,21 @@ std::string TestRunner::find_next_result()
     // initialise a variable to store the next line from the
     // command output stored in the stringstream
     std::string line;
+
+    // at some point, we will hit the end of the individual test function
+    // results and then we will start parsing the test suite summary. We
+    // want to skip the summary, so if we see the start of it, then set
+    // this flag to skip all following lines.
+    bool doneParsingResults = false;
+
     // loop through all the lines in the command output
-    while ( std::getline( ss, line, '\n' ) )
+    while ( !doneParsingResults && std::getline( ss, line, '\n' ) )
     {
         // find the next result output
-        if ( ! line.find("[  ",0) )
+        if(line.find("[----------] Global test environment tear-down") != std::string::npos) {
+            doneParsingResults = true;
+        }
+        else if ( ! line.find("[  ",0) )
         {
             // stop further execution of the function
             return line;

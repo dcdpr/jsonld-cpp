@@ -8,6 +8,11 @@ CommandRunner::CommandRunner(std::string command) : command{command}{}
 std::string CommandRunner::run()
 {
     FILE* pipe;
+    // clear any error states on the stringstream
+    output.clear();
+    // set the stringstream position to the beginning
+    output.seekg(0);
+
     pipe = popen( command.c_str(), "r" );
     if ( ! pipe )
     {

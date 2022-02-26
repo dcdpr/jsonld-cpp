@@ -408,7 +408,7 @@ TEST_F(JsonLdProcessorExpandTest, expand_t0076) {
     performExpandTestFromManifest("#t0076");
 }
 
-TEST_F(JsonLdProcessorExpandTest, expand_0077) {
+TEST_F(JsonLdProcessorExpandTest, expand_t0077) {
     performExpandTestFromManifest("#t0077");
 }
 
