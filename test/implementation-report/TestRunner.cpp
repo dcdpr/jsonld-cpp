@@ -108,8 +108,8 @@ bool TestRunner::next_executable()
     {
         // clear any error states on the stringstream
         ss.clear();
-        // set the stringstream position to the beginning
-        ss.seekg(0);
+        // now clear the contents of the stringstream to reuse it
+        ss.str(std::string());
 
         // get the next command
         auto command = executables.at(executable_iterator);
