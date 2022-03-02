@@ -67,6 +67,7 @@ public:
                     return;
                 }
             }
+            FAIL() << e.what();
         }
         catch (std::runtime_error &e) {
             FAIL() << e.what();
@@ -263,8 +264,9 @@ TEST_F(JsonLdProcessorToRDFTest, toRdf_t0117) {
     performToRDFTestFromManifest("#t0117");
 }
 
-// Test output file has blank nodes as predicates, and they are not supported
-TEST_F(JsonLdProcessorToRDFTest, DISABLED_toRdf_t0118) {
+// Test output file has blank nodes as predicates, and they are not supported. We
+// may want to disable, but should keep failing test for test implementation report.
+TEST_F(JsonLdProcessorToRDFTest, toRdf_t0118) {
     performToRDFTestFromManifest("#t0118");
 }
 
@@ -284,8 +286,7 @@ TEST_F(JsonLdProcessorToRDFTest, toRdf_t0122) {
     performToRDFTestFromManifest("#t0122");
 }
 
-// Test failing due to possible problem with uri resolution. Waiting to hear from uriparser project
-TEST_F(JsonLdProcessorToRDFTest, DISABLED_toRdf_t0123) {
+TEST_F(JsonLdProcessorToRDFTest, toRdf_t0123) {
     performToRDFTestFromManifest("#t0123");
 }
 
@@ -816,7 +817,7 @@ TEST_F(JsonLdProcessorToRDFTest, toRdf_te074) {
 }
 
 // Test output file has blank nodes as predicates, and they are not supported
-TEST_F(JsonLdProcessorToRDFTest, DISABLE_toRdf_te075) {
+TEST_F(JsonLdProcessorToRDFTest, toRdf_te075) {
     performToRDFTestFromManifest("#te075");
 }
 

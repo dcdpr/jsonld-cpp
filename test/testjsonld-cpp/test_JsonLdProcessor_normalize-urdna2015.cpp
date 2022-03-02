@@ -54,6 +54,7 @@ public:
                     return;
                 }
             }
+            FAIL() << e.what();
         }
         catch (std::runtime_error &e) {
             FAIL() << e.what();
