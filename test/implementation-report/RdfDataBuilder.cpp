@@ -15,6 +15,9 @@ std::string RdfDataBuilder::get_time()
 
 void RdfDataBuilder::parse( const TestResult& tr )
 {
+    if(tr.empty())
+        return;
+
     // start of an array like object with now subject
     // subject is this so should be blank
     RdfData* data = new RdfData( );
@@ -30,7 +33,7 @@ void RdfDataBuilder::parse( const TestResult& tr )
     predictate->addChild( new RdfData( o ) );
     // add to the data object
     data->addChild( predictate );
-   
+
     //set the subject
     RdfObject s( ns, "subject" );
     RdfData* subject = new RdfData( s );
@@ -62,7 +65,7 @@ void RdfDataBuilder::parse( const TestResult& tr )
     RdfObject result_key( ns, "outcome" );
     RdfObject result_value;
     result_value.ns = ns;
-    ( tr.result == "OK" ) ? result_value.name = "passed" : result_value.name = "failed"; 
+    ( tr.result == "OK" ) ? result_value.name = "passed" : result_value.name = "failed";
     result_data->addChild(
             result_key,
             new RdfData( result_value )

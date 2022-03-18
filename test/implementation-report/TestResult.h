@@ -12,6 +12,10 @@ struct TestResult
     std::string result;
     std::time_t time;
 
+    bool empty() const {
+        return manifest.empty() && test.empty() && result.empty();
+    }
+
     // overload the equality operator
     friend int operator== ( const TestResult& lhs, const TestResult& rhs)
     {
