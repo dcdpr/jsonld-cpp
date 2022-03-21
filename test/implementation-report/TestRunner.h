@@ -32,6 +32,6 @@ class TestRunner
         // control methods
         void start();
         TestResult next_result();
-        bool has_next();
+        bool has_next() const;
 };
 #endif // IMPL_REPORT_TESTRUNNER

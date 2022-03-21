@@ -11,9 +11,8 @@ class CommandRunner
     public:
         static constexpr int BUFFER_SIZE = 128;
         CommandRunner();
-        CommandRunner(std::string);
         std::string run();
-        void set_command(std::string s){ command = s; };
+        void set_command(std::string s){ command = s; }
     private:
         std::string command;
         std::array<char, BUFFER_SIZE> buffer;

@@ -4,7 +4,7 @@
 #include <fstream>
 #include <iomanip>
 
-ConfigReader::ConfigReader(std::string  filename)
+ConfigReader::ConfigReader(const std::string& filename)
 {
     std::ifstream myfile( filename );
 
@@ -18,7 +18,7 @@ ConfigReader::ConfigReader(std::string  filename)
 std::vector<std::vector<std::string>> ConfigReader::getTestsuites()
 {
     std::vector<std::vector<std::string>> testsuites;
-    for ( const auto s : document["testsuites"])
+    for ( const auto &s : document["testsuites"])
     {
         std::vector<std::string> ts;
         ts.push_back(s["file"]);

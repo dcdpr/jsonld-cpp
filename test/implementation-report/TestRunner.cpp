@@ -6,16 +6,17 @@
 #include "RdfData.h"
 
 #include <typeinfo>
+#include <utility>
 
 /**
  * Constructor
  */
 TestRunner::TestRunner(
-        std::string project,
-        std::string user,
-        std::string path,
+        std::string iproject,
+        std::string iuser,
+        std::string ipath,
         std::vector<std::vector<std::string>> exe)
-    : project{project}, user{user}, path{path}, executables{exe}
+    : project{std::move(iproject)}, user{std::move(iuser)}, path{std::move(ipath)}, executables{std::move(exe)}
 {
     // check that the path finishes with a path separator if
     // it doesn't then add one
@@ -36,6 +37,8 @@ TestRunner::TestRunner(
     manifest = command.at(1);
     // prime the command runner
     cr.set_command( fullpath );
+
+    has_next_output = false;
 }
 
 /**
@@ -50,7 +53,7 @@ void TestRunner::start()
 /**
  *  @return true if there is another test executable to run
  */
-bool TestRunner::has_next()
+bool TestRunner::has_next() const
 {
     return has_next_output;
 }
@@ -74,7 +77,7 @@ TestResult TestRunner::next_result()
     // advance the stringstream to the next test result
     std::string next_output = find_next_result();
     // check for empty string and return empty TestResult
-    if ( next_output == "" ) return tr;
+    if ( next_output.empty() ) return tr;
 
     // get pass/fail
     std::smatch result;
@@ -86,7 +89,7 @@ TestResult TestRunner::next_result()
     tr.manifest = manifest;
     tr.test = id[0];
     tr.result = result[0];
-    tr.time = time(0);
+    tr.time = time(nullptr);
     return tr;
 }
 

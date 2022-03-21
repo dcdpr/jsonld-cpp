@@ -12,7 +12,7 @@ class ConfigReader
         nlohmann::json document;
 
     public:
-        ConfigReader(std::string filename);
+        explicit ConfigReader(const std::string& filename);
         std::vector<std::vector<std::string>> getTestsuites();
         std::string getProject();
         std::string getMaker();

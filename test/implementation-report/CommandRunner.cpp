@@ -3,7 +3,6 @@
 #include "CommandRunner.h"
 
 CommandRunner::CommandRunner(){}
-CommandRunner::CommandRunner(std::string command) : command{command}{}
 
 std::string CommandRunner::run()
 {

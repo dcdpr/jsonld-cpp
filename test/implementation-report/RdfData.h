@@ -3,6 +3,7 @@
 
 #include <ostream>
 #include <string>
+#include <utility>
 #include <vector>
 
 class RdfNamespace
@@ -14,10 +15,9 @@ class RdfNamespace
         std::string prefix;
 
         // constructors
-        RdfNamespace(){};
-        RdfNamespace( std::string uri, std::string prefix ): uri{uri}, prefix{prefix} {};
-
-        ~RdfNamespace(){};
+        RdfNamespace() = default;
+        RdfNamespace( std::string iuri, std::string iprefix )
+                : uri{std::move(iuri)}, prefix{std::move(iprefix)} {}
 
         // overload the equality operator
         friend int operator== ( const RdfNamespace& lhs, const RdfNamespace& rhs)
@@ -50,11 +50,12 @@ class RdfObject
         std::string name;
 
         // constructors
-        RdfObject(){};
-        RdfObject( const std::string s ): name{s}{};
-        RdfObject( RdfNamespace ns, std::string s ): ns{ns}, name{s}{};
+        RdfObject() = default;
+        explicit RdfObject( std::string s )
+                : name{std::move(s)}{}
+        RdfObject( RdfNamespace ins, std::string s )
+                : ns{std::move(ins)}, name{std::move(s)}{}
 
-        ~RdfObject(){};
 
         // overload the equality operator
         friend int operator== ( const RdfObject& lhs, const RdfObject& rhs)
@@ -86,12 +87,12 @@ class RdfData
         RdfObject subject;
         std::vector<RdfData*> objects;
 
-        RdfData(){};
-        RdfData( std::string s ) : subject{ RdfObject( s ) }{};
-        RdfData( RdfObject t ) : subject{ t }{};
+        RdfData() = default;
+        explicit RdfData( std::string s ) : subject{ RdfObject( s ) }{}
+        explicit RdfData( RdfObject t ) : subject{std::move( t )}{}
         RdfData( RdfObject t, RdfData* v )
         {
-            subject = t;
+            subject = std::move(t);
             addChild( v );
         }
 
@@ -101,12 +102,13 @@ class RdfData
             {
                 delete rd;
             }
-        };
-        
+        }
+
         void addChild( RdfData* );
         void addChild( RdfObject& );
         void addChild( RdfObject&, RdfData* );
         RdfObject getValue();
+
         // overload the equality operator
         friend int operator== ( const RdfData& lhs, const RdfData& rhs)
         {
