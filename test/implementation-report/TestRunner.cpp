@@ -12,11 +12,10 @@
  * Constructor
  */
 TestRunner::TestRunner(
-        std::string iproject,
-        std::string iuser,
         std::string ipath,
         std::vector<std::vector<std::string>> exe)
-    : project{std::move(iproject)}, user{std::move(iuser)}, path{std::move(ipath)}, executables{std::move(exe)}
+    :   path{std::move(ipath)},
+        executables{std::move(exe)}
 {
     // check that the path finishes with a path separator if
     // it doesn't then add one

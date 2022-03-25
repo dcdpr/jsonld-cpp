@@ -70,16 +70,6 @@ void EarlFormatter::format( std::stringstream& ss, RdfData* data, int depth )
     }
 }
 
-void EarlFormatter::appendRdfObject( std::stringstream& ss, RdfObject& obj )
-{
-    if ( obj.ns.prefix != "" ){
-        ss << obj.ns.prefix << ".";
-        // save the namespaces to be used in the prefix
-        namespaces.insert( obj.ns );
-    }
-    ss << obj.name;
-}
-
 std::string EarlFormatter::prefix( )
 {
     std::stringstream ss;

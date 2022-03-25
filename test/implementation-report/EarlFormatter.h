@@ -7,6 +7,9 @@
 #include <set>
 #include "RdfData.h"
 
+/**
+ * \brief Formatter to take RdfData and transform it to Earl
+ */
 class EarlFormatter
 {
     public:
@@ -22,7 +25,6 @@ class EarlFormatter
         // members
         std::set<RdfNamespace> namespaces;
         // methods
-        void appendRdfObject( std::stringstream&, RdfObject& );
         void addNamespace( RdfNamespace& );
 };
 
