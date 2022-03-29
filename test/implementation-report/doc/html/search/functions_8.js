@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['usage_42',['usage',['../main_8cpp.html#a0deb234f6561a2f7093c67542e69bfc9',1,'main.cpp']]]
+  ['prefix_52',['prefix',['../classEarlFormatter.html#a48ac4dae7668a01c85d59e81cbb54bfe',1,'EarlFormatter']]]
 ];

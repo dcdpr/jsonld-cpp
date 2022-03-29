@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['getsubjects_3',['getSubjects',['../classConfigReader.html#a708cf801e716d75460b812eb62b635da',1,'ConfigReader']]],
-  ['gettestsuites_4',['getTestsuites',['../classConfigReader.html#ada536a0f03a2639b69618a7a4c18de8c',1,'ConfigReader']]]
+  ['earlformatter_3',['EarlFormatter',['../classEarlFormatter.html',1,'EarlFormatter'],['../classEarlFormatter.html#ae087e983e06fd19c4d1cf5fa6ed1658e',1,'EarlFormatter::EarlFormatter()']]]
 ];

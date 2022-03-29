@@ -28,7 +28,14 @@ std::string usage(std::string name)
 * \mainpage Implementation Report
 *
 * \section intro_sec Introduction
-* This is the introduction
+* The Implementation Report was created for the jsonld-cpp project, to generate
+* a report that could be submitted to the JSONLD working group and have the
+* project recognised as an implementation of the spec.  As a great deal of the
+* jsonld-cpp implementation had already been done by Dan Pape, the goal of the
+* implementation report program was to take the existing testsuite output and
+* convert that into the report.  In taking this approach, we would not have to
+* make any changes to the existing jsonld-cpp implementation and could treat
+* the report generation as a standalone sub-project.
 *
 * \section config_sec Configuration
 * The implementation report requires some information not found in the gtest
@@ -103,10 +110,19 @@ int main(int argc, char **argv)
 /**
  * Now comes the time where we want to run our tests and get the data that is
  * going to populate our implementation report.  We do this with the aptly
- * named TestRunner() that is going to use our second parameter passed to the
- * program which is the location of the test executables to run.  It also
+ * named TestRunner() that is going to use our second argument passed to the
+ * program, which is the location of the test executables to run.  It also
  * needs the names of the testsuites that we're going to run which are included
  * in the configuration file that we've just read.
+ *
+ * There might be a case for also including the location of the test files in
+ * the configuration file too so that we only need to use one argument when
+ * launching the program.  The problem with that is that we use a webpage at the
+ * moment to create the configuration file and we would need to get the user to
+ * type or copy and paste the path as a text string because we can't select
+ * a folder/path using javascript for security reasons.  As I predominately use
+ * the linux command line, it is easier for me to use bash completion to enter
+ * a relative path.
  *
  */
     // run the testsuites

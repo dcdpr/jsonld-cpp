@@ -64,6 +64,8 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pri-methods">Private Member Functions</a> &#124;
+<a href="#pri-attribs">Private Attributes</a> &#124;
 <a href="classTestRunner-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">TestRunner Class Reference</div>  </div>
@@ -85,6 +87,40 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:afebdcbf6018f842471c97f28a4f86c39"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6e07817bae53cf708eea19133ff41ff1"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTestRunner.html#a6e07817bae53cf708eea19133ff41ff1">has_next</a> () const</td></tr>
 <tr class="separator:a6e07817bae53cf708eea19133ff41ff1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-methods"></a>
+Private Member Functions</h2></td></tr>
+<tr class="memitem:aa8e36320f0c60dd75dc36c1e5f6db273"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTestRunner.html#aa8e36320f0c60dd75dc36c1e5f6db273">next_executable</a> ()</td></tr>
+<tr class="separator:aa8e36320f0c60dd75dc36c1e5f6db273"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0969689d2e8c54f877e231a3d40468af"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTestRunner.html#a0969689d2e8c54f877e231a3d40468af">find_next_result</a> ()</td></tr>
+<tr class="separator:a0969689d2e8c54f877e231a3d40468af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-attribs"></a>
+Private Attributes</h2></td></tr>
+<tr class="memitem:a7a4ccba44ea80bbfb05bd32996d1fb0f"><td class="memItemLeft" align="right" valign="top"><a id="a7a4ccba44ea80bbfb05bd32996d1fb0f"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>path</b></td></tr>
+<tr class="separator:a7a4ccba44ea80bbfb05bd32996d1fb0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a740b18f52dfde8dc482bb63607f083e8"><td class="memItemLeft" align="right" valign="top"><a id="a740b18f52dfde8dc482bb63607f083e8"></a>
+std::vector&lt; std::vector&lt; std::string &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>executables</b></td></tr>
+<tr class="separator:a740b18f52dfde8dc482bb63607f083e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac8f0a70232e8105fdee36a3d3a82985f"><td class="memItemLeft" align="right" valign="top"><a id="ac8f0a70232e8105fdee36a3d3a82985f"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>manifest</b></td></tr>
+<tr class="separator:ac8f0a70232e8105fdee36a3d3a82985f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1cdf5e7bdbecc5b280e18edf13e530e7"><td class="memItemLeft" align="right" valign="top"><a id="a1cdf5e7bdbecc5b280e18edf13e530e7"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>executable_iterator</b></td></tr>
+<tr class="separator:a1cdf5e7bdbecc5b280e18edf13e530e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa321a694cbb90aa03bfcc690f5c06063"><td class="memItemLeft" align="right" valign="top"><a id="aa321a694cbb90aa03bfcc690f5c06063"></a>
+<a class="el" href="classCommandRunner.html">CommandRunner</a>&#160;</td><td class="memItemRight" valign="bottom"><b>cr</b></td></tr>
+<tr class="separator:aa321a694cbb90aa03bfcc690f5c06063"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4f0a4370743c9bd99816366a3586a241"><td class="memItemLeft" align="right" valign="top"><a id="a4f0a4370743c9bd99816366a3586a241"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>command_output</b></td></tr>
+<tr class="separator:a4f0a4370743c9bd99816366a3586a241"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab662cbeee3e9c4a36120e763dd0d42b5"><td class="memItemLeft" align="right" valign="top"><a id="ab662cbeee3e9c4a36120e763dd0d42b5"></a>
+std::stringstream&#160;</td><td class="memItemRight" valign="bottom"><b>ss</b></td></tr>
+<tr class="separator:ab662cbeee3e9c4a36120e763dd0d42b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a44e34e5c27f183c8da6648ade5ae04d3"><td class="memItemLeft" align="right" valign="top"><a id="a44e34e5c27f183c8da6648ade5ae04d3"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>has_next_output</b></td></tr>
+<tr class="separator:a44e34e5c27f183c8da6648ade5ae04d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The interface that handles running the Test Executables. </p>
@@ -120,6 +156,33 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a0969689d2e8c54f877e231a3d40468af"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0969689d2e8c54f877e231a3d40468af">&#9670;&nbsp;</a></span>find_next_result()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string TestRunner::find_next_result </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Advances the stringstream to the next result and then returns the result string</p>
+<dl class="section return"><dt>Returns</dt><dd>string result </dd></dl>
+
+</div>
+</div>
 <a id="a6e07817bae53cf708eea19133ff41ff1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6e07817bae53cf708eea19133ff41ff1">&#9670;&nbsp;</a></span>has_next()</h2>
 
@@ -135,6 +198,32 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>true if there is another test executable to run </dd></dl>
+
+</div>
+</div>
+<a id="aa8e36320f0c60dd75dc36c1e5f6db273"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa8e36320f0c60dd75dc36c1e5f6db273">&#9670;&nbsp;</a></span>next_executable()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool TestRunner::next_executable </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>This function gets the next executable from the array and then runs the command. The output from the command (with all the debugging info and stuff we don't need) is then passed to the string stream for processing. </p>
 
 </div>
 </div>

@@ -75,26 +75,32 @@ $(function() {
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;set&gt;</span></div>
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;RdfData.h&quot;</span></div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160; </div>
-<div class="line"><a name="l00013"></a><span class="lineno"><a class="line" href="classEarlFormatter.html">   13</a></span>&#160;<span class="keyword">class </span><a class="code" href="classEarlFormatter.html">EarlFormatter</a></div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;{</div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;    <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;        <span class="comment">//constructors</span></div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;        <a class="code" href="classEarlFormatter.html">EarlFormatter</a>();</div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160; </div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;        <span class="comment">//methods</span></div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;        std::string prefix (  );</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;        <span class="keywordtype">void</span> format( std::stringstream&amp;, <a class="code" href="classRdfData.html">RdfData</a>*, <span class="keywordtype">int</span> = 0 );</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;        std::string str( std::vector&lt;RdfData*&gt; );</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160; </div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;        <span class="comment">// members</span></div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;        std::set&lt;RdfNamespace&gt; namespaces;</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;        <span class="comment">// methods</span></div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;        <span class="keywordtype">void</span> addNamespace( <a class="code" href="classRdfNamespace.html">RdfNamespace</a>&amp; );</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;};</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160; </div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#endif </span><span class="comment">//IMPL_REPORT_EARLFORMATTER</span></div>
-<div class="ttc" id="aclassEarlFormatter_html"><div class="ttname"><a href="classEarlFormatter.html">EarlFormatter</a></div><div class="ttdoc">Formatter to take RdfData and transform it to Earl.</div><div class="ttdef"><b>Definition:</b> EarlFormatter.h:14</div></div>
+<div class="line"><a name="l00046"></a><span class="lineno"><a class="line" href="classEarlFormatter.html">   46</a></span>&#160;<span class="keyword">class </span><a class="code" href="classEarlFormatter.html">EarlFormatter</a></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;{</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        <a class="code" href="classEarlFormatter.html#ae087e983e06fd19c4d1cf5fa6ed1658e">EarlFormatter</a>();</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160; </div>
+<div class="line"><a name="l00061"></a><span class="lineno"><a class="line" href="classEarlFormatter.html#aaec6dfb7eb4d465c53c3f745e5bc6d79">   61</a></span>&#160;        <a class="code" href="classEarlFormatter.html#aaec6dfb7eb4d465c53c3f745e5bc6d79">~EarlFormatter</a>(){};</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160; </div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        std::string <a class="code" href="classEarlFormatter.html#a48ac4dae7668a01c85d59e81cbb54bfe">prefix</a> (  );</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        </div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;        std::string <a class="code" href="classEarlFormatter.html#aef554a4af59a284070e42127b496a67e">str</a>( std::vector&lt;RdfData*&gt; );</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160; </div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00090"></a><span class="lineno"><a class="line" href="classEarlFormatter.html#a16abfde32b0a5228f37ee530d02a35c0">   90</a></span>&#160;        std::set&lt;RdfNamespace&gt; <a class="code" href="classEarlFormatter.html#a16abfde32b0a5228f37ee530d02a35c0">namespaces</a>;</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;        <span class="keywordtype">void</span> <a class="code" href="classEarlFormatter.html#aeaf6f3b1e8feea08144e13d6a0465045">addNamespace</a>( <a class="code" href="classRdfNamespace.html">RdfNamespace</a>&amp; );</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;        <span class="keywordtype">void</span> <a class="code" href="classEarlFormatter.html#a32ec1366c9e5425698bdd45345cd6aaf">format</a>( std::stringstream&amp;, <a class="code" href="classRdfData.html">RdfData</a>*, <span class="keywordtype">int</span> = 0 );</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;};</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160; </div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="preprocessor">#endif </span><span class="comment">//IMPL_REPORT_EARLFORMATTER</span></div>
+<div class="ttc" id="aclassEarlFormatter_html"><div class="ttname"><a href="classEarlFormatter.html">EarlFormatter</a></div><div class="ttdoc">A formatter to convert RDF data to the Earl.</div><div class="ttdef"><b>Definition:</b> EarlFormatter.h:47</div></div>
+<div class="ttc" id="aclassEarlFormatter_html_a16abfde32b0a5228f37ee530d02a35c0"><div class="ttname"><a href="classEarlFormatter.html#a16abfde32b0a5228f37ee530d02a35c0">EarlFormatter::namespaces</a></div><div class="ttdeci">std::set&lt; RdfNamespace &gt; namespaces</div><div class="ttdef"><b>Definition:</b> EarlFormatter.h:90</div></div>
+<div class="ttc" id="aclassEarlFormatter_html_a32ec1366c9e5425698bdd45345cd6aaf"><div class="ttname"><a href="classEarlFormatter.html#a32ec1366c9e5425698bdd45345cd6aaf">EarlFormatter::format</a></div><div class="ttdeci">void format(std::stringstream &amp;, RdfData *, int=0)</div><div class="ttdoc">Helper method used by EarlFormatter::str() to create the Earl output.</div><div class="ttdef"><b>Definition:</b> EarlFormatter.cpp:21</div></div>
+<div class="ttc" id="aclassEarlFormatter_html_a48ac4dae7668a01c85d59e81cbb54bfe"><div class="ttname"><a href="classEarlFormatter.html#a48ac4dae7668a01c85d59e81cbb54bfe">EarlFormatter::prefix</a></div><div class="ttdeci">std::string prefix()</div><div class="ttdoc">Returns a formatted string containing prefix data.</div><div class="ttdef"><b>Definition:</b> EarlFormatter.cpp:80</div></div>
+<div class="ttc" id="aclassEarlFormatter_html_aaec6dfb7eb4d465c53c3f745e5bc6d79"><div class="ttname"><a href="classEarlFormatter.html#aaec6dfb7eb4d465c53c3f745e5bc6d79">EarlFormatter::~EarlFormatter</a></div><div class="ttdeci">~EarlFormatter()</div><div class="ttdoc">The destructor for this class.</div><div class="ttdef"><b>Definition:</b> EarlFormatter.h:61</div></div>
+<div class="ttc" id="aclassEarlFormatter_html_ae087e983e06fd19c4d1cf5fa6ed1658e"><div class="ttname"><a href="classEarlFormatter.html#ae087e983e06fd19c4d1cf5fa6ed1658e">EarlFormatter::EarlFormatter</a></div><div class="ttdeci">EarlFormatter()</div><div class="ttdef"><b>Definition:</b> EarlFormatter.cpp:5</div></div>
+<div class="ttc" id="aclassEarlFormatter_html_aeaf6f3b1e8feea08144e13d6a0465045"><div class="ttname"><a href="classEarlFormatter.html#aeaf6f3b1e8feea08144e13d6a0465045">EarlFormatter::addNamespace</a></div><div class="ttdeci">void addNamespace(RdfNamespace &amp;)</div><div class="ttdoc">Method to add \RdfNamespace to the namespaces member.</div><div class="ttdef"><b>Definition:</b> EarlFormatter.cpp:92</div></div>
+<div class="ttc" id="aclassEarlFormatter_html_aef554a4af59a284070e42127b496a67e"><div class="ttname"><a href="classEarlFormatter.html#aef554a4af59a284070e42127b496a67e">EarlFormatter::str</a></div><div class="ttdeci">std::string str(std::vector&lt; RdfData * &gt;)</div><div class="ttdef"><b>Definition:</b> EarlFormatter.cpp:97</div></div>
 <div class="ttc" id="aclassRdfData_html"><div class="ttname"><a href="classRdfData.html">RdfData</a></div><div class="ttdef"><b>Definition:</b> RdfData.h:85</div></div>
 <div class="ttc" id="aclassRdfNamespace_html"><div class="ttname"><a href="classRdfNamespace.html">RdfNamespace</a></div><div class="ttdef"><b>Definition:</b> RdfData.h:10</div></div>
 </div><!-- fragment --></div><!-- contents -->

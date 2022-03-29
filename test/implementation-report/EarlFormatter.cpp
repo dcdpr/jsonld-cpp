@@ -4,11 +4,18 @@
 
 EarlFormatter::EarlFormatter()
 {
-    // insert initial namespace
+    /**
+     * We initialise the EarlFormatter by first creating a RdfNamespace() that
+     * contains the \e earl prefix and uri of the definition.
+     */
     RdfNamespace ns;
     ns.uri = "http://www.w3.org/ns/earl#";
     ns.prefix = "earl";
-    namespaces.insert( ns );
+    /**
+     * Once the namespace has been created, we use the private method
+     * EarlFormatter::addNamespace() to add it to our collection.
+     */
+    addNamespace( ns );
 }
 
 void EarlFormatter::format( std::stringstream& ss, RdfData* data, int depth )
@@ -89,23 +96,45 @@ void EarlFormatter::addNamespace( RdfNamespace& p )
 
 std::string EarlFormatter::str( std::vector<RdfData*> data )
 {
+    /**
+     * As we are going to be building up our output we use a std::stringstream
+     * object to sequencially write data to.
+     */
     std::stringstream ss;
-    // add rdf data
+    /**
+     * We iterate over the vector that has been provided
+     */
     for ( auto d : data )
     {
-        //check for nullptr and skip this iteration
+        /**
+         * skipping any iteration that contains a nullptr.
+         */
         if ( d == nullptr ) continue;
 
-        // process subject
+        /**
+         * If the RdfData() contains a RdfNamespace() then we store it so that
+         * it can be used to generate a prefix.
+         */
         if ( d->subject.ns.uri != "" )
         {
-            namespaces.insert( d->subject.ns );
+            addNamespace( d->subject.ns );
         }
-        // add Rdf to output
+        /**
+         * We then call the format() function, passing the RdfData() and the
+         * std::stringstream
+         */
         format( ss, d );
+        /**
+         * After each set of RdfData() we terminate the output by adding a
+         * full stop character.
+         */
         ss << '.' << std::endl;
     }
-    // add prefix data
+    /**
+     * Once all of the vector elements have been iterated through we are ready
+     * to return the Earl formatted string by concatinating the prefix() output
+     * with the std::stringstream.
+     */
     return prefix() + ss.str();
 }
 

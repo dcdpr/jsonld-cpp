@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['_7econfigreader_20',['~ConfigReader',['../classConfigReader.html#a4c4009264e63a116bdc8d5a24ef4142d',1,'ConfigReader']]],
-  ['_7ereportwriter_21',['~ReportWriter',['../classReportWriter.html#a2472ded8611a0dc35225d0858ff699a1',1,'ReportWriter']]]
+  ['testresult_23',['TestResult',['../structTestResult.html',1,'']]],
+  ['testrunner_24',['TestRunner',['../classTestRunner.html',1,'TestRunner'],['../classTestRunner.html#a9a67b0b8b1e081509fd31b91bfc73fb4',1,'TestRunner::TestRunner()']]]
 ];

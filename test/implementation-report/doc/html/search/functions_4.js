@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['next_5fresult_38',['next_result',['../classTestRunner.html#afebdcbf6018f842471c97f28a4f86c39',1,'TestRunner']]]
+  ['getsubjects_46',['getSubjects',['../classConfigReader.html#a708cf801e716d75460b812eb62b635da',1,'ConfigReader']]],
+  ['gettestsuites_47',['getTestsuites',['../classConfigReader.html#ada536a0f03a2639b69618a7a4c18de8c',1,'ConfigReader']]]
 ];

@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['getsubjects_34',['getSubjects',['../classConfigReader.html#a708cf801e716d75460b812eb62b635da',1,'ConfigReader']]],
-  ['gettestsuites_35',['getTestsuites',['../classConfigReader.html#ada536a0f03a2639b69618a7a4c18de8c',1,'ConfigReader']]]
+  ['configreader_42',['ConfigReader',['../classConfigReader.html#a2f835209e17e2297710e330d16c8cb4e',1,'ConfigReader']]]
 ];

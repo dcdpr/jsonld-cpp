@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['configreader_33',['ConfigReader',['../classConfigReader.html#a2f835209e17e2297710e330d16c8cb4e',1,'ConfigReader']]]
+  ['addnamespace_41',['addNamespace',['../classEarlFormatter.html#aeaf6f3b1e8feea08144e13d6a0465045',1,'EarlFormatter']]]
 ];
