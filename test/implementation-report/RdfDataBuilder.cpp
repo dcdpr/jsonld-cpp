@@ -102,7 +102,7 @@ void RdfDataBuilder::parse( const nlohmann::json& json )
 
 RdfObject RdfDataBuilder::parseObject( const std::string& s )
 {
-    //get the last delimited value of the string
+    // get the last delimited value of the string
     // split the string and add to a vector
     // so that we can find the last element as the name
     std::stringstream ss(s);
@@ -117,12 +117,14 @@ RdfObject RdfDataBuilder::parseObject( const std::string& s )
         while ( getline( ss2, d2, '#' ) )
         {
             std::stringstream ss3(d2);
-            std::string d3;
+            words.push_back( d2 );
+
+            //std::string d3;
             // delimit on fullstop
-            while( getline( ss3, d3, '.' ) )
-            {
-                words.push_back( d3 );
-            }
+            //while( getline( ss3, d3, '.' ) )
+            //{
+            //    words.push_back( d3 );
+            //}
         }
     }
 
