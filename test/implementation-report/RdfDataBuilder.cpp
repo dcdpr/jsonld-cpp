@@ -27,12 +27,12 @@ void RdfDataBuilder::parse( const TestResult& tr )
 
     // define the predicate
     RdfObject p("a");
-    RdfData* predictate = new RdfData( p );
+    RdfData* predicate = new RdfData(p );
     // define the object
     RdfObject o( ns, "Assertion" );
-    predictate->addChild( new RdfData( o ) );
+    predicate->addChild(new RdfData(o ) );
     // add to the data object
-    data->addChild( predictate );
+    data->addChild(predicate );
 
     //set the subject
     RdfObject s( ns, "subject" );

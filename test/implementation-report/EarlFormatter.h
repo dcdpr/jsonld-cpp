@@ -49,9 +49,9 @@ class EarlFormatter
 {
     public:
         /**
-         * \breif   A simple constructor for this class
+         * \brief   A simple constructor for this class
          *
-         * \details We need an instance of the EarlFormatter as as it's going to 
+         * \details We need an instance of the EarlFormatter as as it's going to
          *          collect prefix data from the RDF data that is parses so we
          *          can't just use class methods.
          */
@@ -60,7 +60,7 @@ class EarlFormatter
         /**
          * \brief The destructor for this class
          */
-        ~EarlFormatter(){};
+        ~EarlFormatter() = default;
 
         /**
          * \return  a formatted string containing prefix data
@@ -75,10 +75,9 @@ class EarlFormatter
          * \endcode
          */
         std::string prefix (  );
-        
+
         /**
-        * \param    std::vector<RdfData*> data The RDF Dataset that is to be
-        *           formatted
+        * \param    data The RDF Dataset that is to be formatted
         *
         * \return   std::string A representation of the RDF dataset as a string
         *           in the Earl format
@@ -89,12 +88,12 @@ class EarlFormatter
         *           strict but ultimately simpler way to transform the RDF
         *           data.
         */
-        std::string str( std::vector<RdfData*> );
+        std::string str( const std::vector<RdfData*>& data);
 
     private:
         /**
          * \details This is used to store namespaces that have been extraced
-         *          from the RDF Data, to be used in generating a prefix.  We 
+         *          from the RDF Data, to be used in generating a prefix.  We
          *          don't expose this member as it is specifically used for this
          *          task only.  We use a set here as we don't want any
          *          duplicate namespaces to be present.
@@ -113,18 +112,18 @@ class EarlFormatter
          * \brief   Helper method used by EarlFormatter::str() to create the
          *          Earl output
          *
-         * \param   std::stringstream ss Which is going to be used to output our
+         * \param   ss Which is going to be used to output our
          *          EaRL formatted data
-         * \param   RdfData* data The RDF data that is to be transformed by the
+         * \param   data The RDF data that is to be transformed by the
          *          formatter and output to the std::stringstream
-         * \param   int depth Is used when this method is called recursively to
+         * \param   depth Is used when this method is called recursively to
          *          determine how deep the nesting of the data is.
          *
          * \details This method is the workhorse of the class and traverses the
          *          RDF data tree to convert it into Earl and output it to the
          *          std::stringstream that has been provided.
          */
-        void format( std::stringstream&, RdfData*, int = 0 );
+        void format( std::stringstream& ss, RdfData* data, int depth = 0 );
 };
 
 #endif //IMPL_REPORT_EARLFORMATTER

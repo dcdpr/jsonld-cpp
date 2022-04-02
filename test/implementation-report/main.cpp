@@ -21,7 +21,7 @@ std::string usage(std::string name)
          The implementation report will be created using the executables \n\
          defined in the JSON configuration file which should be located in \n\
          the path/to/executables location";
-    return s; 
+    return s;
 }
 
 /**
@@ -42,7 +42,7 @@ std::string usage(std::string name)
 * result data so we need to provide it to the program using a configuration file
 * that contains the information in JSON.
 *
-* To help ocreate the JSON configuration file we have a HTML page that can be
+* To help create the JSON configuration file we have a HTML page that can be
 * used to input the information and generate the file in the required format.
 * This can be achieved by opening the <a href="../../configuration.html"
 * target="_blank">configuration.html</a> file that is in the
@@ -54,7 +54,7 @@ std::string usage(std::string name)
 * that are defined in the \e doap context defined in the prefix. Clicking the \e
 * Delete button will remove an entry.  Below the \e Developers section is where
 * the \e Testsuites that are to be run are defined.  The \e Testsuites are split
-* to process each manifest indivisually so we enter the corresponding manifest
+* to process each manifest individually so we enter the corresponding manifest
 * name for the \e Testsuite in the same row. Once again you can click the \e
 * Delete button to remove an entry.
 *
@@ -96,7 +96,8 @@ int main(int argc, char **argv)
     {
         std::cerr << usage(argv[0]) << std::endl;
         return 1;
-    };
+    }
+
 /**
  * Assuming that was successful the next thing we need to do is verify
  * that the arguments that were provided are sane.  The first argument should
@@ -106,7 +107,7 @@ int main(int argc, char **argv)
  */
     // parse the configuration file
     ConfigReader cr ( argv[1] );
-    
+
 /**
  * Now comes the time where we want to run our tests and get the data that is
  * going to populate our implementation report.  We do this with the aptly
@@ -152,7 +153,7 @@ int main(int argc, char **argv)
   * report.
   */
     // parse the configuration header
-    for ( auto j : cr.getSubjects() )
+    for ( const auto& j : cr.getSubjects() )
     {
         db.parse( j );
     }

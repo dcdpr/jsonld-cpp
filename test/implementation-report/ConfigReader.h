@@ -26,7 +26,7 @@
  *                  will be used in the implementation report
  *          2.  "testsuites" which details the testsuites to be included in the
  *              implementation report
- *          
+ *
  *          The JSON is expected in the following format:
  *
  * \code
@@ -69,15 +69,13 @@ class ConfigReader
          * \brief Constructor for the ConfigReader
          *
          * \param filename The full path to the configuration fileas detailed in \ref config_sec
-         *
-         * \return An instance of ConfigReader
          */
         explicit ConfigReader(const std::string& filename);
 
         /**
          * \brief Destructor for the ConfigReader
          */
-        ~ConfigReader(){};
+        ~ConfigReader() = default;
 
         /**
          *  \brief  Getter for the TestSuite data
