@@ -29,7 +29,7 @@ void EarlFormatter::format( std::stringstream& ss, RdfData* data, int depth )
     // get the main object
     auto& obj = data->subject;
     // is the object empty? If so begin an array
-    if ( obj.name == "" )
+    if ( obj.name.empty() )
     {
         ss << "[ ";
         depth++;
@@ -37,7 +37,7 @@ void EarlFormatter::format( std::stringstream& ss, RdfData* data, int depth )
     else
     {
         // check for a namespace
-        if ( obj.ns.prefix != "" )
+        if ( !obj.ns.prefix.empty() )
         {
             addNamespace( obj.ns );
             ss << obj.ns.prefix << ':' << obj.name;
@@ -52,11 +52,13 @@ void EarlFormatter::format( std::stringstream& ss, RdfData* data, int depth )
         }
         ss << ' ';
     }
+
     // process children
     for ( auto o : data->objects )
     {
         format( ss, o, depth++ );
-    };
+    }
+
     // finalize
     if ( data->objects.empty() )
     {
@@ -69,9 +71,9 @@ void EarlFormatter::format( std::stringstream& ss, RdfData* data, int depth )
     else
     {
         // close the array for empty name
-        if ( obj.name == "" )
+        if ( obj.name.empty() )
         {
-            ss << "]" << std::endl;
+            ss << "] ";// << std::endl;
             depth--;
         }
     }
@@ -80,9 +82,9 @@ void EarlFormatter::format( std::stringstream& ss, RdfData* data, int depth )
 std::string EarlFormatter::prefix( )
 {
     std::stringstream ss;
-    for ( auto ns : namespaces )
+    for ( const auto& ns : namespaces )
     {
-        if ( ns.uri != "" )
+        if ( !ns.uri.empty() )
             ss << "@prefix " << ns.prefix << ": <" << ns.uri << "> ." << std::endl;
     }
     ss << std::endl;
@@ -94,11 +96,11 @@ void EarlFormatter::addNamespace( RdfNamespace& p )
     namespaces.insert( p );
 }
 
-std::string EarlFormatter::str( std::vector<RdfData*> data )
+std::string EarlFormatter::str( const std::vector<RdfData*>& data )
 {
     /**
      * As we are going to be building up our output we use a std::stringstream
-     * object to sequencially write data to.
+     * object to sequentially write data to.
      */
     std::stringstream ss;
     /**
@@ -115,7 +117,7 @@ std::string EarlFormatter::str( std::vector<RdfData*> data )
          * If the RdfData() contains a RdfNamespace() then we store it so that
          * it can be used to generate a prefix.
          */
-        if ( d->subject.ns.uri != "" )
+        if ( !d->subject.ns.uri.empty() )
         {
             addNamespace( d->subject.ns );
         }
@@ -126,9 +128,9 @@ std::string EarlFormatter::str( std::vector<RdfData*> data )
         format( ss, d );
         /**
          * After each set of RdfData() we terminate the output by adding a
-         * full stop character.
+         * full stop character and extra newline for formatting.
          */
-        ss << '.' << std::endl;
+        ss << ".\n" << std::endl;
     }
     /**
      * Once all of the vector elements have been iterated through we are ready

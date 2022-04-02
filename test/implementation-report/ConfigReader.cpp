@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <fstream>
-#include <iomanip>
 
 ConfigReader::ConfigReader(const std::string& filename)
 {
@@ -27,11 +26,11 @@ ConfigReader::ConfigReader(const std::string& filename)
 }
 
 std::vector<std::vector<std::string>> ConfigReader::getTestsuites()
-
+{
     /**
      *  We want to transform the JSON data into a vector of string vectors so
      *  set up a foreach loop and build up the structure.
-     */{
+     */
     std::vector<std::vector<std::string>> testsuites;
     for ( const auto &s : document["testsuites"])
     {
