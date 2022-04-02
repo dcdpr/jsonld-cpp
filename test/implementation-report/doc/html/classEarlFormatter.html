@@ -85,9 +85,7 @@ Public Member Functions</h2></td></tr>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEarlFormatter.html#aaec6dfb7eb4d465c53c3f745e5bc6d79">~EarlFormatter</a> ()</td></tr>
 <tr class="memdesc:aaec6dfb7eb4d465c53c3f745e5bc6d79"><td class="mdescLeft">&#160;</td><td class="mdescRight">The destructor for this class. <br /></td></tr>
 <tr class="separator:aaec6dfb7eb4d465c53c3f745e5bc6d79"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a48ac4dae7668a01c85d59e81cbb54bfe"><td class="memItemLeft" align="right" valign="top"><a id="a48ac4dae7668a01c85d59e81cbb54bfe"></a>
-std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEarlFormatter.html#a48ac4dae7668a01c85d59e81cbb54bfe">prefix</a> ()</td></tr>
-<tr class="memdesc:a48ac4dae7668a01c85d59e81cbb54bfe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a formatted string containing prefix data. <br /></td></tr>
+<tr class="memitem:a48ac4dae7668a01c85d59e81cbb54bfe"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEarlFormatter.html#a48ac4dae7668a01c85d59e81cbb54bfe">prefix</a> ()</td></tr>
 <tr class="separator:a48ac4dae7668a01c85d59e81cbb54bfe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aef554a4af59a284070e42127b496a67e"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEarlFormatter.html#aef554a4af59a284070e42127b496a67e">str</a> (std::vector&lt; <a class="el" href="classRdfData.html">RdfData</a> * &gt;)</td></tr>
 <tr class="separator:aef554a4af59a284070e42127b496a67e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -95,7 +93,7 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-methods"></a>
 Private Member Functions</h2></td></tr>
 <tr class="memitem:aeaf6f3b1e8feea08144e13d6a0465045"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEarlFormatter.html#aeaf6f3b1e8feea08144e13d6a0465045">addNamespace</a> (<a class="el" href="classRdfNamespace.html">RdfNamespace</a> &amp;)</td></tr>
-<tr class="memdesc:aeaf6f3b1e8feea08144e13d6a0465045"><td class="mdescLeft">&#160;</td><td class="mdescRight">Method to add \RdfNamespace to the namespaces member.  <a href="classEarlFormatter.html#aeaf6f3b1e8feea08144e13d6a0465045">More...</a><br /></td></tr>
+<tr class="memdesc:aeaf6f3b1e8feea08144e13d6a0465045"><td class="mdescLeft">&#160;</td><td class="mdescRight">Method to add <a class="el" href="classRdfNamespace.html">RdfNamespace()</a> to the namespaces member.  <a href="classEarlFormatter.html#aeaf6f3b1e8feea08144e13d6a0465045">More...</a><br /></td></tr>
 <tr class="separator:aeaf6f3b1e8feea08144e13d6a0465045"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a32ec1366c9e5425698bdd45345cd6aaf"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEarlFormatter.html#a32ec1366c9e5425698bdd45345cd6aaf">format</a> (std::stringstream &amp;, <a class="el" href="classRdfData.html">RdfData</a> *, int=0)</td></tr>
 <tr class="memdesc:a32ec1366c9e5425698bdd45345cd6aaf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper method used by <a class="el" href="classEarlFormatter.html#aef554a4af59a284070e42127b496a67e">EarlFormatter::str()</a> to create the Earl output.  <a href="classEarlFormatter.html#a32ec1366c9e5425698bdd45345cd6aaf">More...</a><br /></td></tr>
@@ -108,28 +106,28 @@ Private Attributes</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A formatter to convert RDF data to the Earl. </p>
-<p>RDF data can be transformed to a number of different formats, one of them is the <a href="https://www.w3.org/WAI/standards-guidelines/earl/" target="_blank">Evaluatioon and Report Language <em></em>(EaRL)</a>. This class has been created to handle the transformation of \RdfData() to <em>EaRL</em>.</p>
-<p>The processing of the RDF data is not strictly done as a stream as in the RDF data we have \RdfNamespace() objects that are collected and then used to create a <em>prefix</em> section at the head of the Earl output.</p>
+<p>RDF data can be transformed to a number of different formats, one of them is the <a href="https://www.w3.org/WAI/standards-guidelines/earl/" target="_blank">Evaluatioon and Report Language <em></em>(EaRL)</a>. This class has been created to handle the transformation of <a class="el" href="classRdfData.html">RdfData()</a> to <em>EaRL</em>.</p>
+<p>The processing of the RDF data is not strictly done as a stream as in the RDF data we have <a class="el" href="classRdfNamespace.html">RdfNamespace()</a> objects that are collected and then used to create a <em>prefix</em> section at the head of the Earl output.</p>
 <div class="fragment"><div class="line">@<a class="code" href="classEarlFormatter.html#a48ac4dae7668a01c85d59e81cbb54bfe">prefix</a> dc: &lt;http:<span class="comment">//purl.org/dc/terms/&gt; .</span></div>
-<div class="line">        @<a class="code" href="classEarlFormatter.html#a48ac4dae7668a01c85d59e81cbb54bfe">prefix</a> dcdpr: &lt;https:<span class="comment">//github.com/dcdpr/&gt; .</span></div>
-<div class="line">        @<a class="code" href="classEarlFormatter.html#a48ac4dae7668a01c85d59e81cbb54bfe">prefix</a> doap: &lt;http:<span class="comment">//usefulinc.com/ns/doap#&gt; .</span></div>
-<div class="line">        @<a class="code" href="classEarlFormatter.html#a48ac4dae7668a01c85d59e81cbb54bfe">prefix</a> earl: &lt;http:<span class="comment">//www.w3.org/ns/earl#&gt; .</span></div>
-<div class="line">        @<a class="code" href="classEarlFormatter.html#a48ac4dae7668a01c85d59e81cbb54bfe">prefix</a> foaf: &lt;http:<span class="comment">//xmlns.com/foaf/0.1/&gt; .</span></div>
-<div class="line">        @<a class="code" href="classEarlFormatter.html#a48ac4dae7668a01c85d59e81cbb54bfe">prefix</a> github: &lt;https:<span class="comment">//github.com/&gt; .</span></div>
+<div class="line">@<a class="code" href="classEarlFormatter.html#a48ac4dae7668a01c85d59e81cbb54bfe">prefix</a> dcdpr: &lt;https:<span class="comment">//github.com/dcdpr/&gt; .</span></div>
+<div class="line">@<a class="code" href="classEarlFormatter.html#a48ac4dae7668a01c85d59e81cbb54bfe">prefix</a> doap: &lt;http:<span class="comment">//usefulinc.com/ns/doap#&gt; .</span></div>
+<div class="line">@<a class="code" href="classEarlFormatter.html#a48ac4dae7668a01c85d59e81cbb54bfe">prefix</a> earl: &lt;http:<span class="comment">//www.w3.org/ns/earl#&gt; .</span></div>
+<div class="line">@<a class="code" href="classEarlFormatter.html#a48ac4dae7668a01c85d59e81cbb54bfe">prefix</a> foaf: &lt;http:<span class="comment">//xmlns.com/foaf/0.1/&gt; .</span></div>
+<div class="line">@<a class="code" href="classEarlFormatter.html#a48ac4dae7668a01c85d59e81cbb54bfe">prefix</a> github: &lt;https:<span class="comment">//github.com/&gt; .</span></div>
 <div class="line"> </div>
-<div class="line">        &lt;&gt;  foaf:primaryTopic dcdpr:jsonld-cpp ;</div>
-<div class="line">            foaf:maker github:dpape ;</div>
-<div class="line">        .</div>
-<div class="line">        dcdpr:jsonld-cpp a doap:project ;</div>
-<div class="line">            doap:name <span class="stringliteral">&quot;jsonld-cpp&quot;</span> ;</div>
-<div class="line">            doap:description <span class="stringliteral">&quot;A C++ library implementing the JSONLD API&quot;</span> ;</div>
-<div class="line">            doap:homepage dcdpr:jsonld-cpp ;</div>
-<div class="line">            doap:developer github:hawkmauk ;</div>
-<div class="line">        .</div>
-<div class="line">        github:hawkmauk a foaf:Person ;</div>
-<div class="line">            foaf:name <span class="stringliteral">&quot;Michael Hawkins&quot;</span> ;</div>
-<div class="line">        .</div>
-<div class="ttc" id="aclassEarlFormatter_html_a48ac4dae7668a01c85d59e81cbb54bfe"><div class="ttname"><a href="classEarlFormatter.html#a48ac4dae7668a01c85d59e81cbb54bfe">EarlFormatter::prefix</a></div><div class="ttdeci">std::string prefix()</div><div class="ttdoc">Returns a formatted string containing prefix data.</div><div class="ttdef"><b>Definition:</b> EarlFormatter.cpp:80</div></div>
+<div class="line">&lt;&gt;  foaf:primaryTopic dcdpr:jsonld-cpp ;</div>
+<div class="line">    foaf:maker github:dpape ;</div>
+<div class="line">.</div>
+<div class="line">dcdpr:jsonld-cpp a doap:project ;</div>
+<div class="line">    doap:name <span class="stringliteral">&quot;jsonld-cpp&quot;</span> ;</div>
+<div class="line">    doap:description <span class="stringliteral">&quot;A C++ library implementing the JSONLD API&quot;</span> ;</div>
+<div class="line">    doap:homepage dcdpr:jsonld-cpp ;</div>
+<div class="line">    doap:developer github:hawkmauk ;</div>
+<div class="line">.</div>
+<div class="line">github:hawkmauk a foaf:Person ;</div>
+<div class="line">    foaf:name <span class="stringliteral">&quot;Michael Hawkins&quot;</span> ;</div>
+<div class="line">.</div>
+<div class="ttc" id="aclassEarlFormatter_html_a48ac4dae7668a01c85d59e81cbb54bfe"><div class="ttname"><a href="classEarlFormatter.html#a48ac4dae7668a01c85d59e81cbb54bfe">EarlFormatter::prefix</a></div><div class="ttdeci">std::string prefix()</div><div class="ttdef"><b>Definition:</b> EarlFormatter.cpp:127</div></div>
 </div><!-- fragment --> </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="ae087e983e06fd19c4d1cf5fa6ed1658e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae087e983e06fd19c4d1cf5fa6ed1658e">&#9670;&nbsp;</a></span>EarlFormatter()</h2>
@@ -148,7 +146,7 @@ Private Attributes</h2></td></tr>
 <p>\breif A simple constructor for this class</p>
 <p>We need an instance of the <a class="el" href="classEarlFormatter.html" title="A formatter to convert RDF data to the Earl.">EarlFormatter</a> as as it's going to collect prefix data from the RDF data that is parses so we can't just use class methods. </p>
 <p>We initialise the <a class="el" href="classEarlFormatter.html" title="A formatter to convert RDF data to the Earl.">EarlFormatter</a> by first creating a <a class="el" href="classRdfNamespace.html">RdfNamespace()</a> that contains the <em>earl</em> prefix and uri of the definition.</p>
-<p>Once the namespace has been created, we use the private method <a class="el" href="classEarlFormatter.html#aeaf6f3b1e8feea08144e13d6a0465045" title="Method to add \RdfNamespace to the namespaces member.">EarlFormatter::addNamespace()</a> to add it to our collection.</p>
+<p>Once the namespace has been created, we use the private method <a class="el" href="classEarlFormatter.html#aeaf6f3b1e8feea08144e13d6a0465045" title="Method to add RdfNamespace() to the namespaces member.">EarlFormatter::addNamespace()</a> to add it to our collection.</p>
 
 </div>
 </div>
@@ -177,7 +175,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Method to add \RdfNamespace to the namespaces member. </p>
+<p>Method to add <a class="el" href="classRdfNamespace.html">RdfNamespace()</a> to the namespaces member. </p>
 <p>We've used a set as the collection which we save the namespaces to but might want to change this at a later date so we abstract the implementation details away by adding this method. It's private so that might not be strictly neccessary but hey. </p>
 
 </div>
@@ -232,7 +230,43 @@ Private Attributes</h2></td></tr>
   </dd>
 </dl>
 <p>This method is the workhorse of the class and traverses the RDF data tree to convert it into Earl and output it to the std::stringstream that has been provided. </p>
+<p>The journey through transforming a RDF dataset to EaRL starts here but to begin with lets recap on how the RDF data is composed. We have two elements: A subject which is an <a class="el" href="classRdfObject.html">RdfObject()</a> which itself is comprised of a <a class="el" href="classRdfNamespace.html">RdfNamespace()</a> and a string, then it can optionally also have 0 or more <a class="el" href="classRdfData.html">RdfData()</a> objects.</p>
+<div class="fragment"><div class="line"><a class="code" href="classRdfData.html">RdfData</a></div>
+<div class="line">- subject (<a class="code" href="classRdfObject.html">RdfObject</a>)</div>
+<div class="line">  - ns (<a class="code" href="classRdfNamespace.html">RdfNamespace</a>)</div>
+<div class="line">     - <a class="code" href="classEarlFormatter.html#a48ac4dae7668a01c85d59e81cbb54bfe">prefix</a> (<span class="keywordtype">string</span>)</div>
+<div class="line">     - uri (<span class="keywordtype">string</span>)</div>
+<div class="line">  - name (<span class="keywordtype">string</span>)</div>
+<div class="line">- objects (vector&lt;RdfData*&gt;)</div>
+<div class="ttc" id="aclassRdfData_html"><div class="ttname"><a href="classRdfData.html">RdfData</a></div><div class="ttdef"><b>Definition:</b> RdfData.h:85</div></div>
+<div class="ttc" id="aclassRdfNamespace_html"><div class="ttname"><a href="classRdfNamespace.html">RdfNamespace</a></div><div class="ttdef"><b>Definition:</b> RdfData.h:10</div></div>
+<div class="ttc" id="aclassRdfObject_html"><div class="ttname"><a href="classRdfObject.html">RdfObject</a></div><div class="ttdef"><b>Definition:</b> RdfData.h:46</div></div>
+</div><!-- fragment --><p>to begin we check if the current RDF data node has a subject, if not then this is an array of Rdf data nodes and needs to be encapsulated in square brackets. To keep a track of our depth, we increment a variable that is 0 when we are at the top of the structure.</p>
+<p>If we do have a subject then we check for a namespace and add it to the namespaces member so that it can be included in the prefix. We then append the prefix and name to the output, delimited with a colon.</p>
+<p>Otherwise we need to check if this is the last element in the data, in which case we encapsulate the name in double quotes. There is a condition where the object name is the keyword 'a' which doesn't have a namespace, in this instance we simply output the keyword 'a'.</p>
+<p>For each of the RddData pointers, we recursively call the format function, incrementing the depth as we do.</p>
+<p>After we have finished traversing the child, it's time to termniate the elements that we've created. If we are at the end of the <a class="el" href="classRdfData.html">RdfData</a> and the top of the tree then we close off with a semi-colon. Otherwise we check to see if the subject has a name, if not then we are at the end of the array and can terminate it with a right bracket and decrease the depth.</p>
 
+</div>
+</div>
+<a id="a48ac4dae7668a01c85d59e81cbb54bfe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a48ac4dae7668a01c85d59e81cbb54bfe">&#9670;&nbsp;</a></span>prefix()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string EarlFormatter::prefix </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>a formatted string containing prefix data</dd></dl>
+<p>During the <a class="el" href="classEarlFormatter.html#a32ec1366c9e5425698bdd45345cd6aaf" title="Helper method used by EarlFormatter::str() to create the Earl output.">format()</a> method, a collection of namespaces is extracted from the data which are to be used at the head of the EaRL formatted file. This method generates the EaRL prefix header in the format:</p>
+<div class="fragment"><div class="line">@<a class="code" href="classEarlFormatter.html#a48ac4dae7668a01c85d59e81cbb54bfe">prefix</a> myprefix: &lt;my <a class="code" href="classEarlFormatter.html#a48ac4dae7668a01c85d59e81cbb54bfe">prefix</a> url&gt; .</div>
+</div><!-- fragment --> 
 </div>
 </div>
 <a id="aef554a4af59a284070e42127b496a67e"></a>
@@ -264,7 +298,7 @@ Private Attributes</h2></td></tr>
 <p>If the <a class="el" href="classRdfData.html">RdfData()</a> contains a <a class="el" href="classRdfNamespace.html">RdfNamespace()</a> then we store it so that it can be used to generate a prefix.</p>
 <p>We then call the <a class="el" href="classEarlFormatter.html#a32ec1366c9e5425698bdd45345cd6aaf" title="Helper method used by EarlFormatter::str() to create the Earl output.">format()</a> function, passing the <a class="el" href="classRdfData.html">RdfData()</a> and the std::stringstream</p>
 <p>After each set of <a class="el" href="classRdfData.html">RdfData()</a> we terminate the output by adding a full stop character.</p>
-<p>Once all of the vector elements have been iterated through we are ready to return the Earl formatted string by concatinating the <a class="el" href="classEarlFormatter.html#a48ac4dae7668a01c85d59e81cbb54bfe" title="Returns a formatted string containing prefix data.">prefix()</a> output with the std::stringstream.</p>
+<p>Once all of the vector elements have been iterated through we are ready to return the Earl formatted string by concatinating the <a class="el" href="classEarlFormatter.html#a48ac4dae7668a01c85d59e81cbb54bfe">prefix()</a> output with the std::stringstream.</p>
 
 </div>
 </div>
@@ -288,7 +322,7 @@ Private Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>This is used to store namespaces that have been extraced from the RDF Data, to be used in generating a prefix. We don't expose this member as it is specifically used for this task only. </p>
+<p>This is used to store namespaces that have been extraced from the RDF Data, to be used in generating a prefix. We don't expose this member as it is specifically used for this task only. We use a set here as we don't want any duplicate namespaces to be present. </p>
 
 </div>
 </div>

@@ -95,11 +95,9 @@ TestResult TestRunner::next_result()
 
 
 /**
- * This function gets the next executable from the array
- * and then runs the command.
- * The output from the command (with all the debugging
- * info and stuff we don't need) is then passed to the
- * string stream for processing.
+ * This function gets the next executable from the array and then runs the
+ * command.  The output from the command (with all the debugging info and stuff
+ * we don't need) is then passed to the string stream for processing.
  */
 bool TestRunner::next_executable()
 {
@@ -122,7 +120,7 @@ bool TestRunner::next_executable()
         // prime the command runner
         cr.set_command( fullpath );
         // run the command runner
-        command_output = cr.run();
+        std::string command_output = cr.run();
         // direct the output to the istream
         ss << command_output;
         // flag that there is a next output
@@ -136,8 +134,8 @@ bool TestRunner::next_executable()
 
 
 /**
- * Advances the stringstream to the next result and then
- * returns the result string
+ * Advances the stringstream to the next result and then returns the result
+ * string
  *
  * @return string result
  */

@@ -20,11 +20,31 @@ EarlFormatter::EarlFormatter()
 
 void EarlFormatter::format( std::stringstream& ss, RdfData* data, int depth )
 {
-    // check if RdfData has a subject, if not then this is the subject and
-    // needs to be encapsulated in square brackets
-
     // check for nullptr and do nothing if found
     if ( data == nullptr ) return;
+
+    /**
+     * The journey through transforming a RDF dataset to EaRL starts here but
+     * to begin with lets recap on how the RDF data is composed.  We have two
+     * elements: A subject which is an RdfObject() which itself is comprised of
+     * a RdfNamespace() and a string, then it can optionally also have 0 or more
+     * RdfData() objects.
+     *
+     * \code
+     * RdfData
+     * - subject (RdfObject)
+     *   - ns (RdfNamespace)
+     *      - prefix (string)
+     *      - uri (string)
+     *   - name (string)
+     * - objects (vector<RdfData*>)
+     * \endcode
+     *
+     * to begin we check if the current RDF data node has a subject, if not
+     * then this is an array of Rdf data nodes and needs to be encapsulated in
+     * square brackets.  To keep a track of our depth, we increment a variable
+     * that is 0 when we are at the top of the structure.
+     */
 
     // get the main object
     auto& obj = data->subject;
@@ -38,10 +58,24 @@ void EarlFormatter::format( std::stringstream& ss, RdfData* data, int depth )
     {
         // check for a namespace
         if ( obj.ns.prefix != "" )
+        /**
+         * If we do have a subject then we check for a namespace and add it to
+         * the namespaces member so that it can be included in the prefix.  We
+         * then append the prefix and name to the output, delimited with a
+         * colon.
+        */
         {
             addNamespace( obj.ns );
             ss << obj.ns.prefix << ':' << obj.name;
-        } else {
+        }
+        else
+        /**
+         * Otherwise we need to check if this is the last element in the data,
+         * in which case we encapsulate the name in double quotes.  There is a
+         * condition where the object name is the keyword 'a' which doesn't have
+         * a namespace, in this instance we simply output the keyword 'a'.
+        */
+        {
             // check for last element in data
             if ( data->objects.empty() && obj.name != "a" )
             {
@@ -50,14 +84,27 @@ void EarlFormatter::format( std::stringstream& ss, RdfData* data, int depth )
                 ss << obj.name;
             }
         }
+        // add a trailing space
         ss << ' ';
     }
-    // process children
+
+    /**
+     * For each of the RddData pointers, we recursively call the format function,
+     * incrementing the depth as we do.
+     */
     for ( auto o : data->objects )
     {
         format( ss, o, depth++ );
     };
-    // finalize
+
+    /** 
+     *  After we have finished traversing the child, it's time to termniate
+     *  the elements that we've created.  If we are at the end of the RdfData
+     *  and the top of the tree then we close off with a semi-colon.  Otherwise
+     *  we check to see if the subject has a name, if not then we are at the
+     *  end of the array and can terminate it with a right bracket and decrease
+     *  the depth.
+     */
     if ( data->objects.empty() )
     {
 

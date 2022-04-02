@@ -18,13 +18,40 @@
 class TestRunner
 {
     private:
+        /**
+         * We need to store the path to the executables and so we provide
+         * this private member to do that which is populated by the constructor
+         */
         std::string path;
+
+        /**
+         * The second argument passed to the constructor is a vector of string
+         * vectors which provide the name of the test executable and the name
+         * of the associated manifest (only used in writing the report).
+         */
         std::vector<std::vector<std::string>> executables;
+
+        /**
+         * The current manifest name is extracted for each executable and stored
+         * so that it can be used when generating the TestResult() instances.
+         */
         std::string manifest;
 
+        /**
+         * To keep a track of which value in the executables vector we are
+         * currently processng we have this property.
+         */
         size_t executable_iterator;
+
+        /**
+         * A CommandRunner() is used to handle the envoking of an executable
+         * from the vector
+         */
         CommandRunner cr;
-        std::string command_output;
+
+        /**
+         * The command output is buffered in the ss
+         */
         std::stringstream ss;
         bool has_next_output;
         //helper methods

@@ -63,7 +63,16 @@ class EarlFormatter
         ~EarlFormatter(){};
 
         /**
-         * \brief Returns a formatted string containing prefix data
+         * \return  a formatted string containing prefix data
+         *
+         * \details During the format() method, a collection of namespaces is
+         *          extracted from the data which are to be used at the head of
+         *          the EaRL formatted file.  This method generates the EaRL
+         *          prefix header in the format:
+         *
+         * \code
+         *          @prefix myprefix: <my prefix url> .
+         * \endcode
          */
         std::string prefix (  );
         
@@ -87,11 +96,12 @@ class EarlFormatter
          * \details This is used to store namespaces that have been extraced
          *          from the RDF Data, to be used in generating a prefix.  We 
          *          don't expose this member as it is specifically used for this
-         *          task only.
+         *          task only.  We use a set here as we don't want any
+         *          duplicate namespaces to be present.
          */
         std::set<RdfNamespace> namespaces;
         /**
-         * \brief   Method to add \RdfNamespace to the namespaces member
+         * \brief   Method to add RdfNamespace() to the namespaces member
          * \details We've used a set as the collection which we save the
          *          namespaces to but might want to change this at a later date
          *          so we abstract the implementation details away by adding
