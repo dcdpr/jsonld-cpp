@@ -81,10 +81,10 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a2f835209e17e2297710e330d16c8cb4e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConfigReader.html#a2f835209e17e2297710e330d16c8cb4e">ConfigReader</a> (const std::string &amp;filename)</td></tr>
 <tr class="memdesc:a2f835209e17e2297710e330d16c8cb4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for the <a class="el" href="classConfigReader.html" title="Interface for reading the configuration file.">ConfigReader</a>.  <a href="classConfigReader.html#a2f835209e17e2297710e330d16c8cb4e">More...</a><br /></td></tr>
 <tr class="separator:a2f835209e17e2297710e330d16c8cb4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4c4009264e63a116bdc8d5a24ef4142d"><td class="memItemLeft" align="right" valign="top"><a id="a4c4009264e63a116bdc8d5a24ef4142d"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConfigReader.html#a4c4009264e63a116bdc8d5a24ef4142d">~ConfigReader</a> ()</td></tr>
-<tr class="memdesc:a4c4009264e63a116bdc8d5a24ef4142d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor for the <a class="el" href="classConfigReader.html" title="Interface for reading the configuration file.">ConfigReader</a>. <br /></td></tr>
-<tr class="separator:a4c4009264e63a116bdc8d5a24ef4142d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a75d79459b84a1231bb0971be340ccc26"><td class="memItemLeft" align="right" valign="top"><a id="a75d79459b84a1231bb0971be340ccc26"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConfigReader.html#a75d79459b84a1231bb0971be340ccc26">~ConfigReader</a> ()=default</td></tr>
+<tr class="memdesc:a75d79459b84a1231bb0971be340ccc26"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor for the <a class="el" href="classConfigReader.html" title="Interface for reading the configuration file.">ConfigReader</a>. <br /></td></tr>
+<tr class="separator:a75d79459b84a1231bb0971be340ccc26"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ada536a0f03a2639b69618a7a4c18de8c"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::vector&lt; std::string &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConfigReader.html#ada536a0f03a2639b69618a7a4c18de8c">getTestsuites</a> ()</td></tr>
 <tr class="memdesc:ada536a0f03a2639b69618a7a4c18de8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Getter for the TestSuite data.  <a href="classConfigReader.html#ada536a0f03a2639b69618a7a4c18de8c">More...</a><br /></td></tr>
 <tr class="separator:ada536a0f03a2639b69618a7a4c18de8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -166,11 +166,10 @@ nlohmann::json&#160;</td><td class="memItemRight" valign="bottom"><b>document</b
 <p>Constructor for the <a class="el" href="classConfigReader.html" title="Interface for reading the configuration file.">ConfigReader</a>. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">filename</td><td>The full path to the configuration fileas detailed in <a class="el" href="index.html#config_sec">Configuration</a></td></tr>
+    <tr><td class="paramname">filename</td><td>The full path to the configuration fileas detailed in <a class="el" href="index.html#config_sec">Configuration</a> </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>An instance of <a class="el" href="classConfigReader.html" title="Interface for reading the configuration file.">ConfigReader</a> </dd></dl>
 <p>The first thing that we do is take the filename passed as a parameter to this method and initialise an input filestreeam.</p>
 <p>We are expecting the file to contain JSON data and so can try and create a JSON object from the content. If it doesn't exist or contains invalid JSON then we need to stop the program and give an indication as to what the problem might be.</p>
 
@@ -214,8 +213,8 @@ nlohmann::json&#160;</td><td class="memItemRight" valign="bottom"><b>document</b
 </div><div class="memdoc">
 
 <p>Getter for the TestSuite data. </p>
-<dl class="section return"><dt>Returns</dt><dd>This method reformats the json testsuite data as a vector of vectors containing the "file" and "manifest" values from each of the testsuites defined in the generated configuration file.</dd></dl>
-<p>We want to transform the JSON data into a vector of string vectors so set up a foreach loop and build up the structure. </p>
+<dl class="section return"><dt>Returns</dt><dd>This method reformats the json testsuite data as a vector of vectors containing the "file" and "manifest" values from each of the testsuites defined in the generated configuration file. </dd></dl>
+<p>We want to transform the JSON data into a vector of string vectors so set up a foreach loop and build up the structure.</p>
 
 </div>
 </div>

@@ -81,21 +81,21 @@ $(function() {
 <div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160; </div>
 <div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <span class="keyword">public</span>:</div>
 <div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160; </div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        <span class="keyword">explicit</span> <a class="code" href="classConfigReader.html#a2f835209e17e2297710e330d16c8cb4e">ConfigReader</a>(<span class="keyword">const</span> std::string&amp; filename);</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160; </div>
-<div class="line"><a name="l00080"></a><span class="lineno"><a class="line" href="classConfigReader.html#a4c4009264e63a116bdc8d5a24ef4142d">   80</a></span>&#160;        <a class="code" href="classConfigReader.html#a4c4009264e63a116bdc8d5a24ef4142d">~ConfigReader</a>(){};</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160; </div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;        std::vector&lt;std::vector&lt;std::string&gt;&gt; <a class="code" href="classConfigReader.html#ada536a0f03a2639b69618a7a4c18de8c">getTestsuites</a>();</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160; </div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;        nlohmann::json <a class="code" href="classConfigReader.html#a708cf801e716d75460b812eb62b635da">getSubjects</a>();</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;};</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160; </div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="preprocessor">#endif </span><span class="comment">//IMPL_REPORT_CONFIG</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        <span class="keyword">explicit</span> <a class="code" href="classConfigReader.html#a2f835209e17e2297710e330d16c8cb4e">ConfigReader</a>(<span class="keyword">const</span> std::string&amp; filename);</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160; </div>
+<div class="line"><a name="l00078"></a><span class="lineno"><a class="line" href="classConfigReader.html#a75d79459b84a1231bb0971be340ccc26">   78</a></span>&#160;        <a class="code" href="classConfigReader.html#a75d79459b84a1231bb0971be340ccc26">~ConfigReader</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160; </div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        std::vector&lt;std::vector&lt;std::string&gt;&gt; <a class="code" href="classConfigReader.html#ada536a0f03a2639b69618a7a4c18de8c">getTestsuites</a>();</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160; </div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;        nlohmann::json <a class="code" href="classConfigReader.html#a708cf801e716d75460b812eb62b635da">getSubjects</a>();</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;};</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160; </div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="preprocessor">#endif </span><span class="comment">//IMPL_REPORT_CONFIG</span></div>
 <div class="ttc" id="aclassConfigReader_html"><div class="ttname"><a href="classConfigReader.html">ConfigReader</a></div><div class="ttdoc">Interface for reading the configuration file.</div><div class="ttdef"><b>Definition:</b> ConfigReader.h:62</div></div>
-<div class="ttc" id="aclassConfigReader_html_a2f835209e17e2297710e330d16c8cb4e"><div class="ttname"><a href="classConfigReader.html#a2f835209e17e2297710e330d16c8cb4e">ConfigReader::ConfigReader</a></div><div class="ttdeci">ConfigReader(const std::string &amp;filename)</div><div class="ttdoc">Constructor for the ConfigReader.</div><div class="ttdef"><b>Definition:</b> ConfigReader.cpp:7</div></div>
-<div class="ttc" id="aclassConfigReader_html_a4c4009264e63a116bdc8d5a24ef4142d"><div class="ttname"><a href="classConfigReader.html#a4c4009264e63a116bdc8d5a24ef4142d">ConfigReader::~ConfigReader</a></div><div class="ttdeci">~ConfigReader()</div><div class="ttdoc">Destructor for the ConfigReader.</div><div class="ttdef"><b>Definition:</b> ConfigReader.h:80</div></div>
-<div class="ttc" id="aclassConfigReader_html_a708cf801e716d75460b812eb62b635da"><div class="ttname"><a href="classConfigReader.html#a708cf801e716d75460b812eb62b635da">ConfigReader::getSubjects</a></div><div class="ttdeci">nlohmann::json getSubjects()</div><div class="ttdoc">Getter for the subject data.</div><div class="ttdef"><b>Definition:</b> ConfigReader.cpp:46</div></div>
-<div class="ttc" id="aclassConfigReader_html_ada536a0f03a2639b69618a7a4c18de8c"><div class="ttname"><a href="classConfigReader.html#ada536a0f03a2639b69618a7a4c18de8c">ConfigReader::getTestsuites</a></div><div class="ttdeci">std::vector&lt; std::vector&lt; std::string &gt; &gt; getTestsuites()</div><div class="ttdoc">Getter for the TestSuite data.</div><div class="ttdef"><b>Definition:</b> ConfigReader.cpp:29</div></div>
+<div class="ttc" id="aclassConfigReader_html_a2f835209e17e2297710e330d16c8cb4e"><div class="ttname"><a href="classConfigReader.html#a2f835209e17e2297710e330d16c8cb4e">ConfigReader::ConfigReader</a></div><div class="ttdeci">ConfigReader(const std::string &amp;filename)</div><div class="ttdoc">Constructor for the ConfigReader.</div><div class="ttdef"><b>Definition:</b> ConfigReader.cpp:6</div></div>
+<div class="ttc" id="aclassConfigReader_html_a708cf801e716d75460b812eb62b635da"><div class="ttname"><a href="classConfigReader.html#a708cf801e716d75460b812eb62b635da">ConfigReader::getSubjects</a></div><div class="ttdeci">nlohmann::json getSubjects()</div><div class="ttdoc">Getter for the subject data.</div><div class="ttdef"><b>Definition:</b> ConfigReader.cpp:45</div></div>
+<div class="ttc" id="aclassConfigReader_html_a75d79459b84a1231bb0971be340ccc26"><div class="ttname"><a href="classConfigReader.html#a75d79459b84a1231bb0971be340ccc26">ConfigReader::~ConfigReader</a></div><div class="ttdeci">~ConfigReader()=default</div><div class="ttdoc">Destructor for the ConfigReader.</div></div>
+<div class="ttc" id="aclassConfigReader_html_ada536a0f03a2639b69618a7a4c18de8c"><div class="ttname"><a href="classConfigReader.html#ada536a0f03a2639b69618a7a4c18de8c">ConfigReader::getTestsuites</a></div><div class="ttdeci">std::vector&lt; std::vector&lt; std::string &gt; &gt; getTestsuites()</div><div class="ttdoc">Getter for the TestSuite data.</div><div class="ttdef"><b>Definition:</b> ConfigReader.cpp:28</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

@@ -72,26 +72,33 @@ $(function() {
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#include &quot;RdfData.h&quot;</span></div>
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#include &quot;TestResult.h&quot;</span></div>
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &quot;jsoninc.h&quot;</span></div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160; </div>
-<div class="line"><a name="l00008"></a><span class="lineno"><a class="line" href="classRdfDataBuilder.html">    8</a></span>&#160;<span class="keyword">class </span><a class="code" href="classRdfDataBuilder.html">RdfDataBuilder</a></div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;{</div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;    <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;        std::vector&lt;RdfData*&gt; database;</div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;        <span class="keywordtype">void</span> parse( <span class="keyword">const</span> <a class="code" href="structTestResult.html">TestResult</a>&amp; );</div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;        <span class="keywordtype">void</span> parse( <span class="keyword">const</span> nlohmann::json&amp; );</div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;        <a class="code" href="classRdfObject.html">RdfObject</a> parseObject( <span class="keyword">const</span> std::string&amp; );</div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;        <a class="code" href="classRdfNamespace.html">RdfNamespace</a> parseNamespace( <span class="keyword">const</span> std::string&amp; );</div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;        <a class="code" href="classRdfData.html">RdfData</a>* get( std::string );</div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;        <a class="code" href="classRdfData.html">RdfData</a>* search( <a class="code" href="classRdfData.html">RdfData</a>*, std::string );</div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;    <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;        std::string get_time();</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;};</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160; </div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#endif </span><span class="comment">//IMPL_REPORT_RDFDATABUILDER_H</span></div>
-<div class="ttc" id="aclassRdfDataBuilder_html"><div class="ttname"><a href="classRdfDataBuilder.html">RdfDataBuilder</a></div><div class="ttdef"><b>Definition:</b> RdfDataBuilder.h:9</div></div>
-<div class="ttc" id="aclassRdfData_html"><div class="ttname"><a href="classRdfData.html">RdfData</a></div><div class="ttdef"><b>Definition:</b> RdfData.h:85</div></div>
-<div class="ttc" id="aclassRdfNamespace_html"><div class="ttname"><a href="classRdfNamespace.html">RdfNamespace</a></div><div class="ttdef"><b>Definition:</b> RdfData.h:10</div></div>
-<div class="ttc" id="aclassRdfObject_html"><div class="ttname"><a href="classRdfObject.html">RdfObject</a></div><div class="ttdef"><b>Definition:</b> RdfData.h:46</div></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;regex&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160; </div>
+<div class="line"><a name="l00025"></a><span class="lineno"><a class="line" href="classRdfDataBuilder.html">   25</a></span>&#160;<span class="keyword">class </span><a class="code" href="classRdfDataBuilder.html">RdfDataBuilder</a></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;{</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00031"></a><span class="lineno"><a class="line" href="classRdfDataBuilder.html#a5910e2b777ebb0d020bd5cad35aeeac9">   31</a></span>&#160;        std::vector&lt;RdfData*&gt; <a class="code" href="classRdfDataBuilder.html#a5910e2b777ebb0d020bd5cad35aeeac9">database</a>;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;        <span class="keywordtype">void</span> <a class="code" href="classRdfDataBuilder.html#a0ff76b9daba20246566d3d5d92cc9a5f">parse</a>( <span class="keyword">const</span> <a class="code" href="structTestResult.html">TestResult</a>&amp; );</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        <span class="keywordtype">void</span> <a class="code" href="classRdfDataBuilder.html#a0ff76b9daba20246566d3d5d92cc9a5f">parse</a>( <span class="keyword">const</span> nlohmann::json&amp; );</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00068"></a><span class="lineno"><a class="line" href="classRdfDataBuilder.html#abaf1d0288681b2072927ecac73a2be51">   68</a></span>&#160;        <span class="keyword">static</span> std::regex <span class="keyword">const</span> <a class="code" href="classRdfDataBuilder.html#abaf1d0288681b2072927ecac73a2be51">url_regex</a>;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        std::string <a class="code" href="classRdfDataBuilder.html#a5cf1bde70bd14d3d5b3ca35c730d33e0">get_time</a>();</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;        <a class="code" href="classRdfObject.html">RdfObject</a> <a class="code" href="classRdfDataBuilder.html#af2a59ed82418b558cc44fb200f06fc39">parseObject</a>( <span class="keyword">const</span> std::string&amp; );</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        <a class="code" href="classRdfNamespace.html">RdfNamespace</a> parseNamespace( <span class="keyword">const</span> std::string&amp; );</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;        <a class="code" href="classRdfData.html">RdfData</a>* get( std::string );</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        <a class="code" href="classRdfData.html">RdfData</a>* search( <a class="code" href="classRdfData.html">RdfData</a>*, std::string );</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;};</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160; </div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="preprocessor">#endif </span><span class="comment">//IMPL_REPORT_RDFDATABUILDER_H</span></div>
+<div class="ttc" id="aclassRdfDataBuilder_html"><div class="ttname"><a href="classRdfDataBuilder.html">RdfDataBuilder</a></div><div class="ttdoc">Builds and stores an RDF data structure.</div><div class="ttdef"><b>Definition:</b> RdfDataBuilder.h:26</div></div>
+<div class="ttc" id="aclassRdfDataBuilder_html_a0ff76b9daba20246566d3d5d92cc9a5f"><div class="ttname"><a href="classRdfDataBuilder.html#a0ff76b9daba20246566d3d5d92cc9a5f">RdfDataBuilder::parse</a></div><div class="ttdeci">void parse(const TestResult &amp;)</div><div class="ttdoc">A method to add TestReult data to our stored RDF data.</div><div class="ttdef"><b>Definition:</b> RdfDataBuilder.cpp:18</div></div>
+<div class="ttc" id="aclassRdfDataBuilder_html_a5910e2b777ebb0d020bd5cad35aeeac9"><div class="ttname"><a href="classRdfDataBuilder.html#a5910e2b777ebb0d020bd5cad35aeeac9">RdfDataBuilder::database</a></div><div class="ttdeci">std::vector&lt; RdfData * &gt; database</div><div class="ttdoc">Member where we store the RDF Data tree.</div><div class="ttdef"><b>Definition:</b> RdfDataBuilder.h:31</div></div>
+<div class="ttc" id="aclassRdfDataBuilder_html_a5cf1bde70bd14d3d5b3ca35c730d33e0"><div class="ttname"><a href="classRdfDataBuilder.html#a5cf1bde70bd14d3d5b3ca35c730d33e0">RdfDataBuilder::get_time</a></div><div class="ttdeci">std::string get_time()</div><div class="ttdoc">Helper method to get the current date and time as a string.</div><div class="ttdef"><b>Definition:</b> RdfDataBuilder.cpp:9</div></div>
+<div class="ttc" id="aclassRdfDataBuilder_html_abaf1d0288681b2072927ecac73a2be51"><div class="ttname"><a href="classRdfDataBuilder.html#abaf1d0288681b2072927ecac73a2be51">RdfDataBuilder::url_regex</a></div><div class="ttdeci">static std::regex const url_regex</div><div class="ttdoc">Regular Expression used to identify a string representation of a URL.</div><div class="ttdef"><b>Definition:</b> RdfDataBuilder.h:68</div></div>
+<div class="ttc" id="aclassRdfDataBuilder_html_af2a59ed82418b558cc44fb200f06fc39"><div class="ttname"><a href="classRdfDataBuilder.html#af2a59ed82418b558cc44fb200f06fc39">RdfDataBuilder::parseObject</a></div><div class="ttdeci">RdfObject parseObject(const std::string &amp;)</div><div class="ttdef"><b>Definition:</b> RdfDataBuilder.cpp:105</div></div>
+<div class="ttc" id="aclassRdfData_html"><div class="ttname"><a href="classRdfData.html">RdfData</a></div><div class="ttdoc">Used to build a RDF Tripple of RdfObjects() in an RDF graph.</div><div class="ttdef"><b>Definition:</b> RdfData.h:157</div></div>
+<div class="ttc" id="aclassRdfNamespace_html"><div class="ttname"><a href="classRdfNamespace.html">RdfNamespace</a></div><div class="ttdoc">Provides context with a URI to a definition and a prefix that can be used as a reference to the URI.</div><div class="ttdef"><b>Definition:</b> RdfData.h:19</div></div>
+<div class="ttc" id="aclassRdfObject_html"><div class="ttname"><a href="classRdfObject.html">RdfObject</a></div><div class="ttdoc">A description of an entity in an RDF graph. This could be a subject predicate or object.</div><div class="ttdef"><b>Definition:</b> RdfData.h:84</div></div>
 <div class="ttc" id="astructTestResult_html"><div class="ttname"><a href="structTestResult.html">TestResult</a></div><div class="ttdef"><b>Definition:</b> TestResult.h:9</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

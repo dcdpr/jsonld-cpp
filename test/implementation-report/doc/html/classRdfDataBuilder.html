@@ -66,22 +66,40 @@ $(function() {
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="#pri-methods">Private Member Functions</a> &#124;
+<a href="#pri-static-attribs">Static Private Attributes</a> &#124;
 <a href="classRdfDataBuilder-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">RdfDataBuilder Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Builds and stores an RDF data structure.  
+ <a href="classRdfDataBuilder.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="RdfDataBuilder_8h_source.html">RdfDataBuilder.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a0ff76b9daba20246566d3d5d92cc9a5f"><td class="memItemLeft" align="right" valign="top"><a id="a0ff76b9daba20246566d3d5d92cc9a5f"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>parse</b> (const <a class="el" href="structTestResult.html">TestResult</a> &amp;)</td></tr>
+<tr class="memitem:a0ff76b9daba20246566d3d5d92cc9a5f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRdfDataBuilder.html#a0ff76b9daba20246566d3d5d92cc9a5f">parse</a> (const <a class="el" href="structTestResult.html">TestResult</a> &amp;)</td></tr>
+<tr class="memdesc:a0ff76b9daba20246566d3d5d92cc9a5f"><td class="mdescLeft">&#160;</td><td class="mdescRight">A method to add TestReult data to our stored RDF data.  <a href="classRdfDataBuilder.html#a0ff76b9daba20246566d3d5d92cc9a5f">More...</a><br /></td></tr>
 <tr class="separator:a0ff76b9daba20246566d3d5d92cc9a5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1023f046386158539b6005ff953de3af"><td class="memItemLeft" align="right" valign="top"><a id="a1023f046386158539b6005ff953de3af"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>parse</b> (const nlohmann::json &amp;)</td></tr>
+<tr class="memitem:a1023f046386158539b6005ff953de3af"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRdfDataBuilder.html#a1023f046386158539b6005ff953de3af">parse</a> (const nlohmann::json &amp;)</td></tr>
+<tr class="memdesc:a1023f046386158539b6005ff953de3af"><td class="mdescLeft">&#160;</td><td class="mdescRight">A method to add JSON header data to our stored RDF data.  <a href="classRdfDataBuilder.html#a1023f046386158539b6005ff953de3af">More...</a><br /></td></tr>
 <tr class="separator:a1023f046386158539b6005ff953de3af"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af2a59ed82418b558cc44fb200f06fc39"><td class="memItemLeft" align="right" valign="top"><a id="af2a59ed82418b558cc44fb200f06fc39"></a>
-<a class="el" href="classRdfObject.html">RdfObject</a>&#160;</td><td class="memItemRight" valign="bottom"><b>parseObject</b> (const std::string &amp;)</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
+Public Attributes</h2></td></tr>
+<tr class="memitem:a5910e2b777ebb0d020bd5cad35aeeac9"><td class="memItemLeft" align="right" valign="top"><a id="a5910e2b777ebb0d020bd5cad35aeeac9"></a>
+std::vector&lt; <a class="el" href="classRdfData.html">RdfData</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRdfDataBuilder.html#a5910e2b777ebb0d020bd5cad35aeeac9">database</a></td></tr>
+<tr class="memdesc:a5910e2b777ebb0d020bd5cad35aeeac9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Member where we store the RDF Data tree. <br /></td></tr>
+<tr class="separator:a5910e2b777ebb0d020bd5cad35aeeac9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-methods"></a>
+Private Member Functions</h2></td></tr>
+<tr class="memitem:a5cf1bde70bd14d3d5b3ca35c730d33e0"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRdfDataBuilder.html#a5cf1bde70bd14d3d5b3ca35c730d33e0">get_time</a> ()</td></tr>
+<tr class="memdesc:a5cf1bde70bd14d3d5b3ca35c730d33e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper method to get the current date and time as a string.  <a href="classRdfDataBuilder.html#a5cf1bde70bd14d3d5b3ca35c730d33e0">More...</a><br /></td></tr>
+<tr class="separator:a5cf1bde70bd14d3d5b3ca35c730d33e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af2a59ed82418b558cc44fb200f06fc39"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classRdfObject.html">RdfObject</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRdfDataBuilder.html#af2a59ed82418b558cc44fb200f06fc39">parseObject</a> (const std::string &amp;)</td></tr>
 <tr class="separator:af2a59ed82418b558cc44fb200f06fc39"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a07d81f505629fa70717fdd0ed93f4f1b"><td class="memItemLeft" align="right" valign="top"><a id="a07d81f505629fa70717fdd0ed93f4f1b"></a>
 <a class="el" href="classRdfNamespace.html">RdfNamespace</a>&#160;</td><td class="memItemRight" valign="bottom"><b>parseNamespace</b> (const std::string &amp;)</td></tr>
@@ -93,18 +111,144 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>parse</b> (const nloh
 <a class="el" href="classRdfData.html">RdfData</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>search</b> (<a class="el" href="classRdfData.html">RdfData</a> *, std::string)</td></tr>
 <tr class="separator:a1d983a01b662c2f3cff396d8a29fb591"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
-Public Attributes</h2></td></tr>
-<tr class="memitem:a5910e2b777ebb0d020bd5cad35aeeac9"><td class="memItemLeft" align="right" valign="top"><a id="a5910e2b777ebb0d020bd5cad35aeeac9"></a>
-std::vector&lt; <a class="el" href="classRdfData.html">RdfData</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>database</b></td></tr>
-<tr class="separator:a5910e2b777ebb0d020bd5cad35aeeac9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-methods"></a>
-Private Member Functions</h2></td></tr>
-<tr class="memitem:a5cf1bde70bd14d3d5b3ca35c730d33e0"><td class="memItemLeft" align="right" valign="top"><a id="a5cf1bde70bd14d3d5b3ca35c730d33e0"></a>
-std::string&#160;</td><td class="memItemRight" valign="bottom"><b>get_time</b> ()</td></tr>
-<tr class="separator:a5cf1bde70bd14d3d5b3ca35c730d33e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-static-attribs"></a>
+Static Private Attributes</h2></td></tr>
+<tr class="memitem:abaf1d0288681b2072927ecac73a2be51"><td class="memItemLeft" align="right" valign="top"><a id="abaf1d0288681b2072927ecac73a2be51"></a>
+static std::regex const&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRdfDataBuilder.html#abaf1d0288681b2072927ecac73a2be51">url_regex</a> { &quot;^\\D+:\\/\\/.*&quot; }</td></tr>
+<tr class="memdesc:abaf1d0288681b2072927ecac73a2be51"><td class="mdescLeft">&#160;</td><td class="mdescRight">Regular Expression used to identify a string representation of a URL. <br /></td></tr>
+<tr class="separator:abaf1d0288681b2072927ecac73a2be51"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Builds and stores an RDF data structure. </p>
+<p>We needed to have an internal format to store our data and so chose to create a basic implementation of the <a href="https://www.w3.org/TR/rdf11-concepts/" target="_blank">RDF Spec</a> to create a database. The main reason for this was that the transformation to the turtle format, required for the implementation report, is a recognised transformation target for RDF. It would also allow the flexability to support other output formats in the future if needed.</p>
+<p>Input data can be parsed from several formats to add to the data stored: Header data is provided by the configuration tool as a JSON string; <a class="el" href="structTestResult.html">TestResult</a> data is provided as a class instance. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a5cf1bde70bd14d3d5b3ca35c730d33e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5cf1bde70bd14d3d5b3ca35c730d33e0">&#9670;&nbsp;</a></span>get_time()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string RdfDataBuilder::get_time </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Helper method to get the current date and time as a string. </p>
+<dl class="section return"><dt>Returns</dt><dd>the current date and time as a string in the format 2011-10-08T07:07:09Z </dd></dl>
+
+</div>
+</div>
+<a id="a1023f046386158539b6005ff953de3af"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1023f046386158539b6005ff953de3af">&#9670;&nbsp;</a></span>parse() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void RdfDataBuilder::parse </td>
+          <td>(</td>
+          <td class="paramtype">const nlohmann::json &amp;&#160;</td>
+          <td class="paramname"><em>json</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>A method to add JSON header data to our stored RDF data. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">json</td><td>A JSON structure containing header data</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>The JSON Data is read from the configuration file and the "subject" section of the "header" needs to be stored. This data contains the <em>doap</em> and <em>foaf</em> data in the format: </p><div class="fragment"><div class="line">{</div>
+<div class="line">    <span class="stringliteral">&quot;id&quot;</span> : &lt;identifier&gt;,</div>
+<div class="line">    <span class="stringliteral">&quot;type&quot;</span> : &lt;<span class="keywordtype">object</span>&gt;,</div>
+<div class="line">    <span class="stringliteral">&quot;value&quot;</span> : &lt;value&gt;,</div>
+<div class="line">    <span class="stringliteral">&quot;properties&quot;</span> : [</div>
+<div class="line">        {</div>
+<div class="line">            <span class="stringliteral">&quot;type&quot;</span> : &lt;<span class="keywordtype">object</span>&gt;,</div>
+<div class="line">            <span class="stringliteral">&quot;value&quot;</span> : &lt;value&gt;</div>
+<div class="line">        }</div>
+<div class="line">    ]</div>
+<div class="line">}</div>
+</div><!-- fragment --> 
+</div>
+</div>
+<a id="a0ff76b9daba20246566d3d5d92cc9a5f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0ff76b9daba20246566d3d5d92cc9a5f">&#9670;&nbsp;</a></span>parse() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void RdfDataBuilder::parse </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structTestResult.html">TestResult</a> &amp;&#160;</td>
+          <td class="paramname"><em>tr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>A method to add TestReult data to our stored RDF data. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">test</td><td>A <a class="el" href="structTestResult.html">TestResult()</a> containing the results of a single test</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>The <a class="el" href="structTestResult.html">TestResult</a> data </p>
+
+</div>
+</div>
+<a id="af2a59ed82418b558cc44fb200f06fc39"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af2a59ed82418b558cc44fb200f06fc39">&#9670;&nbsp;</a></span>parseObject()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classRdfObject.html">RdfObject</a> RdfDataBuilder::parseObject </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>s</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">string</td><td>Object definition. This could be a URL, keyword or null value.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Our RDF data will contain an object which could be defined by a URL or a </p>
+<p>The first thing to do when parsing the string is to identify if this is a URL that can shortened and added t the prefix section</p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>/home/michael/github/jsonld-cpp/test/implementation-report/<a class="el" href="RdfDataBuilder_8h_source.html">RdfDataBuilder.h</a></li>
 <li>/home/michael/github/jsonld-cpp/test/implementation-report/RdfDataBuilder.cpp</li>

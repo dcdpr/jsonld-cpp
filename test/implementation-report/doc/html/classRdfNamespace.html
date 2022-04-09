@@ -71,6 +71,11 @@ $(function() {
 <div class="title">RdfNamespace Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Provides context with a URI to a definition and a prefix that can be used as a reference to the URI.  
+ <a href="classRdfNamespace.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="RdfData_8h_source.html">RdfData.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -89,16 +94,134 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>prefix</b></td
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
-<tr class="memitem:a54e134098da3e6b7bccf2ddde4e2303d"><td class="memItemLeft" align="right" valign="top"><a id="a54e134098da3e6b7bccf2ddde4e2303d"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classRdfNamespace.html">RdfNamespace</a> &amp;lhs, const <a class="el" href="classRdfNamespace.html">RdfNamespace</a> &amp;rhs)</td></tr>
+<tr class="memitem:a54e134098da3e6b7bccf2ddde4e2303d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRdfNamespace.html#a54e134098da3e6b7bccf2ddde4e2303d">operator==</a> (const <a class="el" href="classRdfNamespace.html">RdfNamespace</a> &amp;lhs, const <a class="el" href="classRdfNamespace.html">RdfNamespace</a> &amp;rhs)</td></tr>
+<tr class="memdesc:a54e134098da3e6b7bccf2ddde4e2303d"><td class="mdescLeft">&#160;</td><td class="mdescRight">When comparing two <a class="el" href="classRdfNamespace.html" title="Provides context with a URI to a definition and a prefix that can be used as a reference to the URI.">RdfNamespace()</a>, we look to the prefix and use the value to determine equality.  <a href="classRdfNamespace.html#a54e134098da3e6b7bccf2ddde4e2303d">More...</a><br /></td></tr>
 <tr class="separator:a54e134098da3e6b7bccf2ddde4e2303d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a06b75cc0f06cb338a68f14292b05e9f1"><td class="memItemLeft" align="right" valign="top"><a id="a06b75cc0f06cb338a68f14292b05e9f1"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;</b> (const <a class="el" href="classRdfNamespace.html">RdfNamespace</a> &amp;lhs, const <a class="el" href="classRdfNamespace.html">RdfNamespace</a> &amp;rhs)</td></tr>
+<tr class="memitem:a06b75cc0f06cb338a68f14292b05e9f1"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRdfNamespace.html#a06b75cc0f06cb338a68f14292b05e9f1">operator&lt;</a> (const <a class="el" href="classRdfNamespace.html">RdfNamespace</a> &amp;lhs, const <a class="el" href="classRdfNamespace.html">RdfNamespace</a> &amp;rhs)</td></tr>
 <tr class="separator:a06b75cc0f06cb338a68f14292b05e9f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5b9e9bc4de685c6c26a19bc5f3326d9b"><td class="memItemLeft" align="right" valign="top"><a id="a5b9e9bc4de685c6c26a19bc5f3326d9b"></a>
-std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;&lt;</b> (std::ostream &amp;os, const <a class="el" href="classRdfNamespace.html">RdfNamespace</a> &amp;ns)</td></tr>
+<tr class="memitem:a5b9e9bc4de685c6c26a19bc5f3326d9b"><td class="memItemLeft" align="right" valign="top">std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRdfNamespace.html#a5b9e9bc4de685c6c26a19bc5f3326d9b">operator&lt;&lt;</a> (std::ostream &amp;os, const <a class="el" href="classRdfNamespace.html">RdfNamespace</a> &amp;ns)</td></tr>
+<tr class="memdesc:a5b9e9bc4de685c6c26a19bc5f3326d9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">We define the way that a <a class="el" href="classRdfNamespace.html" title="Provides context with a URI to a definition and a prefix that can be used as a reference to the URI.">RdfNamespace()</a> should be displayed when passed to an output stream.  <a href="classRdfNamespace.html#a5b9e9bc4de685c6c26a19bc5f3326d9b">More...</a><br /></td></tr>
 <tr class="separator:a5b9e9bc4de685c6c26a19bc5f3326d9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Provides context with a URI to a definition and a prefix that can be used as a reference to the URI. </p>
+<p>A RDF Namespace contains a URI and a prefix that can be used as a substitute for the URI, making the data more human readable. The URI can either be used inline in the data or replaced inline with the prefix and then included in a context section. </p>
+</div><h2 class="groupheader">Friends And Related Function Documentation</h2>
+<a id="a06b75cc0f06cb338a68f14292b05e9f1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a06b75cc0f06cb338a68f14292b05e9f1">&#9670;&nbsp;</a></span>operator&lt;</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int operator&lt; </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classRdfNamespace.html">RdfNamespace</a> &amp;&#160;</td>
+          <td class="paramname"><em>lhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classRdfNamespace.html">RdfNamespace</a> &amp;&#160;</td>
+          <td class="paramname"><em>rhs</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>When comparing two <a class="el" href="classRdfNamespace.html" title="Provides context with a URI to a definition and a prefix that can be used as a reference to the URI.">RdfNamespace()</a>, we look to the prefix and use the value to determine order. </p>
+
+</div>
+</div>
+<a id="a5b9e9bc4de685c6c26a19bc5f3326d9b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5b9e9bc4de685c6c26a19bc5f3326d9b">&#9670;&nbsp;</a></span>operator&lt;&lt;</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::ostream&amp; operator&lt;&lt; </td>
+          <td>(</td>
+          <td class="paramtype">std::ostream &amp;&#160;</td>
+          <td class="paramname"><em>os</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classRdfNamespace.html">RdfNamespace</a> &amp;&#160;</td>
+          <td class="paramname"><em>ns</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>We define the way that a <a class="el" href="classRdfNamespace.html" title="Provides context with a URI to a definition and a prefix that can be used as a reference to the URI.">RdfNamespace()</a> should be displayed when passed to an output stream. </p>
+<p>This is in a format suitable for debugging and does not conform to any recognised specification. </p>
+
+</div>
+</div>
+<a id="a54e134098da3e6b7bccf2ddde4e2303d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a54e134098da3e6b7bccf2ddde4e2303d">&#9670;&nbsp;</a></span>operator==</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int operator== </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classRdfNamespace.html">RdfNamespace</a> &amp;&#160;</td>
+          <td class="paramname"><em>lhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classRdfNamespace.html">RdfNamespace</a> &amp;&#160;</td>
+          <td class="paramname"><em>rhs</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>When comparing two <a class="el" href="classRdfNamespace.html" title="Provides context with a URI to a definition and a prefix that can be used as a reference to the URI.">RdfNamespace()</a>, we look to the prefix and use the value to determine equality. </p>
+<p>It is not possible to have multiple namespaces with the same prefix so we overload the equality operator to compare the value of prefix in two <a class="el" href="classRdfNamespace.html" title="Provides context with a URI to a definition and a prefix that can be used as a reference to the URI.">RdfNamespace()</a> instances. </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>/home/michael/github/jsonld-cpp/test/implementation-report/<a class="el" href="RdfData_8h_source.html">RdfData.h</a></li>
 </ul>

@@ -4,6 +4,8 @@
 
 #include "RdfDataBuilder.h"
 
+std::regex const RdfDataBuilder::url_regex{ "^\\D+:\\/\\/.*" };
+
 std::string RdfDataBuilder::get_time()
 {
     time_t now;
@@ -102,6 +104,16 @@ void RdfDataBuilder::parse( const nlohmann::json& json )
 
 RdfObject RdfDataBuilder::parseObject( const std::string& s )
 {
+
+    /**
+     * The first thing to do when parsing the string is to identify if this is
+     * a URL that can shortened and added t the prefix section
+     */
+    if ( std::regex_match( s, RdfDataBuilder::url_regex ) )
+    {
+        std::cout << "Found URL: " << s << std::endl;
+    }
+
     // get the last delimited value of the string
     // split the string and add to a vector
     // so that we can find the last element as the name

@@ -71,6 +71,11 @@ $(function() {
 <div class="title">RdfObject Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>A description of an entity in an RDF graph. This could be a subject predicate or object.  
+ <a href="classRdfObject.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="RdfData_8h_source.html">RdfData.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -93,15 +98,96 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>name</b></td><
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
 <tr class="memitem:a879e3c8c29e39414f48a30b78085f560"><td class="memItemLeft" align="right" valign="top"><a id="a879e3c8c29e39414f48a30b78085f560"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classRdfObject.html">RdfObject</a> &amp;lhs, const <a class="el" href="classRdfObject.html">RdfObject</a> &amp;rhs)</td></tr>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRdfObject.html#a879e3c8c29e39414f48a30b78085f560">operator==</a> (const <a class="el" href="classRdfObject.html">RdfObject</a> &amp;lhs, const <a class="el" href="classRdfObject.html">RdfObject</a> &amp;rhs)</td></tr>
+<tr class="memdesc:a879e3c8c29e39414f48a30b78085f560"><td class="mdescLeft">&#160;</td><td class="mdescRight">When comparing two <a class="el" href="classRdfObject.html" title="A description of an entity in an RDF graph. This could be a subject predicate or object.">RdfObject()</a>, we look to the namespace and name to determine equality. <br /></td></tr>
 <tr class="separator:a879e3c8c29e39414f48a30b78085f560"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a061b8f48670c417fffebbf07701f6d25"><td class="memItemLeft" align="right" valign="top"><a id="a061b8f48670c417fffebbf07701f6d25"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;</b> (const <a class="el" href="classRdfObject.html">RdfObject</a> &amp;lhs, const <a class="el" href="classRdfObject.html">RdfObject</a> &amp;rhs)</td></tr>
+<tr class="memitem:a061b8f48670c417fffebbf07701f6d25"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRdfObject.html#a061b8f48670c417fffebbf07701f6d25">operator&lt;</a> (const <a class="el" href="classRdfObject.html">RdfObject</a> &amp;lhs, const <a class="el" href="classRdfObject.html">RdfObject</a> &amp;rhs)</td></tr>
 <tr class="separator:a061b8f48670c417fffebbf07701f6d25"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a421c1285c1fbe76e2a1dca59200a3e8e"><td class="memItemLeft" align="right" valign="top"><a id="a421c1285c1fbe76e2a1dca59200a3e8e"></a>
-std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;&lt;</b> (std::ostream &amp;os, const <a class="el" href="classRdfObject.html">RdfObject</a> &amp;o)</td></tr>
+<tr class="memitem:a421c1285c1fbe76e2a1dca59200a3e8e"><td class="memItemLeft" align="right" valign="top">std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRdfObject.html#a421c1285c1fbe76e2a1dca59200a3e8e">operator&lt;&lt;</a> (std::ostream &amp;os, const <a class="el" href="classRdfObject.html">RdfObject</a> &amp;o)</td></tr>
+<tr class="memdesc:a421c1285c1fbe76e2a1dca59200a3e8e"><td class="mdescLeft">&#160;</td><td class="mdescRight">We define the way that a <a class="el" href="classRdfObject.html" title="A description of an entity in an RDF graph. This could be a subject predicate or object.">RdfObject()</a> should be displayed when passed to an output stream.  <a href="classRdfObject.html#a421c1285c1fbe76e2a1dca59200a3e8e">More...</a><br /></td></tr>
 <tr class="separator:a421c1285c1fbe76e2a1dca59200a3e8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>A description of an entity in an RDF graph. This could be a subject predicate or object. </p>
+<p>\detail This class implemets a representation of RDF Nodes and Arcs as described in the <a href="https://www.w3.org/TR/rdf-primer/#rdfmodel" target="_blank">RDF Primer</a>. Each is a constituant of a RDF Triple that is built using <a class="el" href="classRdfData.html" title="Used to build a RDF Tripple of RdfObjects() in an RDF graph.">RdfData()</a> objects.</p>
+<p>As a full RDF implementation was not a desired goal for this project, I chose to create a lite implementation that would provide the functionality needed to generate a report. </p>
+</div><h2 class="groupheader">Friends And Related Function Documentation</h2>
+<a id="a061b8f48670c417fffebbf07701f6d25"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a061b8f48670c417fffebbf07701f6d25">&#9670;&nbsp;</a></span>operator&lt;</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int operator&lt; </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classRdfObject.html">RdfObject</a> &amp;&#160;</td>
+          <td class="paramname"><em>lhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classRdfObject.html">RdfObject</a> &amp;&#160;</td>
+          <td class="paramname"><em>rhs</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>When comparing two <a class="el" href="classRdfObject.html" title="A description of an entity in an RDF graph. This could be a subject predicate or object.">RdfObject()</a>, we look to the namespace and name to determine order. </p>
+
+</div>
+</div>
+<a id="a421c1285c1fbe76e2a1dca59200a3e8e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a421c1285c1fbe76e2a1dca59200a3e8e">&#9670;&nbsp;</a></span>operator&lt;&lt;</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::ostream&amp; operator&lt;&lt; </td>
+          <td>(</td>
+          <td class="paramtype">std::ostream &amp;&#160;</td>
+          <td class="paramname"><em>os</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classRdfObject.html">RdfObject</a> &amp;&#160;</td>
+          <td class="paramname"><em>o</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>We define the way that a <a class="el" href="classRdfObject.html" title="A description of an entity in an RDF graph. This could be a subject predicate or object.">RdfObject()</a> should be displayed when passed to an output stream. </p>
+<p>This is in a format suitable for debugging and does not conform to any recognised specification. </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>/home/michael/github/jsonld-cpp/test/implementation-report/<a class="el" href="RdfData_8h_source.html">RdfData.h</a></li>
 </ul>

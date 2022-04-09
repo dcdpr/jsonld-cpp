@@ -71,6 +71,11 @@ $(function() {
 <div class="title">RdfData Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Used to build a RDF Tripple of RdfObjects() in an RDF graph.  
+ <a href="classRdfData.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="RdfData_8h_source.html">RdfData.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -98,11 +103,11 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>addChild</b> (<a clas
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:af7abe22f1271103ad3564f85cafc0845"><td class="memItemLeft" align="right" valign="top"><a id="af7abe22f1271103ad3564f85cafc0845"></a>
-<a class="el" href="classRdfObject.html">RdfObject</a>&#160;</td><td class="memItemRight" valign="bottom"><b>subject</b></td></tr>
+<tr class="memitem:af7abe22f1271103ad3564f85cafc0845"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classRdfObject.html">RdfObject</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRdfData.html#af7abe22f1271103ad3564f85cafc0845">subject</a></td></tr>
+<tr class="memdesc:af7abe22f1271103ad3564f85cafc0845"><td class="mdescLeft">&#160;</td><td class="mdescRight">The subject of the RDF Tripple.  <a href="classRdfData.html#af7abe22f1271103ad3564f85cafc0845">More...</a><br /></td></tr>
 <tr class="separator:af7abe22f1271103ad3564f85cafc0845"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a46a7916e688ef42c58871b6a9851bb4a"><td class="memItemLeft" align="right" valign="top"><a id="a46a7916e688ef42c58871b6a9851bb4a"></a>
-std::vector&lt; <a class="el" href="classRdfData.html">RdfData</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>objects</b></td></tr>
+<tr class="memitem:a46a7916e688ef42c58871b6a9851bb4a"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classRdfData.html">RdfData</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRdfData.html#a46a7916e688ef42c58871b6a9851bb4a">objects</a></td></tr>
+<tr class="memdesc:a46a7916e688ef42c58871b6a9851bb4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Collection storing the properties of the subject or object related to the predicte.  <a href="classRdfData.html#a46a7916e688ef42c58871b6a9851bb4a">More...</a><br /></td></tr>
 <tr class="separator:a46a7916e688ef42c58871b6a9851bb4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
@@ -117,6 +122,50 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;</b> (cons
 std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;&lt;</b> (std::ostream &amp;os, const <a class="el" href="classRdfData.html">RdfData</a> &amp;d)</td></tr>
 <tr class="separator:a8b218dc064205f30111510395daa5ce9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Used to build a RDF Tripple of RdfObjects() in an RDF graph. </p>
+<p>\detail This class implemets a way to build RDF Tripples as defined in href="https://www.w3.org/TR/rdf-primer/#rdfmodel" target="_blank"&gt; RDF Primer and <a href="https://www.w3.org/TR/2004/REC-rdf-concepts-20040210/#section-Graph-syntax" target="_blank">RDF Concepts</a>. The purpose is to providee a way to create a linked tree of RDFData() instances that will create a RDF Tripple. A <a class="el" href="classRdfData.html" title="Used to build a RDF Tripple of RdfObjects() in an RDF graph.">RdfData()</a> instance is a relationship between a <a class="el" href="classRdfObject.html" title="A description of an entity in an RDF graph. This could be a subject predicate or object.">RdfObject()</a> and other <a class="el" href="classRdfData.html" title="Used to build a RDF Tripple of RdfObjects() in an RDF graph.">RdfData()</a> in the RDF Tripple.</p>
+<p>A RDF Tripple will consist of at least 2 <a class="el" href="classRdfData.html" title="Used to build a RDF Tripple of RdfObjects() in an RDF graph.">RdfData()</a> instances: </p><ul>
+<li>Subject -&gt; Predicate relationship </li>
+<li>Predicate -&gt; Object relationship</li>
+</ul>
+<p>The subject can have multiple <em>properties</em> (Predicate -&gt; Object relationships) so we implament a collection of these to build the linked tree structure.</p>
+<p>As a full RDF implementation was not a desired goal for this project, I chose to create a lite implementation that would provide the functionality needed to generate a report. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a46a7916e688ef42c58871b6a9851bb4a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a46a7916e688ef42c58871b6a9851bb4a">&#9670;&nbsp;</a></span>objects</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;<a class="el" href="classRdfData.html">RdfData</a>*&gt; RdfData::objects</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Collection storing the properties of the subject or object related to the predicte. </p>
+<p>\detail If this is the <em>object</em> in the tripple then there will be nothing in the collection </p>
+
+</div>
+</div>
+<a id="af7abe22f1271103ad3564f85cafc0845"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af7abe22f1271103ad3564f85cafc0845">&#9670;&nbsp;</a></span>subject</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classRdfObject.html">RdfObject</a> RdfData::subject</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The subject of the RDF Tripple. </p>
+<p>\detail If this is the <em>subject</em> in the tripple it will have a value, otherwise this will be null. </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>/home/michael/github/jsonld-cpp/test/implementation-report/<a class="el" href="RdfData_8h_source.html">RdfData.h</a></li>
 <li>/home/michael/github/jsonld-cpp/test/implementation-report/RdfData.cpp</li>

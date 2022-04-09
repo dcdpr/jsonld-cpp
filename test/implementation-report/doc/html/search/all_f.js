@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['_7econfigreader_27',['~ConfigReader',['../classConfigReader.html#a4c4009264e63a116bdc8d5a24ef4142d',1,'ConfigReader']]],
-  ['_7eearlformatter_28',['~EarlFormatter',['../classEarlFormatter.html#aaec6dfb7eb4d465c53c3f745e5bc6d79',1,'EarlFormatter']]],
-  ['_7ereportwriter_29',['~ReportWriter',['../classReportWriter.html#a2472ded8611a0dc35225d0858ff699a1',1,'ReportWriter']]]
+  ['url_5fregex_40',['url_regex',['../classRdfDataBuilder.html#abaf1d0288681b2072927ecac73a2be51',1,'RdfDataBuilder']]],
+  ['usage_41',['usage',['../main_8cpp.html#a0deb234f6561a2f7093c67542e69bfc9',1,'main.cpp']]]
 ];

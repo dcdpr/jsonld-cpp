@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['addnamespace_41',['addNamespace',['../classEarlFormatter.html#aeaf6f3b1e8feea08144e13d6a0465045',1,'EarlFormatter']]]
+  ['addnamespace_57',['addNamespace',['../classEarlFormatter.html#aeaf6f3b1e8feea08144e13d6a0465045',1,'EarlFormatter']]]
 ];
