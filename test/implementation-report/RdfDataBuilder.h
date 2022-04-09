@@ -24,66 +24,70 @@
  */
 class RdfDataBuilder
 {
-    public:
-        /**
-         * \brief   Member where we store the RDF Data tree
-         */
-        std::vector<RdfData*> database;
-        /**
-         * \param   test A TestResult() containing the results of a single test
-         *
-         * \brief   A method to add TestReult data to our stored RDF data
-         *
-         * \details The TestResult data 
-         */
-        void parse( const TestResult& );
-        /**
-         * \param   json A JSON structure containing header data
-         *
-         * \brief   A method to add JSON header data to our stored RDF data
-         *
-         * \details The JSON Data is read from the configuration file and the
-         *          "subject" section of the "header" needs to be stored.  This
-         *          data contains the \e doap and \e foaf data in the format:
-         * \code
-         * {
-         *     "id" : <identifier>,
-         *     "type" : <object>,
-         *     "value" : <value>,
-         *     "properties" : [
-         *         {
-         *             "type" : <object>,
-         *             "value" : <value>
-         *         }
-         *     ]
-         * }
-         * \endcode
-         */
-        void parse( const nlohmann::json& );
-    private:
-        /**
-         * \brief   Regular Expression used to identify a string representation
-         *          of a URL
-         */
-        static std::regex const url_regex;
-        /**
-         * \brief   Helper method to get the current date and time as a string
-         *
-         * \return  the current date and time as a string in the format
-         *          2011-10-08T07:07:09Z
-         */
-        std::string get_time();
-        /**
-         * \param   string Object definition.  This could be a URL, keyword or
-         *          null value.
-         *
-         * \details Our RDF data will contain an object which could be defined
-         *          by a URL or a 
-         */
-        RdfObject parseObject( const std::string& );
-        RdfNamespace parseNamespace( const std::string& );
-        RdfData* get( std::string );
-        RdfData* search( RdfData*, std::string );
+public:
+    virtual ~RdfDataBuilder();
+
+    /**
+     * \brief   Member where we store the RDF Data tree
+     */
+    std::vector<RdfData*> database;
+    /**
+     * \param   test A TestResult() containing the results of a single test
+     *
+     * \brief   A method to add TestReult data to our stored RDF data
+     *
+     * \details The TestResult data 
+     */
+    void parse( const TestResult& );
+    /**
+     * \param   json A JSON structure containing header data
+     *
+     * \brief   A method to add JSON header data to our stored RDF data
+     *
+     * \details The JSON Data is read from the configuration file and the
+     *          "subject" section of the "header" needs to be stored.  This
+     *          data contains the \e doap and \e foaf data in the format:
+     * \code
+     * {
+     *     "id" : <identifier>,
+     *     "type" : <object>,
+     *     "value" : <value>,
+     *     "properties" : [
+     *         {
+     *             "type" : <object>,
+     *             "value" : <value>
+     *         }
+     *     ]
+     * }
+     * \endcode
+     */
+    void parse( const nlohmann::json& );
+    void parsePrefix(const nlohmann::json &p);
+private:
+    /**
+     * \brief   Regular Expression used to identify a string representation
+     *          of a URL
+     */
+    static std::regex const url_regex;
+    /**
+     * \brief   Helper method to get the current date and time as a string
+     *
+     * \return  the current date and time as a string in the format
+     *          2011-10-08T07:07:09Z
+     */
+    std::string get_time();
+    /**
+     * \param   string Object definition.  This could be a URL, keyword or
+     *          null value.
+     *
+     * \details Our RDF data will contain an object which could be defined
+     *          by a URL or a 
+     */
+    RdfObject parseObject( const std::string& );
+    RdfObject parseSimpleObject( const std::string& );
+    RdfNamespace parseNamespace( const std::string& );
+    RdfData* get( const std::string& );
+    RdfData* search( RdfData*, std::string );
 };
 
 #endif //IMPL_REPORT_RDFDATABUILDER_H

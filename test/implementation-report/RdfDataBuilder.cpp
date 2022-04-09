@@ -36,13 +36,21 @@ void RdfDataBuilder::parse( const TestResult& tr )
     // add to the data object
     data->addChild(predicate );
 
+    // set the assertedBy
+    RdfObject ab( ns, "assertedBy" );
+    RdfData* assertedBy = new RdfData( ab );
+    // find the org
+    RdfData* org = get( "foaf:Organization" );
+    assertedBy->addChild( new RdfData( org->subject.name ) );
+    // add to the data object
+    data->addChild( assertedBy );
+
     //set the subject
     RdfObject s( ns, "subject" );
     RdfData* subject = new RdfData( s );
     // find the project
-    RdfData* project = get( "project" );
-    auto project_name = search( project, "name" );
-    subject->addChild( project_name );
+    RdfData* project = get( "doap:Project" );
+    subject->addChild( new RdfData( project->subject.name ) );
     // add to the data object
     data->addChild( subject );
 
@@ -52,13 +60,16 @@ void RdfDataBuilder::parse( const TestResult& tr )
             new RdfData( tr.manifest + "#" + tr.test )
             );
     RdfObject mode( ns, "mode" );
+    RdfObject mode_value;
+    mode_value.ns = ns;
+    mode_value.name = "automatic";
     data->addChild(
             mode,
-            new RdfData( "automatic" )
+            new RdfData( mode_value )
             );
 
     // create the result sub data
-    RdfData* result_data = new RdfData( );
+    RdfData* result_data = new RdfData( "earl:result" );
     RdfData* result_predicate = new RdfData( p );
     RdfObject result_object( ns, "TestResult" );
     result_predicate->addChild( new RdfData( result_object ) );
@@ -72,6 +83,8 @@ void RdfDataBuilder::parse( const TestResult& tr )
             result_key,
             new RdfData( result_value )
             );
+    // create datetime for when this test was run. Note that this isn't really the time the test
+    // ran, but the time this implementation report is running and creating this report output.
     RdfObject date( dc, "date" );
     result_data->addChild(
             date,
@@ -85,18 +98,18 @@ void RdfDataBuilder::parse( const nlohmann::json& json )
 {
     RdfData* d = new RdfData();
     // convert the id
-    d->subject = parseObject( json["id"] );
+    d->subject = parseSimpleObject( json["id"] );
     // convert the type
-    auto type = parseObject( json["type"] );
+    auto type = parseSimpleObject( json["type"] );
     d->addChild( type );
     // convert the value
-    auto value = parseObject( json["value"] );
+    auto value = parseSimpleObject( json["value"] );
     d->addChild( value );
     // process properties
     for ( auto p : json["properties"] )
     {
-        auto t = parseObject( p["type"] );
-        auto v = parseObject( p["value"] );
+        auto t = parseSimpleObject( p["type"] );
+        auto v = parseSimpleObject( p["value"] );
         d->addChild( t, new RdfData( v ) );
     }
     this->database.push_back( d );
@@ -130,13 +143,6 @@ RdfObject RdfDataBuilder::parseObject( const std::string& s )
         {
             std::stringstream ss3(d2);
             words.push_back( d2 );
-
-            //std::string d3;
-            // delimit on fullstop
-            //while( getline( ss3, d3, '.' ) )
-            //{
-            //    words.push_back( d3 );
-            //}
         }
     }
 
@@ -149,13 +155,20 @@ RdfObject RdfDataBuilder::parseObject( const std::string& s )
         o.ns = parseNamespace( s );
     }
 
-    if ( words.size() > 0 )
+    if ( !words.empty() )
     {
         o.name = words.back();
     } else {
         o.name = "";
     }
     // set the name
+    return o;
+}
+
+RdfObject RdfDataBuilder::parseSimpleObject( const std::string& s )
+{
+    RdfObject o;
+    o.name = s;
     return o;
 }
 
@@ -210,12 +223,23 @@ RdfNamespace RdfDataBuilder::parseNamespace( const std::string& s )
     return ns;
 }
 
-RdfData* RdfDataBuilder::get( std::string s )
+void RdfDataBuilder::parsePrefix( const nlohmann::json& p )
+{
+    if(p.is_object() && p.size() == 1) {
+        auto entry = p.begin();
+        RdfNamespace ns( entry.value(), entry.key() );
+        RdfObject o;
+        o.ns = ns;
+        o.name = "skipprefix"; // set name as special value so we can skip it later when printing in the EarlFormatter
+        this->database.push_back(new RdfData(o));
+    }
+}
+
+RdfData* RdfDataBuilder::get( const std::string& s )
 {
     // recursively search database for search string
-    for ( std::vector<RdfData*>::iterator it = this->database.begin(); it != this->database.end() ; ++it )
+    for (auto i : this->database)
     {
-        auto i= *it;
         auto d = search( i, s );
         if ( d != nullptr )
             return i;
@@ -242,4 +266,10 @@ RdfData* RdfDataBuilder::search( RdfData* data, std::string s )
         }
     }
     return nullptr;
+}
+
+RdfDataBuilder::~RdfDataBuilder() {
+    for (auto i : this->database) {
+        delete i;
+    }
 }

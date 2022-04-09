@@ -51,3 +51,12 @@ nlohmann::json ConfigReader::getSubjects()
     }
     return j;
 }
+
+nlohmann::json ConfigReader::getPrefixes() {
+    nlohmann::json j;
+    if ( document["header"].contains("prefix") )
+    {
+        j = document["header"]["prefix"];
+    }
+    return j;
+}

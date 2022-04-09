@@ -68,7 +68,7 @@ class ConfigReader
         /**
          * \brief Constructor for the ConfigReader
          *
-         * \param filename The full path to the configuration fileas detailed in \ref config_sec
+         * \param filename The full path to the configuration file as detailed in \ref config_sec
          */
         explicit ConfigReader(const std::string& filename);
 
@@ -96,6 +96,17 @@ class ConfigReader
          *           configuration file.
          */
         nlohmann::json getSubjects();
+
+        /**
+         *  \brief   Getter for the namespace prefixes required
+         *
+         *  \details The namespace prefixes are contained in the "header" section of
+         *           the configuration file and this method returns it.
+         *
+         *  \return  Returns the namespace prefixes as json from the generated
+         *           configuration file.
+         */
+        nlohmann::json getPrefixes();
 };
 
 #endif //IMPL_REPORT_CONFIG

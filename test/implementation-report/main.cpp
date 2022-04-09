@@ -153,6 +153,10 @@ int main(int argc, char **argv)
   * report.
   */
     // parse the configuration header
+    for ( const auto& j : cr.getPrefixes() )
+    {
+        db.parsePrefix( j );
+    }
     for ( const auto& j : cr.getSubjects() )
     {
         db.parse( j );
@@ -174,7 +178,7 @@ int main(int argc, char **argv)
     }
 
  /**
-  * Thats all our data realised and converted to RDF data now so the next thing
+  * That's all our data realised and converted to RDF data now so the next thing
   * we want to do is define somewhere to write our implementation report out
   * to.  The ReportWriter() is what we use to abstract away the output stream
   * that we are going to use.

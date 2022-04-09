@@ -8,11 +8,11 @@
  * \brief   A class to provide an interface that we'll use to write out our
  *          implementation report
  *
- * \details I wanted a way to make sure that I wasn't tying myself doeen to a
+ * \details I wanted a way to make sure that I wasn't tying myself down to a
  *          particular ostream --- either writing to the console, file or both
  *          --- so I thought it would be best to create a class that could be
  *          modified and/or extended in future and as long as it maintained the
- *          same interrface then it wouldn't impact other areas of the program.
+ *          same interface then it wouldn't impact other areas of the program.
  */
 class ReportWriter
 {
