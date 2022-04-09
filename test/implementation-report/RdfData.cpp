@@ -13,6 +13,8 @@ RdfObject RdfData::getValue()
 }
 void RdfData::addChild( RdfData* d )
 {
+    if(d == nullptr)
+        std::cout << "d == nullptr\n";
     objects.push_back( d );
 }
 

@@ -7,16 +7,21 @@
 
 class RdfDataBuilder
 {
-    public:
-        std::vector<RdfData*> database;
-        void parse( const TestResult& );
-        void parse( const nlohmann::json& );
-        RdfObject parseObject( const std::string& );
-        RdfNamespace parseNamespace( const std::string& );
-        RdfData* get( std::string );
-        RdfData* search( RdfData*, std::string );
-    private:
-        std::string get_time();
+public:
+    virtual ~RdfDataBuilder();
+
+    std::vector<RdfData*> database;
+    void parse( const TestResult& );
+    void parse( const nlohmann::json& );
+    RdfObject parseObject( const std::string& );
+    RdfObject parseSimpleObject( const std::string& );
+    void parsePrefix(const nlohmann::json &p);
+    RdfNamespace parseNamespace( const std::string& );
+    RdfData* get( const std::string& );
+    RdfData* search( RdfData*, std::string );
+private:
+    std::string get_time();
+
 };
 
 #endif //IMPL_REPORT_RDFDATABUILDER_H

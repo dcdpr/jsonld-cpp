@@ -6,7 +6,7 @@ add_library(jsonld-cpp STATIC RemoteDocument.cpp RemoteDocument.h FileLoader.cpp
 target_include_directories(jsonld-cpp
     PUBLIC
         $<INSTALL_INTERFACE:include/libjsonld-cpp>
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include;${CMAKE_CURRENT_SOURCE_DIR}/../include/libjsonld-cpp>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include;${CMAKE_CURRENT_SOURCE_DIR}>"
 )
 
 target_link_libraries(jsonld-cpp PUBLIC uriparser)
