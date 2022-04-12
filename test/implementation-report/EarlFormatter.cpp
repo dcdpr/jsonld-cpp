@@ -1,5 +1,6 @@
 #include <iostream>
 #include <ctime>
+#include <algorithm>
 #include "EarlFormatter.h"
 #include "Uri.h"
 

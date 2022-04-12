@@ -40,8 +40,8 @@ void RdfDataBuilder::parse( const TestResult& tr )
     RdfObject ab( ns, "assertedBy" );
     RdfData* assertedBy = new RdfData( ab );
     // find the org
-    RdfData* org = get( "foaf:Organization" );
-    assertedBy->addChild( new RdfData( org->subject.name ) );
+    //RdfData* org = get( "foaf:Organization" );
+    //assertedBy->addChild( new RdfData( org->subject.name ) );
     // add to the data object
     data->addChild( assertedBy );
 

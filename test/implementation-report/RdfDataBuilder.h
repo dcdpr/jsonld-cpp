@@ -85,8 +85,20 @@ private:
      */
     RdfObject parseObject( const std::string& );
     RdfObject parseSimpleObject( const std::string& );
+    /**
+     * \param   string URI that needs to be translated into a RdfNamepace
+     * 
+     * \return  An instance of a RdfNamespace()
+     * 
+     * \details A URI string can be substituted throughout the RDF data by a
+     *          prefix.  This method takes a URI and extracts a string from the
+     *          URI to use as the prefix
+     */
     RdfNamespace parseNamespace( const std::string& );
     RdfData* get( const std::string& );
+    /**
+     *
+     */
     RdfData* search( RdfData*, std::string );
 };
 
