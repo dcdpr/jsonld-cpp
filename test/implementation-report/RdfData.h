@@ -70,10 +70,10 @@ class RdfNamespace
  * \brief   A description of an entity in an RDF graph.  This could be a subject
  *          predicate or object.
  *
- * \detail  This class implemets a representation of RDF Nodes and Arcs as
+ * \details  This class implements a representation of RDF Nodes and Arcs as
  *          described in the <a
  *          href="https://www.w3.org/TR/rdf-primer/#rdfmodel" target="_blank">
- *          RDF Primer</a>.  Each is a constituant of a RDF Triple that is
+ *          RDF Primer</a>.  Each is a constituent of a RDF Triple that is
  *          built using RdfData() objects.
  *
  *          As a full RDF implementation was not a desired goal for this
@@ -130,23 +130,23 @@ class RdfObject
 
 
 /**
- * \brief   Used to build a RDF Tripple of RdfObjects() in an RDF graph.
+ * \brief   Used to build a RDF Triple of RdfObjects() in an RDF graph.
  *
- * \detail  This class implemets a way to build RDF Tripples as defined in
+ * \details  This class implements a way to build RDF Tripples as defined in
  *          href="https://www.w3.org/TR/rdf-primer/#rdfmodel" target="_blank">
  *          RDF Primer</a> and <a
  *          href="https://www.w3.org/TR/2004/REC-rdf-concepts-20040210/#section-Graph-syntax"
- *          target="_blank">RDF Concepts</a>.  The purpose is to providee a way
+ *          target="_blank">RDF Concepts</a>.  The purpose is to provide a way
  *          to create a linked tree of RDFData() instances that will create a
- *          RDF Tripple. A RdfData() instance is a relationship between a
- *          RdfObject() and other RdfData() in the RDF Tripple.
+ *          RDF Triple. A RdfData() instance is a relationship between a
+ *          RdfObject() and other RdfData() in the RDF Triple.
  *
  *          A RDF Tripple will consist of at least 2 RdfData() instances:
  *          \li Subject ->  Predicate relationship
  *          \li Predicate -> Object relationship
  *
  *          The subject can have multiple \e properties (Predicate -> Object
- *          relationships) so we implament a collection of these to
+ *          relationships) so we implement a collection of these to
  *          build the linked tree structure.
  *
  *          As a full RDF implementation was not a desired goal for this
@@ -159,15 +159,15 @@ class RdfData
         /**
          * \brief   The subject of the RDF Tripple
          *
-         * \detail  If this is the \e subject in the tripple it will have a
+         * \details  If this is the \e subject in the triple it will have a
          *          value, otherwise this will be null.
          */
         RdfObject subject;
         /**
          * \brief   Collection storing the properties of the subject or object
-         *          related to the predicte
+         *          related to the predicate
          *
-         * \detail  If this is the \e object in the tripple then there will be
+         * \details  If this is the \e object in the triple then there will be
          *          nothing in the collection
          */
         std::vector<RdfData*> objects;

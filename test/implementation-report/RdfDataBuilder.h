@@ -32,13 +32,13 @@ public:
      */
     std::vector<RdfData*> database;
     /**
-     * \param   test A TestResult() containing the results of a single test
+     * \param   tr A TestResult() containing the results of a single test
      *
      * \brief   A method to add TestReult data to our stored RDF data
      *
-     * \details The TestResult data 
+     * \details The TestResult data
      */
-    void parse( const TestResult& );
+    void parse( const TestResult& tr);
     /**
      * \param   json A JSON structure containing header data
      *
@@ -61,7 +61,7 @@ public:
      * }
      * \endcode
      */
-    void parse( const nlohmann::json& );
+    void parse( const nlohmann::json& json);
     void parsePrefix(const nlohmann::json &p);
 private:
     /**
@@ -77,29 +77,28 @@ private:
      */
     std::string get_time();
     /**
-     * \param   string Object definition.  This could be a URL, keyword or
+     * \param   str Object definition.  This could be a URL, keyword or
      *          null value.
      *
      * \details Our RDF data will contain an object which could be defined
-     *          by a URL or a 
+     *          by a URL or a
      */
-    RdfObject parseObject( const std::string& );
-    RdfObject parseSimpleObject( const std::string& );
+    RdfObject parseObject( const std::string& str);
+    RdfObject parseSimpleObject( const std::string& str);
     /**
-     * \param   string URI that needs to be translated into a RdfNamepace
-     * 
+     * \param   str URI that needs to be translated into a RdfNamepace
+     *
      * \return  An instance of a RdfNamespace()
-     * 
+     *
      * \details A URI string can be substituted throughout the RDF data by a
      *          prefix.  This method takes a URI and extracts a string from the
      *          URI to use as the prefix
      */
-    RdfNamespace parseNamespace( const std::string& );
-    RdfData* get( const std::string& );
-    /**
-     *
-     */
-    RdfData* search( RdfData*, std::string );
+    RdfNamespace parseNamespace( const std::string& str);
+    RdfData* get( const std::string& str);
+    RdfData* search( RdfData*, const std::string& str );
+
+    RdfData *parseProperty(const nlohmann::json &json);
 };
 
 #endif //IMPL_REPORT_RDFDATABUILDER_H

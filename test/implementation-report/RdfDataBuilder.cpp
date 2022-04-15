@@ -40,8 +40,8 @@ void RdfDataBuilder::parse( const TestResult& tr )
     RdfObject ab( ns, "assertedBy" );
     RdfData* assertedBy = new RdfData( ab );
     // find the org
-    //RdfData* org = get( "foaf:Organization" );
-    //assertedBy->addChild( new RdfData( org->subject.name ) );
+    RdfData* org = get( "foaf:Organization" );
+    assertedBy->addChild( new RdfData( org->subject.name ) );
     // add to the data object
     data->addChild( assertedBy );
 
@@ -108,29 +108,55 @@ void RdfDataBuilder::parse( const nlohmann::json& json )
     // process properties
     for ( auto p : json["properties"] )
     {
-        auto t = parseSimpleObject( p["type"] );
-        auto v = parseSimpleObject( p["value"] );
-        d->addChild( t, new RdfData( v ) );
+        // check to see if there is an id
+        if(p.contains("id"))
+            d->addChild(parseProperty(p));
+        else {
+            auto t = parseSimpleObject(p["type"]);
+            auto v = parseSimpleObject(p["value"]);
+            d->addChild(t, new RdfData(v));
+        }
     }
     this->database.push_back( d );
 }
 
-RdfObject RdfDataBuilder::parseObject( const std::string& s )
+RdfData* RdfDataBuilder::parseProperty( const nlohmann::json& json )
+{
+    RdfData* d = new RdfData();
+    // convert the id
+    d->subject = parseSimpleObject( json["id"] );
+    // convert the type
+    auto type = parseSimpleObject( json["type"] );
+    //d->addChild( type );
+    // convert the value
+    auto value = parseSimpleObject( json["value"] );
+    d->addChild( type, new RdfData(value) );
+    // process properties
+    for ( auto p : json["properties"] )
+    {
+        auto t = parseSimpleObject(p["type"]);
+        auto v = parseSimpleObject(p["value"]);
+        d->addChild(t, new RdfData(v));
+    }
+    return d ;
+}
+
+RdfObject RdfDataBuilder::parseObject( const std::string& str )
 {
 
     /**
      * The first thing to do when parsing the string is to identify if this is
      * a URL that can shortened and added t the prefix section
      */
-    if ( std::regex_match( s, RdfDataBuilder::url_regex ) )
+    if ( std::regex_match( str, RdfDataBuilder::url_regex ) )
     {
-        std::cout << "Found URL: " << s << std::endl;
+        std::cout << "Found URL: " << str << std::endl;
     }
 
     // get the last delimited value of the string
     // split the string and add to a vector
     // so that we can find the last element as the name
-    std::stringstream ss(s);
+    std::stringstream ss(str);
     std::string d1;
     std::vector<std::string> words;
     //initially split on folder separator
@@ -152,7 +178,7 @@ RdfObject RdfDataBuilder::parseObject( const std::string& s )
     // any matches
     if ( words.size() > 1 )
     {
-        o.ns = parseNamespace( s );
+        o.ns = parseNamespace( str );
     }
 
     if ( !words.empty() )
@@ -165,23 +191,23 @@ RdfObject RdfDataBuilder::parseObject( const std::string& s )
     return o;
 }
 
-RdfObject RdfDataBuilder::parseSimpleObject( const std::string& s )
+RdfObject RdfDataBuilder::parseSimpleObject( const std::string& str )
 {
     RdfObject o;
-    o.name = s;
+    o.name = str;
     return o;
 }
 
-RdfNamespace RdfDataBuilder::parseNamespace( const std::string& s )
+RdfNamespace RdfDataBuilder::parseNamespace( const std::string& str )
 {
     //get the uri of the namespace
     std::smatch uri;
-    std::regex_search( s, uri, std::regex( "^.*[//#]" ) );
+    std::regex_search(str, uri, std::regex("^.*[//#]" ) );
 
     // split the string and add to a set in reverse order
     // so that we can find the first sensible word to use
     // as the prefix
-    std::stringstream ss(s);
+    std::stringstream ss(str);
     std::string d1;
     std::deque<std::string> words;
     //initially split on folder separator
@@ -247,21 +273,21 @@ RdfData* RdfDataBuilder::get( const std::string& s )
     return nullptr;
 }
 
-RdfData* RdfDataBuilder::search( RdfData* data, std::string s )
+RdfData* RdfDataBuilder::search( RdfData* data, const std::string& str )
 {
     // check for null pointer
     if ( data == nullptr ) return data;
 
     for ( auto d : data->objects )
     {
-        if ( d->subject.name == s )
+        if ( d->subject.name == str )
         {
             return d;
         }
         else
         {
             // recursively search
-            auto r = search( d, s );
+            auto r = search( d, str );
             if ( r != nullptr ) return r;
         }
     }

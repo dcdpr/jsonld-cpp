@@ -184,7 +184,7 @@ void EarlFormatter::format( std::stringstream& ss, RdfData* data, int depth )
     else
     {
         // close the array for empty name or "earl:result"
-        if ( obj.name.empty() || obj.name == "earl:result")
+        if ( obj.name.empty() || obj.name == "earl:result" || obj.name == "doap:release")
         {
             ss << "] ";// << std::endl;
             depth--;

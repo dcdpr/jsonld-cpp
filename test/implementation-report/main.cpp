@@ -82,7 +82,6 @@ std::string usage(std::string name)
 * For a walkthrough please start at main()
 */
 
-/** \file */
 int main(int argc, char **argv)
 {
 /**
@@ -166,7 +165,7 @@ int main(int argc, char **argv)
   * We get the important information here, the TestResult() that are provided
   * iteratively by the TestRunner::has_next() method and converted to RDF
   * linearly until there are no further TestResults to be returned.  It's worth
-  * noting here that even if there are multiple tests executabeles, the
+  * noting here that even if there are multiple test executables, the
   * TestRunner::next_result() method will keep seamlessly returning the next
   * one until results from all the test executables have been returned.
   *

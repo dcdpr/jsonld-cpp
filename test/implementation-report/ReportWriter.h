@@ -25,15 +25,15 @@ class ReportWriter
          *
          * \param stream A reference to an output stream that will be used to
          *        write the implementation report to
-         *
-         * \return An instance of ReportWriter
         */
-        ReportWriter(std::ostream& stream);
+        explicit ReportWriter(std::ostream& stream);
+
+        ReportWriter(ReportWriter const&) = default;
 
         /**
          * Destructor for the ReportWriter
          */
-        ~ReportWriter(){};
+        ~ReportWriter() = default;
 
         /**
          * \brief method to enable writing of data to the outputstream
