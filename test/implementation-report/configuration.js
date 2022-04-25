@@ -1,4 +1,5 @@
 var state
+const debug = false
 
 const developer_titles = [
     "maker",
@@ -173,7 +174,7 @@ function load_json( fileInput ) {
         update_form()
     }
     reader.onerror = function( err ) {
-        console.error( "Failed to read file", err )
+        if ( debug ) console.error( "Failed to read file", err )
     }
     reader.readAsText( fileInput.files[0] )
 }
@@ -201,43 +202,66 @@ function update_form(){
      *  Update the properties
      */
     let properties = state.header.subject[1].properties
-    properties.forEach( ( property ) => {
-        let element_name = property.type.replace( /^.*:/,'project-' )
-        let element_name_no_prefix = property.type.replace( /^.*:/,'' )
-        /**
-         * If the property is a developer property then we need to skip it in
-         * this section
-         */
-        console.log( element_name_no_prefix )
-        console.log( developer_titles )
-        console.log( property.id )
-        if ( ! developer_titles.includes( element_name_no_prefix ) && property.id == undefined ){
-            console.log( `Adding property: ${ element_name }` )
-            let element = document.getElementById( element_name )
-            console.log( `element.value ${element.value} element_name ${element_name}`)
-            element.value = property.value
-        }
-    })
+    for ( let i = 0; i < properties.length; i++ ){
 
-    /**
-     *  Update the developers which are defined as subjects after the prefix and
-     *  the doap
-     */
-    let developers = state.header.subject
-    for ( let i = 2; i < developers.length; i++ )
-    {
-            let developer = developers[i]
+        let property = properties[ i ]
+
+        if ( debug ) console.log( property.id )
+        let element_name = property.type.replace( /^.*#/,'project-' )
+        let element_name_no_prefix = property.type.replace( /^.*#/,'' )
+        let developers = state.header.subject
+        if ( debug ) console.log( `element name: ${element_name} (without prefix: ${element_name_no_prefix})` )
+        if ( debug ) console.log( developer_titles )
+        /**
+         * If the property is a developer property then we need to process this
+         * with the developers section, adding a developer
+         */
+        if ( debug ) console.log( `Adding property: ${ element_name }` )
+        if ( developer_titles.includes( element_name_no_prefix ) ){
+            /**
+             *  Add a developer form element
+             */
             addDeveloper()
             /**
-             * Get the last element with the github-profile class
-             * Get the last element with the developer-name class
-             * and the last element with the developer-type class
+             *  Find the developer in the developers sections of the json
              */
-            let github_profile = get_last_element( 'github-profile' ) 
-            let developer_name = get_last_element( 'developer-name' ) 
-            let developer_type = get_last_element( 'developer-type' ) 
-            github_profile.value = developer.id
-            developer_name.value = developer.properties[0].value
+            let developer
+            for ( let ii = 2; ii < developers.length; ii++ )
+            {
+                developer = developers[ii]
+                if ( debug ) console.log( `developer: ${developer.id} property: ${property.value}` )
+                if ( developer.id != property.value ) continue
+
+                /**
+                 * Get the last element with the github-profile class
+                 * Get the last element with the developer-name class
+                 * and the last element with the developer-type class
+                 */
+                let github_profile = get_last_element( 'github-profile' ) 
+                let developer_name = get_last_element( 'developer-name' ) 
+                let developer_type = get_last_element( 'developer-type' ) 
+                developer_name.value = developer.properties[0].value
+                github_profile.value = developer.id
+                /**
+                 * Select the developer type
+                 */
+                let options = Array.from( developer_type.options )
+                let option_to_select = options.find( item => item.text === element_name_no_prefix )
+                option_to_select.selected = true
+
+                if ( debug ) console.log( `set name: ${developer.properties[0].value} url: ${developer.id} type: ${element_name_no_prefix}` )
+            }
+        }
+        /**
+         * If the property is not a developer then we locate the correct
+         * form element for it and add the value
+        */
+        else
+        {
+            let element = document.getElementById( element_name )
+            if ( debug ) console.log( `element.value ${element.value} element_name ${element_name}`)
+            element.value = property.value
+        }
     }
 
     /**
@@ -320,8 +344,7 @@ function update_state()
      * is defined as the Primary Topic above
      */
     const doap_index = state.header.subject.length
-    let doap = state.header.subject[ doap_index ]
-    doap = {
+    state.header.subject[ doap_index ] = {
         "id": uri,
         "type": "a",
         "value": "doap:project",
@@ -329,14 +352,15 @@ function update_state()
     }
 
     doapProperties.forEach( ( property ) => {
-        addDoapProperty( doap, property.dispaly, property.id  )
+        if ( debug ) console.log( property )
+        addDoapProperty( state.header.subject[ doap_index ], property.display, property.id  )
     })
 
     /**
      * We need to have a nested release section
      */
-    let doap_version = state.header.subject[ state.header.subject.length ]
-    doap_version  = {
+    let doap_version_index = state.header.subject.length
+    state.header.subject[ doap_version_index ]  = {
         "id": "doap:release",
         "type": "a",
         "value": "doap:Version",
@@ -344,11 +368,12 @@ function update_state()
     }
 
     doapVersionProperties.forEach( ( property ) => {
-        addDoapProperty( doap_version, property.display, property.id )
+        addDoapProperty( state.header.subject[ doap_version_index], property.display, property.id )
     })
 
     function addDoapProperty( property_list, name, id ){
         try {
+            if ( debug ) console.log( `addDoapProperty ${name} : ${id}` )
             let property = document.getElementById( id ).value
             if (property !== "") {
                 property_list.properties.push({
@@ -372,7 +397,7 @@ function update_state()
         let developer_name = developer_list[i].getElementsByClassName("developer-name")[0].value
         let select = developer_list[i].getElementsByClassName("developer-type")[0]
         let developer_type = select.options[select.selectedIndex].text
-        
+        if ( debug ) console.log( `Updating state with developer: ${developer_uri}/${developer_type}` )
         if ( developer_uri !== "") {
             /**
              * If the developer type is maker then this entry belongs in the
@@ -387,7 +412,7 @@ function update_state()
              * Otherwise we add the developer to the doap section
              */
             } else {
-                state.header.subject[ doap ].properties.push({
+                state.header.subject[ doap_index ].properties.push({
                     "type": `doap:${developer_type}`,
                     "value": developer_uri
                 })
@@ -399,7 +424,7 @@ function update_state()
          * perform any more actions so exit the loop
          */
         if ( dev_set.includes( developer_uri ) ){
-            console.log( `Already defined developer` )
+            if ( debug ) console.log( `Already defined developer` )
             continue 
         }
 
@@ -435,7 +460,7 @@ function update_state()
             testsuite = testsuite_list[i].getElementsByTagName("input")[0].files[0].name
        } catch ( e ) {
             testsuite = get_last_element( 'manifest-file-import' ).textContent
-           console.log( testsuite )
+           if ( debug ) console.log( testsuite )
        }
        let manifest = testsuite_list[i].getElementsByTagName("input")[1].value
        state.testsuites.push({ "file": testsuite, "manifest": manifest})
