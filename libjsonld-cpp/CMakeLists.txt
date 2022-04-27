@@ -15,6 +15,6 @@ target_compile_options(jsonld-cpp PRIVATE ${DCD_CXX_FLAGS})
 set_target_properties(jsonld-cpp PROPERTIES CXX_EXTENSIONS OFF)
 
 install (TARGETS jsonld-cpp DESTINATION lib)
-install (FILES
-${CMAKE_CURRENT_SOURCE_DIR}/../include/libjsonld-cpp/jsonld.h DESTINATION include)
+FILE(GLOB INCLUDES_H ${CMAKE_CURRENT_SOURCE_DIR}/Json*.h)
+install (FILES ${INCLUDES_H} DESTINATION include)
 

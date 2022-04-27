@@ -12,6 +12,8 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
   set(DCD_CXX_FLAGS -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-padded -Wno-missing-prototypes)
 endif()
 
+include(GNUInstallDirs)
+
 find_package(Boost 1.65 REQUIRED COMPONENTS  filesystem)
 
 # Add subdirectories for external dependencies
@@ -33,17 +35,31 @@ add_library(uriparser::uriparser ALIAS uriparser)
 
 # Add local subdirectories
 
+# Set option to build tests or not. Other projects that embed jsonld-cpp
+# may want to set this to OFF
+set(JSONLDCPP_BUILD_TESTS ON CACHE BOOL "JSONLDCPP_BUILD_TESTS")
+
+# Set option to build examples or not. Other projects that embed jsonld-cpp
+# may want to set this to OFF
+set(JSONLDCPP_BUILD_EXAMPLES ON CACHE BOOL "JSONLDCPP_BUILD_EXAMPLES")
+
+# Set option to install jsonld-cpp library and header file. Other projects that
+# embed jsonld-cpp may want to set this to OFF
+option(INSTALL_JSONLDCPP "Enable installation of jsonld-cpp. (Projects embedding jsonld-cpp may want to turn this OFF.)" ON)
+
+
 add_subdirectory(libjsonld-cpp)
-add_subdirectory(examples)
 
+if(JSONLDCPP_BUILD_TESTS)
+  enable_testing()
+  # Set options so we build googletest and rapidcheck. Other projects that
+  # embed libjsonld-cpp should set these options to OFF
+  # todo: can we detect that with toplevel?
+  option(LIBJSONLDCPP_BUILD_GOOGLETEST "Build googletest" ON)
+  option(LIBJSONLDCPP_BUILD_RAPIDCHECK "Build rapidcheck" ON)
+  add_subdirectory(test)
+endif()
 
-enable_testing()
-
-# Set options so we build googletest and rapidcheck. Other projects that
-# embed libjsonld-cpp should set these options to OFF
-# todo: can we detect that with toplevel?
-option(LIBJSONLDCPP_BUILD_GOOGLETEST "Build googletest" ON)
-option(LIBJSONLDCPP_BUILD_RAPIDCHECK "Build rapidcheck" ON)
-
-add_subdirectory(test)
-
+if(JSONLDCPP_BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
