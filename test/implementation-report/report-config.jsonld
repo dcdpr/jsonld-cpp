@@ -1,0 +1,157 @@
+{
+  "header": {
+    "prefix": [
+      {
+        "dc": "http://purl.org/dc/terms/"
+      },
+      {
+        "earl": "http://www.w3.org/ns/earl#"
+      },
+      {
+        "doap": "http://usefulinc.com/ns/doap#"
+      },
+      {
+        "foaf": "http://xmlns.com/foaf/0.1/"
+      },
+      {
+        "xsd": "http://www.w3.org/2001/XMLSchema#"
+      }
+    ],
+    "subject": [
+      {
+        "id": "<>",
+        "type": "foaf:primaryTopic",
+        "value": "https://github.com/dcdpr/jsonld-cpp",
+        "properties": [
+          {
+            "type": "foaf:maker",
+            "value": "https://github.com/dcdpr"
+          },
+          {
+            "type": "dc:issued",
+            "value": "@generatedatetime@"
+          }
+        ]
+      },
+      {
+        "id": "https://github.com/dcdpr/jsonld-cpp",
+        "type": "a",
+        "value": "earl:TestSubject, doap:Project, earl:Software",
+        "properties": [
+          {
+            "type": "doap:name",
+            "value": "jsonld-cpp"
+          },
+          {
+            "type": "doap:description",
+            "value": "A JSON-LD 1.1 Processor & API for C++"
+          },
+          {
+            "type": "doap:homepage",
+            "value": "https://github.com/dcdpr/jsonld-cpp"
+          },
+          {
+            "type": "doap:license",
+            "value": "https://github.com/dcdpr/jsonld-cpp/blob/master/LICENSE"
+          },
+          {
+            "type": "doap:creator",
+            "value": "https://github.com/danpape"
+          },
+          {
+            "type": "doap:developer",
+            "value": "https://github.com/danpape"
+          },
+          {
+            "type": "doap:developer",
+            "value": "https://github.com/hawkmauk"
+          },
+          {
+            "type": "doap:organization",
+            "value": "https://github.com/dcdpr"
+          },
+          {
+            "type": "doap:programming-language",
+            "value": "C++"
+          },
+          {
+            "id": "doap:release",
+            "type": "a",
+            "value": "doap:Version",
+            "properties": [
+               {
+                 "type": "doap:name",
+                 "value": "jsonld-cpp 0.5.0"
+               },
+               {
+                 "type": "doap:created",
+                 "value": "@generatedate@"
+               },
+               {
+                 "type": "doap:revision",
+                 "value": "0.5.0"
+               }
+            ]
+          }
+        ]
+       },
+      {
+        "id": "https://github.com/danpape",
+        "type": "a",
+        "value": "foaf:Person",
+        "properties": [
+          {
+            "type": "foaf:name",
+            "value": "Dan Pape"
+          },
+          {
+            "type": "foaf:homepage",
+            "value": "https://github.com/danpape"
+          }
+        ]
+      },
+      {
+        "id": "https://github.com/hawkmauk",
+        "type": "a",
+        "value": "foaf:Person",
+        "properties": [
+          {
+            "type": "foaf:name",
+            "value": "Michael Hawkins"
+          },
+          {
+            "type": "foaf:homepage",
+            "value": "https://github.com/hawkmauk"
+          }
+        ]
+      },
+      {
+        "id": "https://github.com/dcdpr",
+        "type": "a",
+        "value": "foaf:Organization, earl:Assertor",
+        "properties": [
+          {
+            "type": "foaf:name",
+            "value": "Digital Contract Design, LLC"
+          },
+          {
+            "type": "foaf:homepage",
+            "value": "https://github.com/dcdpr"
+          }
+        ]
+      }
+
+
+    ]
+  },
+  "testsuites": [
+    {
+      "file": "UnitTests_JsonLdProcessor_expand_jsonld-cpp",
+      "manifest": "https://w3c.github.io/json-ld-api/tests/expand-manifest"
+    },
+    {
+      "file": "UnitTests_JsonLdProcessor_toRDF_jsonld-cpp",
+      "manifest": "https://w3c.github.io/json-ld-api/tests/toRdf-manifest"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 
-project(libjsonld-cpp VERSION 1.0.0
+project(libjsonld-cpp VERSION 0.5.0
                  DESCRIPTION "Digital Contract Design's C++ implementation of JSON-LD"
                  LANGUAGES C CXX )
 

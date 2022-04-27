@@ -40,7 +40,9 @@ void RdfDataBuilder::parse( const TestResult& tr )
     RdfObject ab( ns, "assertedBy" );
     RdfData* assertedBy = new RdfData( ab );
     // find the org
-    RdfData* org = get( "foaf:Organization" );
+    RdfData* org = get( "foaf:Organization, earl:Assertor" );
+    if(org==nullptr)
+        throw std::runtime_error("Can't find 'foaf:Organization, earl:Assertor'");
     assertedBy->addChild( new RdfData( org->subject.name ) );
     // add to the data object
     data->addChild( assertedBy );
@@ -49,7 +51,9 @@ void RdfDataBuilder::parse( const TestResult& tr )
     RdfObject s( ns, "subject" );
     RdfData* subject = new RdfData( s );
     // find the project
-    RdfData* project = get( "doap:Project" );
+    RdfData* project = get( "earl:TestSubject, doap:Project, earl:Software" );
+    if(project==nullptr)
+        throw std::runtime_error("Can't find 'earl:TestSubject, doap:Project, earl:Software'");
     subject->addChild( new RdfData( project->subject.name ) );
     // add to the data object
     data->addChild( subject );
