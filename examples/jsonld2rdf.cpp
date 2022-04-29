@@ -3,16 +3,16 @@
 
 // This application reads a jsonld file and, if possible, outputs
 // a normalized RDF dataset in NQuads format. This can then be piped
-// to a hashing utility like sh256sum and used to compare with RDF
+// to a hashing utility like sha256sum and used to compare with RDF
 // generated from other documents.
 
 // Usage: jsonld2rdf <filename>
 
-#include "JsonLdOptions.h"
-#include "JsonLdProcessor.h"
+#include <jsonld-cpp/FileLoader.h>
+#include <jsonld-cpp/JsonLdOptions.h>
+#include <jsonld-cpp/JsonLdProcessor.h>
 #include <iostream>
 #include <fstream>
-#include <FileLoader.h>
 
 int main (int argc, char *argv[]) {
 
@@ -43,7 +43,6 @@ int main (int argc, char *argv[]) {
     std::string fileUri = "file://" + inputFilename;
 
     std::unique_ptr<FileLoader> loader(new FileLoader);
-    //loader->addDocumentToCache(fileUri, inputStr);
     JsonLdOptions opts(fileUri);
     opts.setDocumentLoader(std::move(loader));
 

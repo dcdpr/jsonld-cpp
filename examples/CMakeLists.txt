@@ -1,12 +1,24 @@
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+
+project("jsonld-cpp-examples" VERSION ${JSONLDCPP_VERSION}
+        LANGUAGES CXX )
+
+find_package(jsonld-cpp ${JSONLDCPP_VERSION} CONFIG REQUIRED)
+
 add_executable(jsonld2rdf jsonld2rdf.cpp)
 
+# Misc properties
+
 target_compile_features(jsonld2rdf PRIVATE cxx_std_11)
-target_compile_options(jsonld2rdf PRIVATE ${DCD_CXX_FLAGS})
 set_target_properties(jsonld2rdf PROPERTIES CXX_EXTENSIONS OFF)
 
-target_include_directories(jsonld2rdf
-        PUBLIC
-        ${PROJECT_SOURCE_DIR}/libjsonld-cpp)
+# Set version
 
-target_link_libraries(jsonld2rdf jsonld-cpp Boost::filesystem)
+target_compile_definitions(jsonld2rdf PRIVATE -DJSONLDCPP_VERSION_MAJOR=${JSONLDCPP_VERSION_MAJOR})
+target_compile_definitions(jsonld2rdf PRIVATE -DJSONLDCPP_VERSION_MINOR=${JSONLDCPP_VERSION_MINOR})
+target_compile_definitions(jsonld2rdf PRIVATE -DJSONLDCPP_VERSION_PATCH=${JSONLDCPP_VERSION_PATCH})
+
+# Link
+
+target_link_libraries(jsonld2rdf jsonld-cpp::jsonld-cpp)
 

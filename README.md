@@ -32,26 +32,14 @@ You can also run all the tests:
 make test
 ```
 
-### Installing prerequirements
+### Installing prerequisites
 
 If the above doesn't work, you probably need to install some
-prerequirements. For example, on a fresh Debian Stretch system:
+prerequisites. For example, on a fresh Debian Bullseye system:
 
 ```
-$ sudo apt-get install make gcc g++
+$ sudo apt-get install make cmake gcc g++ libssl-dev
 ```
-
-It is worth getting the latest cmake, so you may want to install that the hard way:
-
-```
-wget https://cmake.org/files/v3.13/cmake-3.16.1.tar.gz
-tar xzf cmake-3.16.1.tar.gz
-cd cmake-3.16.1
-./configure
-make 
-sudo make install
-```
-
 
 Now you can again try to build jsonld-cpp.
 
@@ -64,9 +52,9 @@ also two example files showing how the normalized RDF could be hashed to
 show that the two documents are equivalent:
 
 ```
-$ ./build/debug/examples/jsonld2rdf examples/ex01a.jsonld | shasum -a 256
+$ ./build/debug/jsonld-cpp-examples-prefix/src/jsonld-cpp-examples-build/jsonld2rdf examples/ex01a.jsonld | shasum -a 256
 cb92d57d8b7abf09e4642338049bd9ee91a0ee0fe327e0a6061a8bbc2f4314bf  -
-$ ./build/debug/examples/jsonld2rdf examples/ex01b.jsonld | shasum -a 256
+$ ./build/debug/jsonld-cpp-examples-prefix/src/jsonld-cpp-examples-build/jsonld2rdf examples/ex01b.jsonld | shasum -a 256
 cb92d57d8b7abf09e4642338049bd9ee91a0ee0fe327e0a6061a8bbc2f4314bf  -
 ```
 
