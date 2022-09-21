@@ -6,9 +6,7 @@
 
 class FileLoader : public DocumentLoader {
 private:
-// todo: trying to create this cache object is giving me "copy constructor is implicitly deleted because 'unique_ptr<RemoteDocument,
-//      std::__1::default_delete<RemoteDocument> >' has a user-declared move constructor" errors
-//    std::map<std::string, std::unique_ptr<RemoteDocument>> cache;
+    //std::map<std::string, std::unique_ptr<RemoteDocument>> cache;
 
 public:
 

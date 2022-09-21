@@ -21,7 +21,7 @@ nlohmann::json JsonLdProcessor::expand(nlohmann::json input, JsonLdOptions opts)
     // todo: input is string? already handled in another version of expand
 
     // 4)
-    // todo: document from remote is a string ... that's kind of what this versino already is
+    // todo: document from remote is a string ... that's kind of what this version already is
 
     // 5)
     Context activeCtx(opts);

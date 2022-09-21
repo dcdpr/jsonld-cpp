@@ -20,7 +20,7 @@ private:
     std::string baseIRI;
     std::string originalBaseURL;
 
-    Context *inverseContext;
+    Context *inverseContext{};
     std::string vocabularyMapping;
     std::string defaultLanguage;
     std::string defaultBaseDirection; // todo: this should be an enum
@@ -30,13 +30,11 @@ private:
 
 
     std::vector<std::string> remoteContexts;
-    bool overrideProtected;
-    bool propagate;
-    bool validateScopedContext;
+    bool overrideProtected{};
+    bool propagate{};
+    bool validateScopedContext{};
 
 
-    static void checkEmptyKey(const nlohmann::json& map);
-    static void checkEmptyKey(const StringMap& map);
     void createTermDefinition(
             nlohmann::json context,
             const std::string& term,
@@ -48,8 +46,6 @@ private:
             bool validateScopedContext = true
             );
 
-    void init();
-
     std::string & at(const std::string& s);
     size_t erase( const std::string& key );
     std::pair<StringMap::iterator,bool> insert( const StringMap::value_type& value );
@@ -58,9 +54,7 @@ private:
 public:
 
     Context() = default;
-    explicit Context(JsonLdOptions options);
-//    Context(std::map<std::string, std::string> map, JsonLdOptions options);
-//    explicit Context(std::map<std::string, std::string> map);
+    explicit Context(const JsonLdOptions& options);
 
     Context parse(const nlohmann::json & localContext, const std::string & baseURL);
     Context parse(const nlohmann::json & localContext, const std::string & baseURL,
@@ -91,7 +85,7 @@ public:
 
     Context *getPreviousContext() const;
 
-        const std::string &getBaseIri() const;
+    const std::string &getBaseIri() const;
 
     void setBaseIri(const std::string &baseIri);
 

@@ -331,8 +331,8 @@ std::string RDFDatasetUtils::escape(const std::string& str) {
  * @return an RDF dataset.
  */
 RDF::RDFDataset RDFDatasetUtils::parseNQuads(std::string input) {
-    UniqueNamer blankNodeUniqueNamer;
-    RDF::RDFDataset dataset(JsonLdOptions(), &blankNodeUniqueNamer);
+    BlankNodeNames blankNodeNames;
+    RDF::RDFDataset dataset(JsonLdOptions(), &blankNodeNames);
 
     // split N-Quad input into lines
     std::vector<std::string> lines;

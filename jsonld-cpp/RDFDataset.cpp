@@ -9,8 +9,8 @@ using nlohmann::json;
 
 namespace RDF {
 
-    RDF::RDFDataset::RDFDataset(JsonLdOptions ioptions, UniqueNamer *iblankNodeUniqueNamer)
-            : options(std::move(ioptions)), blankNodeUniqueNamer(iblankNodeUniqueNamer) {
+    RDF::RDFDataset::RDFDataset(JsonLdOptions ioptions, BlankNodeNames *iBlankNodeNames)
+            : options(std::move(ioptions)), blankNodeNames(iBlankNodeNames) {
 
     }
 
@@ -113,7 +113,7 @@ namespace RDF {
                         std::shared_ptr<Node> firstBNode = rdf_nil;
                         if (!list.empty()) {
                             last = objectToRDF(list.back());
-                            firstBNode = std::make_shared<BlankNode>(blankNodeUniqueNamer->get());
+                            firstBNode = std::make_shared<BlankNode>(blankNodeNames->get());
                         }
                         triples.emplace_back(subject, predicate, firstBNode, &graphName);
                         if (!list.empty()) {
@@ -121,7 +121,7 @@ namespace RDF {
                                 std::shared_ptr<Node> object = objectToRDF(list.at(i));
                                 triples.emplace_back(firstBNode, rdf_first, object, &graphName);
                                 std::shared_ptr<Node> restBNode = std::make_shared<BlankNode>(
-                                        blankNodeUniqueNamer->get());
+                                        blankNodeNames->get());
                                 triples.emplace_back(firstBNode, rdf_rest, restBNode, &graphName);
                                 firstBNode = restBNode;
                             }

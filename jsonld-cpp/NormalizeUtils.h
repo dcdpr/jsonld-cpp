@@ -3,7 +3,7 @@
 
 #include "jsonld-cpp/jsoninc.h"
 #include "jsonld-cpp/JsonLdOptions.h"
-#include "jsonld-cpp/UniqueNamer.h"
+#include "jsonld-cpp/BlankNodeNames.h"
 #include "jsonld-cpp/RDFDataset.h"
 
 class NormalizeUtils {
@@ -11,15 +11,15 @@ private:
     std::vector<RDF::Quad> quads;
     std::map<std::string, std::map<std::string, std::vector<RDF::Quad>>> bnodes;
     std::map<std::string, std::string> cachedHashes;
-    UniqueNamer uniqueNamer;
+    BlankNodeNames blankNodeNames;
     JsonLdOptions opts;
 
     struct HashResult {
         std::string hash;
-        UniqueNamer pathNamer;
+        BlankNodeNames pathNames;
     };
 
-    HashResult hashPaths(const std::string& id, UniqueNamer pathUniqueNamer);
+    HashResult hashPaths(const std::string& id, BlankNodeNames pathNames);
 
     std::string hashQuads(std::string id);
 
@@ -28,7 +28,7 @@ public:
     NormalizeUtils(
             std::vector<RDF::Quad> quads,
             std::map<std::string, std::map<std::string, std::vector<RDF::Quad>>> bnodes,
-            UniqueNamer  iuniqueNamer,
+            BlankNodeNames iBlankNodeNames,
             JsonLdOptions opts);
 
     std::string hashBlankNodes(const std::vector<std::string> &unnamed_);

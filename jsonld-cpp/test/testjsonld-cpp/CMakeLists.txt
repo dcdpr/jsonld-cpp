@@ -40,11 +40,10 @@ add_executable(
     test_JsonLdUtils.cpp
     test_NodeComparisons.cpp
     test_ObjectComparisons.cpp
-    test_UniqueNamer.cpp
+    test_BlankNodeNames.cpp
     test_DoubleFormatter.cpp
     test_Permutator.cpp
     test_NormalizeUtils.cpp
-    test_Sha1.cpp
     test_Regex.cpp
     test_RDFDataset.cpp
     test_RDFDatasetUtils.cpp

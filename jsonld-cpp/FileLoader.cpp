@@ -41,7 +41,7 @@ namespace {
 
 std::unique_ptr<RemoteDocument> FileLoader::loadDocument(const std::string &url) {
 
-    // check cache
+    // todo: check cache
 
     // check file properties
     if(url.find("file://") != 0 && url.find('/') != 0)
@@ -62,11 +62,7 @@ std::unique_ptr<RemoteDocument> FileLoader::loadDocument(const std::string &url)
         throw JsonLdError(JsonLdError::LoadingDocumentFailed,
                           "Failed to open file: " + localUrl);
 
-    // create document
-
-    // add to cache
-
-    // return
+    // todo: add to cache
 
     if (JSONDocument::accepts(contentType)) {
         return std::unique_ptr<RemoteDocument>(

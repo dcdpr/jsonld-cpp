@@ -2,7 +2,7 @@
 #define LIBJSONLD_CPP_JSONLDOPTIONS_H
 
 // The JsonLdOptions type as specified in "JSON-LD-API specification":
-// http://www.w3.org/TR/json-ld-api/#the-jsonldoptions-type
+// https://www.w3.org/TR/json-ld-api/#the-jsonldoptions-type
 
 #include "jsonld-cpp/DocumentLoader.h"
 #include "jsonld-cpp/JsonLdConsts.h"
@@ -11,43 +11,58 @@
 
 class JsonLdOptions {
 private:
-    // Base options : http://www.w3.org/TR/json-ld-api/#idl-def-JsonLdOptions
+    // Base options : https://www.w3.org/TR/json-ld-api/#idl-def-JsonLdOptions
 
     /**
-     * http://www.w3.org/TR/json-ld-api/#widl-JsonLdOptions-base
+     * https://www.w3.org/TR/json-ld-api/#dom-jsonldoptions-base
      */
     std::string base_;
 
     /**
-     * http://www.w3.org/TR/json-ld-api/#widl-JsonLdOptions-compactArrays
+     * https://www.w3.org/TR/json-ld-api/#dom-jsonldoptions-compactarrays
      */
     bool compactArrays_ = DEFAULT_COMPACT_ARRAYS;
     /**
-     * http://www.w3.org/TR/json-ld-api/#widl-JsonLdOptions-expandContext
+     * https://www.w3.org/TR/json-ld-api/#dom-jsonldoptions-expandcontext
      */
     nlohmann::json expandContext_;
     /**
-     * http://www.w3.org/TR/json-ld-api/#widl-JsonLdOptions-processingMode
+     * https://www.w3.org/TR/json-ld-api/#dom-jsonldoptions-processingmode
      */
     std::string processingMode_ = JSON_LD_1_1;
     /**
-     * http://www.w3.org/TR/json-ld-api/#widl-JsonLdOptions-documentLoader
+     * https://www.w3.org/TR/json-ld-api/#dom-jsonldoptions-documentloader
      */
     std::unique_ptr<DocumentLoader> documentLoader_;
 
-    // Frame options : https://w3c.github.io/json-ld-framing/
+    // Framing options : https://www.w3.org/TR/json-ld11-framing/
 
+    /**
+     * https://www.w3.org/TR/json-ld11-framing/#dom-jsonldoptions-embed
+     */
     JsonLdConsts::Embed embed_ = JsonLdConsts::ONCE;
-    bool explicit_ = false; // was null
-    bool omitDefault_ = false; // was null
+
+    /**
+     * https://www.w3.org/TR/json-ld11-framing/#dom-jsonldoptions-explicit
+     */
+    bool explicit_ = false;
+    /**
+     * https://www.w3.org/TR/json-ld11-framing/#dom-jsonldoptions-omitdefault
+     */
+    bool omitDefault_ = false;
+    /**
+     * https://www.w3.org/TR/json-ld11-framing/#dom-jsonldoptions-omitgraph
+     */
     bool omitGraph_ = false;
-    bool frameExpansion_ = false;
-    bool pruneBlankNodeIdentifiers_ = false;
+    /**
+     * https://www.w3.org/TR/json-ld11-framing/#dom-jsonldoptions-requireall
+     */
     bool requireAll_ = false;
-    bool allowContainerSetOnType_ = false;
+
+    // todo: frameDefault, ordered?
 
     // RDF conversion options :
-    // http://www.w3.org/TR/json-ld-api/#serialize-rdf-as-json-ld-algorithm
+    // https://www.w3.org/TR/json-ld-api/#serialize-rdf-as-json-ld-algorithm
 
     bool useRdfType_ = false;
     bool useNativeTypes_ = false;
@@ -62,8 +77,8 @@ public:
     static constexpr bool DEFAULT_COMPACT_ARRAYS = true;
 
     /**
-     * Constructs an instance of JsonLdOptions using the given base. Defaults to
-     * empty base if none is given.
+     * Constructs an instance of JsonLdOptions using the given base IRI. Defaults to
+     * empty base IRI if none is given.
      *
      * @param base
      *            The base IRI for the document.
@@ -88,10 +103,7 @@ public:
         explicit_ = other.explicit_;
         omitDefault_ = other.omitDefault_;
         omitGraph_ = other.omitGraph_;
-        frameExpansion_ = other.frameExpansion_;
-        pruneBlankNodeIdentifiers_ = other.pruneBlankNodeIdentifiers_;
         requireAll_ = other.requireAll_;
-        allowContainerSetOnType_ = other.allowContainerSetOnType_;
 
         useRdfType_ = other.useRdfType_;
         useNativeTypes_ = other.useNativeTypes_;
@@ -161,14 +173,6 @@ public:
         this->omitDefault_ = omitDefault;
     }
 
-    bool getFrameExpansion() {
-        return frameExpansion_;
-    }
-
-    void setFrameExpansion(bool frameExpansion) {
-        this->frameExpansion_ = frameExpansion;
-    }
-
     bool getOmitGraph() {
         return omitGraph_;
     }
@@ -177,28 +181,12 @@ public:
         this->omitGraph_ = omitGraph;
     }
 
-    bool getPruneBlankNodeIdentifiers() {
-        return pruneBlankNodeIdentifiers_;
-    }
-
-    void setPruneBlankNodeIdentifiers(bool pruneBlankNodeIdentifiers) {
-        this->pruneBlankNodeIdentifiers_ = pruneBlankNodeIdentifiers;
-    }
-
     bool getRequireAll() {
         return requireAll_;
     }
 
     void setRequireAll(bool requireAll) {
         this->requireAll_ = requireAll;
-    }
-
-    bool getAllowContainerSetOnType() {
-        return allowContainerSetOnType_;
-    }
-
-    void setAllowContainerSetOnType(bool allowContainerSetOnType) {
-        this->allowContainerSetOnType_ = allowContainerSetOnType;
     }
 
     bool getCompactArrays() {
@@ -225,8 +213,6 @@ public:
         this->processingMode_ = processingMode;
         if (processingMode == JSON_LD_1_1) {
             omitGraph_ = true;
-            pruneBlankNodeIdentifiers_ = true;
-            allowContainerSetOnType_ = true;
         }
     }
 

@@ -1,14 +1,12 @@
-#ifndef LIBJSONLD_CPP_UNIQUENAMER_H
-#define LIBJSONLD_CPP_UNIQUENAMER_H
+#ifndef LIBJSONLD_CPP_BLANKNODENAMES_H
+#define LIBJSONLD_CPP_BLANKNODENAMES_H
 
 #include <string>
 #include <map>
 #include <vector>
 
-/**
- * A UniqueNamer issues unique names, keeping track of any previously issued names.
- */
-class UniqueNamer {
+
+class BlankNodeNames {
 private:
     int counter = 0;
     std::string prefix = "_:b";
@@ -16,8 +14,8 @@ private:
     std::vector<std::string> keysInInsertionOrder;
 
 public:
-    UniqueNamer();
-    explicit UniqueNamer(std::string prefix);
+    BlankNodeNames();
+    explicit BlankNodeNames(std::string prefix);
 
     std::string get();
     std::string get(const std::string & key);
@@ -26,4 +24,4 @@ public:
     std::vector<std::string> getKeys();
 };
 
-#endif //LIBJSONLD_CPP_UNIQUENAMER_H
+#endif //LIBJSONLD_CPP_BLANKNODENAMES_H

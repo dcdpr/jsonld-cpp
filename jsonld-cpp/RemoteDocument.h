@@ -13,9 +13,9 @@ namespace RDF {
 class RemoteDocument {
 
 public:
-    RemoteDocument() = default;                                  // constructor
-    RemoteDocument(const RemoteDocument&) = default;             // copy constructor
-    RemoteDocument& operator=(const RemoteDocument&) = default;  // copy assignment
+    RemoteDocument() = default;
+    RemoteDocument(const RemoteDocument&) = default;
+    RemoteDocument& operator=(const RemoteDocument&) = default;
 
     virtual ~RemoteDocument();
 

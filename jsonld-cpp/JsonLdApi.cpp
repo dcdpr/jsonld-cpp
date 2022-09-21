@@ -197,8 +197,8 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
     // 11), 12)
     std::string inputType = findInputType(activeCtx, typeScopedContext, element); // only used in 13.4.7.1 and 13.4.16
 
-    json result = ObjUtils::newMap();
-    json nests = ObjUtils::newMap();
+    json result = json::object();
+    json nests = json::object();
 
     // 13)
     // For each key and value in element, ordered lexicographically by key if ordered is true:
@@ -269,7 +269,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                 // Expansion algorithm as above.
                 if (element_value.is_string()) {
                     expandedValue = activeCtx.expandIri(element_value.get<std::string>(), true, false);
-                } else if (options.getFrameExpansion()) {
+                } else if (frameExpansion) {
                     if (element_value.is_object()) {
                         if (!element_value.empty()) {
                             throw JsonLdError(JsonLdError::InvalidIdValue,
@@ -335,7 +335,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                 // object with the value of @default set to the result of IRI expanding value
                 // using type-scoped context for active context, and true for document relative.
                 else if(ObjUtils::isDefaultObject(element_value)) {
-                    expandedValue = ObjUtils::newMap();
+                    expandedValue = json::object();
                     expandedValue[JsonLdConsts::DEFAULT] =
                             typeScopedContext.expandIri(element_value.at(JsonLdConsts::DEFAULT), true, true);
                 }
@@ -623,7 +623,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
         // 13.6)
         if(keyTermDefinition.contains(JsonLdConsts::TYPE) &&
            keyTermDefinition.at(JsonLdConsts::TYPE) == JsonLdConsts::JSON) {
-            expandedValue = ObjUtils::newMap();
+            expandedValue = json::object();
             expandedValue[JsonLdConsts::VALUE] = element_value;
             expandedValue[JsonLdConsts::TYPE] = JsonLdConsts::JSON;
         }
@@ -683,7 +683,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                     // and (@language-language). If item is neither @none nor well-formed
                     // according to section 2.2.9 of [BCP47], processors SHOULD issue a
                     // warning. Note: Processors MAY normalize language tags to lower case.
-                    json v = ObjUtils::newMap();
+                    json v = json::object();
                     std::transform(language.begin(), language.end(), language.begin(), &::tolower);
                     v[JsonLdConsts::VALUE] = item;
                     v[JsonLdConsts::LANGUAGE] = language;
@@ -943,7 +943,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
             // 13.13.1)
             // If result has no @reverse entry, create one and initialize its value to an empty map.
             if (!result.contains(JsonLdConsts::REVERSE)) {
-                result[JsonLdConsts::REVERSE] = ObjUtils::newMap();
+                result[JsonLdConsts::REVERSE] = json::object();
             }
 
             // 13.13.2)
@@ -1116,7 +1116,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
         // 19.2)
         // Otherwise, if result is a map whose only entry is @id, set result to null. When the
         // frameExpansion flag is set, a map containing only the @id entry is retained.
-        else if (!result.is_null() && !options.getFrameExpansion() && result.contains(JsonLdConsts::ID)
+        else if (!result.is_null() && !frameExpansion && result.contains(JsonLdConsts::ID)
                  && result.size() == 1) {
             result = j;
         }
@@ -1132,10 +1132,10 @@ bool JsonLdApi::arrayContains(const json &array,
 }
 
 RDF::RDFDataset JsonLdApi::toRDF(nlohmann::json element) {
-    auto nodeMap = ObjUtils::newMap();
-    nodeMap[JsonLdConsts::DEFAULT] = ObjUtils::newMap();
+    auto nodeMap = json::object();
+    nodeMap[JsonLdConsts::DEFAULT] = json::object();
     generateNodeMap(element, nodeMap);
-    RDF::RDFDataset dataset(options, &blankNodeUniqueNamer);
+    RDF::RDFDataset dataset(options, &blankNodeNames);
 
     std::vector<std::string> keys;
     for (json::iterator it = nodeMap.begin(); it != nodeMap.end(); ++it) {
@@ -1188,7 +1188,7 @@ void JsonLdApi::generateNodeMap(json & element, json &nodeMap, std::string *acti
 
     // 2)
     if (!nodeMap.contains(*activeGraph)) {
-        nodeMap[*activeGraph] = ObjUtils::newMap();
+        nodeMap[*activeGraph] = json::object();
     }
     json & graph = nodeMap[*activeGraph];
 
@@ -1207,7 +1207,7 @@ void JsonLdApi::generateNodeMap(json & element, json &nodeMap, std::string *acti
         for (const auto& item : oldTypes) {
             std::string s = item.get<std::string>();
             if (s.find_first_of("_:") == 0) {
-                newTypes.push_back(blankNodeUniqueNamer.get(item));
+                newTypes.push_back(blankNodeNames.get(item));
             } else {
                 newTypes.push_back(item);
             }
@@ -1238,7 +1238,7 @@ void JsonLdApi::generateNodeMap(json & element, json &nodeMap, std::string *acti
         // 5)
     else if (element.contains(JsonLdConsts::LIST)) {
         // 5.1)
-        json result = ObjUtils::newMap(JsonLdConsts::LIST, json::array());
+        json result = { { JsonLdConsts::LIST, json::array() } };
         // 5.2)
         generateNodeMap(element[JsonLdConsts::LIST], nodeMap, activeGraph, activeSubject,
                         activeProperty, &result);
@@ -1254,16 +1254,16 @@ void JsonLdApi::generateNodeMap(json & element, json &nodeMap, std::string *acti
             id = element[JsonLdConsts::ID];
             element.erase(JsonLdConsts::ID);
             if (id.find_first_of("_:") == 0) {
-                id = blankNodeUniqueNamer.get(id);
+                id = blankNodeNames.get(id);
             }
         }
         // 6.2)
         else {
-            id = blankNodeUniqueNamer.get();
+            id = blankNodeNames.get();
         }
         // 6.3)
         if (!graph.contains(id)) {
-            json tmp = ObjUtils::newMap(JsonLdConsts::ID, id);
+            json tmp = { { JsonLdConsts::ID, id } };
             graph[id] = tmp;
             graph["key_insertion_order"].push_back(id);
         }
@@ -1275,7 +1275,7 @@ void JsonLdApi::generateNodeMap(json & element, json &nodeMap, std::string *acti
         }
             // 6.6)
         else if (activeProperty != nullptr) {
-            json reference = ObjUtils::newMap(JsonLdConsts::ID, id);
+            json reference = { { JsonLdConsts::ID, id } };
             // 6.6.2)
             if (list == nullptr) {
                 // 6.6.2.1+2)
@@ -1312,7 +1312,7 @@ void JsonLdApi::generateNodeMap(json & element, json &nodeMap, std::string *acti
         // 6.9)
         if (element.contains(JsonLdConsts::REVERSE)) {
             // 6.9.1)
-            json referencedNode = ObjUtils::newMap(JsonLdConsts::ID, id);
+            json referencedNode = { { JsonLdConsts::ID, id } };
             // 6.9.2+6.9.4)
             json reverseMap = element[JsonLdConsts::REVERSE];
             element.erase(JsonLdConsts::REVERSE);
@@ -1346,7 +1346,7 @@ void JsonLdApi::generateNodeMap(json & element, json &nodeMap, std::string *acti
             json & propertyValue = element[property];
             // 6.11.1)
             if (property.find_first_of("_:") == 0) {
-                property = blankNodeUniqueNamer.get(property);
+                property = blankNodeNames.get(property);
             }
             // 6.11.2)
             if (node != nullptr && !node->contains(property)) {
@@ -1426,7 +1426,7 @@ std::string JsonLdApi::normalize(const RDF::RDFDataset& dataset) {
     }
 
     // mapping complete, start canonical naming
-    NormalizeUtils normalizeUtils(quads, bnodes, UniqueNamer("_:c14n"), options);
+    NormalizeUtils normalizeUtils(quads, bnodes, BlankNodeNames("_:c14n"), options);
     return normalizeUtils.hashBlankNodes(bnodes_insertion_order_keys);
 }
 

@@ -13,7 +13,7 @@ set(CMAKE_CXX_STANDARD 11)
 include(GNUInstallDirs)
 
 find_package(uriparser 0.9.5 CONFIG REQUIRED char wchar_t)
-      
+
 
 # Define library target
 
@@ -40,12 +40,11 @@ set(LIB_HEADER_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFDocument.h
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFRegex.h
         ${CMAKE_CURRENT_SOURCE_DIR}/RemoteDocument.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/UniqueNamer.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/BlankNodeNames.h
         ${CMAKE_CURRENT_SOURCE_DIR}/Uri.h
         ${CMAKE_CURRENT_SOURCE_DIR}/UriParser.h
         ${CMAKE_CURRENT_SOURCE_DIR}/json.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/jsoninc.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/sha1.h
         ${CMAKE_CURRENT_SOURCE_DIR}/sha256.h
         )
 
@@ -70,10 +69,9 @@ set(LIB_SOURCE_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFDatasetUtils.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFDocument.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/RemoteDocument.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/UniqueNamer.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/BlankNodeNames.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/Uri.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/UriParser.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/sha1.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/sha256.cpp
         )
 
@@ -163,7 +161,7 @@ if(INSTALL_JSONLDCPP)
           NAMESPACE ${namespace}
           DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/jsonld-cpp
   )
-  
+
 
   install(
           TARGETS jsonld-cpp
@@ -194,7 +192,7 @@ endif()
 #          ${CMAKE_CURRENT_SOURCE_DIR}/RDFDataset.h
 #          ${CMAKE_CURRENT_SOURCE_DIR}/RemoteDocument.h
 #          ${CMAKE_CURRENT_SOURCE_DIR}/MediaType.h
-#          ${CMAKE_CURRENT_SOURCE_DIR}/UniqueNamer.h
+#          ${CMAKE_CURRENT_SOURCE_DIR}/BlankNodeNames.h
 #          ${CMAKE_CURRENT_SOURCE_DIR}/../include/json.hpp
 #          ${CMAKE_CURRENT_SOURCE_DIR}/../include/jsoninc.h )
 #  install (FILES ${INCLUDES_H} DESTINATION include)

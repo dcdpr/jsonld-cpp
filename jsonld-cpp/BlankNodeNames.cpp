@@ -1,11 +1,11 @@
-#include "jsonld-cpp/UniqueNamer.h"
+#include "jsonld-cpp/BlankNodeNames.h"
 #include <sstream>
 #include <utility>
 #include <vector>
 
-UniqueNamer::UniqueNamer() = default;
+BlankNodeNames::BlankNodeNames() = default;
 
-UniqueNamer::UniqueNamer(std::string iprefix)
+BlankNodeNames::BlankNodeNames(std::string iprefix)
         : prefix(std::move(iprefix)) { }
 
 /**
@@ -16,7 +16,7 @@ UniqueNamer::UniqueNamer(std::string iprefix)
  *
  * @return A fresh, unused, blank node name.
  */
-std::string UniqueNamer::get() {
+std::string BlankNodeNames::get() {
     std::stringstream ss;
     ss << prefix << counter++;
     return ss.str();
@@ -32,7 +32,7 @@ std::string UniqueNamer::get() {
  *            The key.
  * @return A blank node name based on key.
  */
-std::string UniqueNamer::get(const std::string & key) {
+std::string BlankNodeNames::get(const std::string & key) {
     if(keysToNames.count(key))
         return keysToNames.at(key);
     std::string name = get();
@@ -46,7 +46,7 @@ std::string UniqueNamer::get(const std::string & key) {
  *
  * @return All existing keys
  */
-std::vector<std::string> UniqueNamer::getKeys() {
+std::vector<std::string> BlankNodeNames::getKeys() {
     return keysInInsertionOrder;
 }
 
@@ -56,6 +56,6 @@ std::vector<std::string> UniqueNamer::getKeys() {
  * @param key The key.
  * @return true if key exists as a name
  */
-bool UniqueNamer::exists(const std::string &key) {
+bool BlankNodeNames::exists(const std::string &key) {
     return keysToNames.count(key) > 0;
 }

@@ -9,7 +9,7 @@
 class JsonLdApi {
 private:
     JsonLdOptions options;
-    UniqueNamer blankNodeUniqueNamer;
+    BlankNodeNames blankNodeNames;
 
 public:
 

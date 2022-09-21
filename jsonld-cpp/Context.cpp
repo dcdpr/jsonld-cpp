@@ -17,33 +17,6 @@ namespace {
 
 }
 
-void Context::checkEmptyKey(const json& map) {
-    if(map.count("")) {
-        // the term MUST NOT be an empty string ("")
-        // https://www.w3.org/TR/json-ld/#h3_terms
-        throw JsonLdError(JsonLdError::InvalidTermDefinition, "empty key for value");
-    }
-}
-
-void Context::checkEmptyKey(const std::map<std::string, std::string>& map) {
-    if(map.count("")) {
-        // the term MUST NOT be an empty string ("")
-        // https://www.w3.org/TR/json-ld/#h3_terms
-        throw JsonLdError(JsonLdError::InvalidTermDefinition, "empty key for value");
-    }
-}
-
-void Context::init() {
-    contextMap.insert(std::make_pair(JsonLdConsts::BASE, options.getBase()));
-    termDefinitions = ObjUtils::newMap();
-    inverseContext = nullptr;
-    previousContext = nullptr;
-    overrideProtected = false;
-    propagate = true;
-    validateScopedContext = true;
-    defaultBaseDirection = "null";
-}
-
 /**
  * Context Processing Algorithm
  *
@@ -62,33 +35,8 @@ Context Context::parse(const nlohmann::json & localContext, const std::string & 
 /**
  * Context Processing Algorithm
  *
- * http://json-ld.org/spec/latest/json-ld-api/#context-processing-algorithms
+ * https://w3c.github.io/json-ld-api/#context-processing-algorithm
  *
- * @param localContext
- *            The Local Context object.
- * @param remoteContexts
- *            The list of Strings denoting the remote Context URLs.
- * @return The parsed and merged Context.
- * @throws JsonLdError
- *             If there is an error parsing the contexts.
- */
-//Context Context::parse(const json & localContext, std::vector<std::string> & remoteContexts)  {
-//    return parse(localContext, remoteContexts, false);
-//}
-
-/**
- * Helper method used to work around logic errors related to the recursive
- * nature of the JSONLD-API Context Processing Algorithm.
- *
- * @param localContext
- *            The Local Context object.
- * @param iremoteContexts
- *            The list of Strings denoting the remote Context URLs.
- * @param parsingARemoteContext
- *            True if localContext represents a remote context that has been
- *            parsed and sent into this method and false otherwise. This
- *            must be set to know whether to propagate the @code{@base} key
- *            from the context to the result.
  * @return The parsed and merged Context.
  * @throws JsonLdError
  *             If there is an error parsing the contexts.
@@ -176,8 +124,8 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
             // Continue with the next context.
             continue;
         }
-            // 5.2)
-            // If context is a string,
+        // 5.2)
+        // If context is a string,
         else if (context.is_string()) {
             // 5.2.1)
             // Initialize context to the result of resolving context against base URL. If base
@@ -220,19 +168,20 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
             // internal representation: set context document to the previously dereferenced
             // document, and set loaded context to the value of the @context entry from the
             // document in context document.
+            // todo: ...
 
             // 5.2.5)
             // Otherwise, set context document to the RemoteDocument obtained by dereferencing
             // context using the LoadDocumentCallback, passing context for url, and
             // http://www.w3.org/ns/json-ld#context for profile and for requestProfile.
-            if (options.getDocumentLoader() == nullptr) {
-                throw JsonLdError(JsonLdError::LoadingRemoteContextFailed, "DocumentLoader is null");
-            }
 
             // 5.2.5.1)
             // If context cannot be dereferenced, or the document from context document cannot
             // be transformed into the internal representation , a loading remote context
             // failed error has been detected and processing is aborted.
+            if (options.getDocumentLoader() == nullptr) {
+                throw JsonLdError(JsonLdError::LoadingRemoteContextFailed, "DocumentLoader is null");
+            }
             std::unique_ptr<RemoteDocument> rd;
             try {
                 rd = options.getDocumentLoader()->loadDocument(contextUri);
@@ -268,22 +217,21 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
             // of context document for base URL, a copy of remote contexts, and validate
             // scoped context.
             result = result.parse(loadedContext, rd->getDocumentUrl(), remoteContexts, overrideProtected, propagate,
-                                    validateScopedContext);
+                                  validateScopedContext);
 
             // 5.2.7)
             // Continue with the next context.
             continue;
-
-        } else if (!(context.is_object())) {
-            // 5.3)
-            // If context is not a map, an invalid local context error has been detected
-            // and processing is aborted.
+        }
+        // 5.3)
+        // If context is not a map, an invalid local context error has been detected
+        // and processing is aborted.
+        else if (!(context.is_object())) {
             if (context.is_string())
                 throw JsonLdError(JsonLdError::InvalidLocalContext, context);
             else
                 throw JsonLdError(JsonLdError::InvalidLocalContext);
         }
-        checkEmptyKey(context);
 
         // 5.4)
         // Otherwise, context is a context definition.
@@ -854,14 +802,14 @@ void Context::createTermDefinition(
     // If value is null, convert it to a map consisting of a single entry whose key
     // is @id and whose value is null.
     if(value.is_null()) {
-        value = ObjUtils::newMap(JsonLdConsts::ID, nullptr);
+        value = { { JsonLdConsts::ID, nullptr} };
     }
 
     // 8)
     // Otherwise, if value is a string, convert it to a map consisting of a single entry whose
     // key is @id and whose value is value. Set simple term to true.
     else if (value.is_string()) {
-        value = ObjUtils::newMap(JsonLdConsts::ID, value);
+        value = { { JsonLdConsts::ID, value} };
         simpleTerm = true;
     }
 
@@ -873,7 +821,7 @@ void Context::createTermDefinition(
     }
 
     // 10)
-    auto definition = ObjUtils::newMap();
+    auto definition = json::object();
     definition[JsonLdConsts::IS_PREFIX_FLAG] = false;
     definition[JsonLdConsts::IS_REVERSE_PROPERTY_FLAG] = false;
     definition[JsonLdConsts::IS_PROTECTED_FLAG] = isProtected;
@@ -1502,7 +1450,7 @@ size_t Context::count(const std::string &key) const {
 }
 
 bool Context::isReverseProperty(const std::string &property) {
-    // todo: shoul dmove this function and other slike it to a new TermDefinition class?
+    // todo: should move this function and others like it to a new TermDefinition class?
     if(!termDefinitions.count(property)) {
         return false;
     }
@@ -1611,23 +1559,18 @@ json Context::expandValue(const std::string & activeProperty, const json& value)
     return result;
 }
 
-Context::Context(JsonLdOptions ioptions)
-        : options(std::move(ioptions))
+Context::Context(const JsonLdOptions& ioptions)
+        : options(ioptions)
 {
-    init();
+    contextMap.insert(std::make_pair(JsonLdConsts::BASE, options.getBase()));
+    termDefinitions = json::object();
+    inverseContext = nullptr;
+    previousContext = nullptr;
+    overrideProtected = false;
+    propagate = true;
+    validateScopedContext = true;
+    defaultBaseDirection = "null";
 }
-
-//Context::Context(std::map<std::string, std::string> map, JsonLdOptions ioptions)
-//        : options(std::move(ioptions)), contextMap(std::move(map)) {
-//    checkEmptyKey(contextMap);
-//    init();
-//}
-
-//Context::Context(std::map<std::string, std::string> map)
-//        : contextMap(std::move(map)) {
-//    checkEmptyKey(contextMap);
-//    init();
-//}
 
 bool Context::isProcessingMode(const std::string &mode) {
     return options.getProcessingMode() == mode;

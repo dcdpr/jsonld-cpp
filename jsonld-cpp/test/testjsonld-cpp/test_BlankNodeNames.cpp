@@ -1,4 +1,4 @@
-#include <jsonld-cpp/UniqueNamer.h>
+#include <jsonld-cpp/BlankNodeNames.h>
 
 #include <gtest/gtest.h>
 #pragma clang diagnostic push
@@ -10,33 +10,33 @@
 #pragma clang diagnostic pop
 #pragma GCC diagnostic pop
 
-TEST(UniqueNamerGenTest, singleGeneration_succeeds) {
-    UniqueNamer gen;
+TEST(BlankNodeNamesGenTest, singleGeneration_succeeds) {
+    BlankNodeNames gen;
     std::string result = gen.get();
     EXPECT_EQ(result, "_:b0");
 }
 
-TEST(UniqueNamerGenTest, twoGenerations_succeeds) {
-    UniqueNamer gen;
+TEST(BlankNodeNamesGenTest, twoGenerations_succeeds) {
+    BlankNodeNames gen;
     std::string result = gen.get();
     EXPECT_EQ(result, "_:b0");
     result = gen.get();
     EXPECT_EQ(result, "_:b1");
 }
 
-TEST(UniqueNamerGenTest, twoGenerations_withIdString_returnsSameId) {
+TEST(BlankNodeNamesGenTest, twoGenerations_withIdString_returnsSameId) {
     std::string name = "foo";
-    UniqueNamer gen;
+    BlankNodeNames gen;
     std::string result = gen.get(name);
     EXPECT_EQ(result, "_:b0");
     result = gen.get(name);
     EXPECT_EQ(result, "_:b0");
 }
 
-TEST(UniqueNamerGenTest, fourGenerations_withTwoIdStrings_returnsCorrectIds) {
+TEST(BlankNodeNamesGenTest, fourGenerations_withTwoIdStrings_returnsCorrectIds) {
     std::string name1 = "foo";
     std::string name2 = "bar";
-    UniqueNamer gen;
+    BlankNodeNames gen;
 
     std::string result = gen.get(name1);
     EXPECT_EQ(result, "_:b0");
@@ -49,20 +49,20 @@ TEST(UniqueNamerGenTest, fourGenerations_withTwoIdStrings_returnsCorrectIds) {
     EXPECT_EQ(result, "_:b1");
 }
 
-TEST(UniqueNamerGenTest, nameExists) {
+TEST(BlankNodeNamesGenTest, nameExists) {
     std::string name1 = "foo";
     std::string name2 = "bar";
-    UniqueNamer gen;
+    BlankNodeNames gen;
 
     std::string result = gen.get(name1);
     EXPECT_TRUE(gen.exists(name1));
     EXPECT_FALSE(gen.exists(name2));
 }
 
-TEST(UniqueNamerGenTest, name_enumeration) {
+TEST(BlankNodeNamesGenTest, name_enumeration) {
     std::string name1 = "foo";
     std::string name2 = "bar";
-    UniqueNamer gen;
+    BlankNodeNames gen;
 
     gen.get(name1);
     gen.get(name2);
@@ -74,15 +74,15 @@ TEST(UniqueNamerGenTest, name_enumeration) {
     EXPECT_NE(v.end(), std::find(v.begin(), v.end(), name2));
 }
 
-TEST(UniqueNamerGenTest, emptyPrefix) {
-    UniqueNamer gen("");
+TEST(BlankNodeNamesGenTest, emptyPrefix) {
+    BlankNodeNames gen("");
 
     std::string result = gen.get();
     EXPECT_EQ(result, "0");
 }
 
-TEST(UniqueNamerGenTest, differentPrefix) {
-    UniqueNamer gen("foo");
+TEST(BlankNodeNamesGenTest, differentPrefix) {
+    BlankNodeNames gen("foo");
 
     std::string result = gen.get();
     EXPECT_EQ(result, "foo0");

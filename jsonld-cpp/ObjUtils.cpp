@@ -3,16 +3,6 @@
 
 using json = nlohmann::json;
 
-json ObjUtils::newMap() {
-    return json::object();
-}
-
-json ObjUtils::newMap(const std::string& key, json value) {
-    auto result = newMap();
-    result[key] = value;
-    return result;
-}
-
 /**
  * Check if a json object is a default object
  *
@@ -21,7 +11,7 @@ json ObjUtils::newMap(const std::string& key, json value) {
  * @param object the object to test
  * @return true if object is a default object
  */
-bool ObjUtils::isDefaultObject(json object) {
+bool ObjUtils::isDefaultObject(const json& object) {
     return object.is_object() && object.contains(JsonLdConsts::DEFAULT);
 }
 
@@ -34,7 +24,7 @@ bool ObjUtils::isDefaultObject(json object) {
  * @param object the object to test
  * @return true if object is a node object
  */
-bool ObjUtils::isNodeObject(json object) {
+bool ObjUtils::isNodeObject(const json& object) {
     return object.is_object() &&
            ((!object.contains(JsonLdConsts::VALUE) &&
              !object.contains(JsonLdConsts::LIST) &&

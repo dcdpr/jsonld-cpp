@@ -1,14 +1,10 @@
 #include "jsonld-cpp/UriParser.h"
 
-#include <cstring>
 #include <uriparser/Uri.h>
 
 class UriParserImpl {
 public:
-    UriParserImpl() {
-        // Initialize the UriUriA struct this class wraps to a sane state.
-        memset(static_cast<void *>(&uri_), 0, sizeof(UriUriA));
-    }
+    UriParserImpl() = default;
 
     ~UriParserImpl() {
         uriFreeUriMembersA(&uri_);
@@ -22,11 +18,8 @@ public:
         return const_cast<UriUriA*>(&uri_);
     }
 
-    // This helper function detects the existence of the given component and
-    // converts it to a string if one is supplied.  If this component does not
-    // exist false is returned.  If the component does exist true is returned.
-    bool GetUriComponent(const UriTextRangeA& text_range,
-                         std::string* output) const {
+    static bool GetUriComponent(const UriTextRangeA& text_range,
+                         std::string* output) {
         if (!text_range.first || !text_range.afterLast) {
             return false;
         }
@@ -37,24 +30,24 @@ public:
     }
 
 private:
-    UriUriA uri_;
+    UriUriA uri_{};
 };
 
 
-UriParser * UriParser::create(const char *str) {
-    if(str == nullptr)
+UriParser * UriParser::create(const char *uri) {
+    if(uri == nullptr)
         return nullptr;
     auto* uri_parser = new UriParser;
-    if (uri_parser->Parse(str)) {
+    if (uri_parser->Parse(uri)) {
         return uri_parser;
     }
     delete uri_parser;
     return nullptr;
 }
 
-UriParser * UriParser::createResolved(const char *base, const char *relative) {
-    std::unique_ptr<UriParser> base_uri(create(base));
-    std::unique_ptr<UriParser> relative_uri(create(relative));
+UriParser * UriParser::createResolved(const char *baseUri, const char *relativeUri) {
+    std::unique_ptr<UriParser> base_uri(create(baseUri));
+    std::unique_ptr<UriParser> relative_uri(create(relativeUri));
     if (!base_uri || !relative_uri) {
         return nullptr;
     }
@@ -68,10 +61,10 @@ UriParser * UriParser::createResolved(const char *base, const char *relative) {
 
 UriParser::~UriParser() = default;
 
-bool UriParser::Parse(const char *str) {
+bool UriParser::Parse(const char *uri) {
     UriParserStateA state;
     state.uri = pimpl_->get_mutable_uri();
-    if (uriParseUriA(&state, str) != URI_SUCCESS) {
+    if (uriParseUriA(&state, uri) != URI_SUCCESS) {
         uriFreeUriMembersA(pimpl_->get_mutable_uri());
         return false;
     }
@@ -143,12 +136,12 @@ bool UriParser::GetPath(std::string *output) const {
         while (segment) {
             UriTextRangeA* text_range = &segment->text;
             if (!text_range || !text_range->first || !text_range->afterLast) {
-                return false;  // Something is corrupt.
+                return false;
             }
             output->append(text_range->first,
                          text_range->afterLast - text_range->first);
             segment = segment->next;
-            if (segment) {  // If there's a next segment append a separator.
+            if (segment) {
                 output->append("/");
             }
         }

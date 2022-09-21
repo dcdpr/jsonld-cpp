@@ -17,8 +17,8 @@ using namespace RDF;
 
 TEST(RDFDatasetTest, insert_one_quad_vector) {
     JsonLdOptions options;
-    UniqueNamer blankNodeUniqueNamer;
-    RDFDataset dataset(options, &blankNodeUniqueNamer);
+    BlankNodeNames blankNodeNames;
+    RDFDataset dataset(options, &blankNodeNames);
 
     std::vector<Quad> ones;
     std::string oneName = "one";
@@ -31,8 +31,8 @@ TEST(RDFDatasetTest, insert_one_quad_vector) {
 
 TEST(RDFDatasetTest, insert_two_quad_vectors) {
     JsonLdOptions options;
-    UniqueNamer blankNodeUniqueNamer;
-    RDFDataset dataset(options, &blankNodeUniqueNamer);
+    BlankNodeNames blankNodeNames;
+    RDFDataset dataset(options, &blankNodeNames);
 
     std::vector<Quad> ones;
     std::string oneName = "one";
@@ -53,8 +53,8 @@ TEST(RDFDatasetTest, insert_two_quad_vectors) {
 
 TEST(RDFDatasetTest, add_one_quad_to_one_vector) {
     JsonLdOptions options;
-    UniqueNamer blankNodeUniqueNamer;
-    RDFDataset dataset(options, &blankNodeUniqueNamer);
+    BlankNodeNames blankNodeNames;
+    RDFDataset dataset(options, &blankNodeNames);
 
     std::string oneName = "one";
 
@@ -69,8 +69,8 @@ TEST(RDFDatasetTest, add_one_quad_to_one_vector) {
 
 TEST(RDFDatasetTest, add_one_quad_twice_to_one_vector) {
     JsonLdOptions options;
-    UniqueNamer blankNodeUniqueNamer;
-    RDFDataset dataset(options, &blankNodeUniqueNamer);
+    BlankNodeNames blankNodeNames;
+    RDFDataset dataset(options, &blankNodeNames);
 
     std::string oneName = "one";
 
@@ -86,8 +86,8 @@ TEST(RDFDatasetTest, add_one_quad_twice_to_one_vector) {
 
 TEST(RDFDatasetTest, add_two_quad_to_two_vectors) {
     JsonLdOptions options;
-    UniqueNamer blankNodeUniqueNamer;
-    RDFDataset dataset(options, &blankNodeUniqueNamer);
+    BlankNodeNames blankNodeNames;
+    RDFDataset dataset(options, &blankNodeNames);
 
     std::string oneName = "one";
     Quad one("http://example.com/subject1", "http://example.com/prop1", "1", &oneName);
@@ -131,10 +131,10 @@ TEST(RDFDatasetTest, graphnames_canBeComparedRelational) {
 
 TEST(RDFDatasetTest, areIsomorphic_withEmptyDatasets_isTrue) {
     JsonLdOptions options;
-    UniqueNamer blankNodeUniqueNamer1;
-    RDFDataset dataset1(options, &blankNodeUniqueNamer1);
-    UniqueNamer blankNodeUniqueNamer2;
-    RDFDataset dataset2(options, &blankNodeUniqueNamer2);
+    BlankNodeNames blankNodeNames1;
+    RDFDataset dataset1(options, &blankNodeNames1);
+    BlankNodeNames blankNodeNames2;
+    RDFDataset dataset2(options, &blankNodeNames2);
 
     EXPECT_TRUE(areIsomorphic(dataset1, dataset2));
 
@@ -142,10 +142,10 @@ TEST(RDFDatasetTest, areIsomorphic_withEmptyDatasets_isTrue) {
 
 TEST(RDFDatasetTest, areIsomorphic_withSameSizeDatasets_isTrue) {
     JsonLdOptions options;
-    UniqueNamer blankNodeUniqueNamer1;
-    RDFDataset dataset1(options, &blankNodeUniqueNamer1);
-    UniqueNamer blankNodeUniqueNamer2;
-    RDFDataset dataset2(options, &blankNodeUniqueNamer2);
+    BlankNodeNames blankNodeNames1;
+    RDFDataset dataset1(options, &blankNodeNames1);
+    BlankNodeNames blankNodeNames2;
+    RDFDataset dataset2(options, &blankNodeNames2);
 
     std::string oneName = "one";
     Quad one("http://example.com/subject1", "http://example.com/prop1", "1", &oneName);
@@ -158,10 +158,10 @@ TEST(RDFDatasetTest, areIsomorphic_withSameSizeDatasets_isTrue) {
 
 TEST(RDFDatasetTest, areIsomorphic_withDifferentSubjectsInDatasets_isFalse) {
     JsonLdOptions options;
-    UniqueNamer blankNodeUniqueNamer1;
-    RDFDataset dataset1(options, &blankNodeUniqueNamer1);
-    UniqueNamer blankNodeUniqueNamer2;
-    RDFDataset dataset2(options, &blankNodeUniqueNamer2);
+    BlankNodeNames blankNodeNames1;
+    RDFDataset dataset1(options, &blankNodeNames1);
+    BlankNodeNames blankNodeNames2;
+    RDFDataset dataset2(options, &blankNodeNames2);
 
     std::string oneName = "one";
     Quad one("http://example.com/subject1", "http://example.com/prop1", "1", &oneName);
@@ -177,10 +177,10 @@ TEST(RDFDatasetTest, areIsomorphic_withDifferentSubjectsInDatasets_isFalse) {
 
 TEST(RDFDatasetTest, areIsomorphic_withSameSizeDatasetsWithSameSizeBlanks_isTrue) {
     JsonLdOptions options;
-    UniqueNamer blankNodeUniqueNamer1;
-    RDFDataset dataset1(options, &blankNodeUniqueNamer1);
-    UniqueNamer blankNodeUniqueNamer2;
-    RDFDataset dataset2(options, &blankNodeUniqueNamer2);
+    BlankNodeNames blankNodeNames1;
+    RDFDataset dataset1(options, &blankNodeNames1);
+    BlankNodeNames blankNodeNames2;
+    RDFDataset dataset2(options, &blankNodeNames2);
 
     std::string oneName = "one";
     Quad one("http://example.com/subject1", "http://example.com/prop1", "1", &oneName);
@@ -196,10 +196,10 @@ TEST(RDFDatasetTest, areIsomorphic_withSameSizeDatasetsWithSameSizeBlanks_isTrue
 
 TEST(RDFDatasetTest, areIsomorphic_withSameSizeDatasetsWithSameSizeBlanksAndDifferentNames_isTrue) {
     JsonLdOptions options;
-    UniqueNamer blankNodeUniqueNamer1;
-    RDFDataset dataset1(options, &blankNodeUniqueNamer1);
-    UniqueNamer blankNodeUniqueNamer2;
-    RDFDataset dataset2(options, &blankNodeUniqueNamer2);
+    BlankNodeNames blankNodeNames1;
+    RDFDataset dataset1(options, &blankNodeNames1);
+    BlankNodeNames blankNodeNames2;
+    RDFDataset dataset2(options, &blankNodeNames2);
 
     std::string oneName = "one";
     Quad one("http://example.com/subject1", "http://example.com/prop1", "1", &oneName);
@@ -216,10 +216,10 @@ TEST(RDFDatasetTest, areIsomorphic_withSameSizeDatasetsWithSameSizeBlanksAndDiff
 
 TEST(RDFDatasetTest, areIsomorphic_withSameSizeBlanksAndDifferentNames_isTrue) {
     JsonLdOptions options;
-    UniqueNamer blankNodeUniqueNamer1;
-    RDFDataset dataset1(options, &blankNodeUniqueNamer1);
-    UniqueNamer blankNodeUniqueNamer2;
-    RDFDataset dataset2(options, &blankNodeUniqueNamer2);
+    BlankNodeNames blankNodeNames1;
+    RDFDataset dataset1(options, &blankNodeNames1);
+    BlankNodeNames blankNodeNames2;
+    RDFDataset dataset2(options, &blankNodeNames2);
 
     std::string oneName = "one";
     Quad oneBlank("_:b0", "http://example.com/prop1", "1", &oneName);
@@ -237,10 +237,10 @@ TEST(RDFDatasetTest, areIsomorphic_withSameSizeBlanksAndDifferentNames_isTrue) {
 
 TEST(RDFDatasetTest, areIsomorphic_withBlankObjects_isTrue) {
     JsonLdOptions options;
-    UniqueNamer blankNodeUniqueNamer1;
-    RDFDataset dataset1(options, &blankNodeUniqueNamer1);
-    UniqueNamer blankNodeUniqueNamer2;
-    RDFDataset dataset2(options, &blankNodeUniqueNamer2);
+    BlankNodeNames blankNodeNames1;
+    RDFDataset dataset1(options, &blankNodeNames1);
+    BlankNodeNames blankNodeNames2;
+    RDFDataset dataset2(options, &blankNodeNames2);
 
     std::string oneName = "one";
     Quad oneBlank("one", "http://example.com/prop1", "_:b1", &oneName);

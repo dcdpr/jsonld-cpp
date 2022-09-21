@@ -4,7 +4,7 @@
 #include "jsonld-cpp/jsoninc.h"
 #include "jsonld-cpp/JsonLdConsts.h"
 #include "jsonld-cpp/JsonLdOptions.h"
-#include "jsonld-cpp/UniqueNamer.h"
+#include "jsonld-cpp/BlankNodeNames.h"
 #include <memory>
 #include <string>
 #include <iostream>
@@ -181,9 +181,9 @@ namespace RDF {
 
     public:
         JsonLdOptions options;
-        UniqueNamer *blankNodeUniqueNamer;
+        BlankNodeNames *blankNodeNames;
 
-        RDFDataset(JsonLdOptions options, UniqueNamer *blankNodeUniqueNamer);
+        RDFDataset(JsonLdOptions options, BlankNodeNames *blankNodeUniqueNamer);
 
         VectorMap::mapped_type & at(const VectorMap::key_type& s);
         std::pair<VectorMap::iterator,bool> insert( const VectorMap::value_type& value );
