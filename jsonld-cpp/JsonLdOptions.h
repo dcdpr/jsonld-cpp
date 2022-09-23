@@ -11,6 +11,7 @@
 
 class JsonLdOptions {
 private:
+    // ///////////////////////////////////////////////////////////////////////
     // Base options : https://www.w3.org/TR/json-ld-api/#idl-def-JsonLdOptions
 
     /**
@@ -22,19 +23,23 @@ private:
      * https://www.w3.org/TR/json-ld-api/#dom-jsonldoptions-compactarrays
      */
     bool compactArrays_ = DEFAULT_COMPACT_ARRAYS;
+
     /**
      * https://www.w3.org/TR/json-ld-api/#dom-jsonldoptions-expandcontext
      */
     nlohmann::json expandContext_;
+
     /**
      * https://www.w3.org/TR/json-ld-api/#dom-jsonldoptions-processingmode
      */
     std::string processingMode_ = JSON_LD_1_1;
+
     /**
      * https://www.w3.org/TR/json-ld-api/#dom-jsonldoptions-documentloader
      */
     std::unique_ptr<DocumentLoader> documentLoader_;
 
+    // //////////////////////////////////////////////////////////
     // Framing options : https://www.w3.org/TR/json-ld11-framing/
 
     /**
@@ -46,10 +51,12 @@ private:
      * https://www.w3.org/TR/json-ld11-framing/#dom-jsonldoptions-explicit
      */
     bool explicit_ = false;
+
     /**
      * https://www.w3.org/TR/json-ld11-framing/#dom-jsonldoptions-omitdefault
      */
     bool omitDefault_ = false;
+
     /**
      * https://www.w3.org/TR/json-ld11-framing/#dom-jsonldoptions-omitgraph
      */
@@ -61,11 +68,23 @@ private:
 
     // todo: frameDefault, ordered?
 
+    // ///////////////////////////////////////////////////////////////////////
     // RDF conversion options :
     // https://www.w3.org/TR/json-ld-api/#serialize-rdf-as-json-ld-algorithm
 
+    /**
+     * https://www.w3.org/TR/json-ld-api/#dom-jsonldoptions-userdftype
+     */
     bool useRdfType_ = false;
+
+    /**
+     * https://www.w3.org/TR/json-ld-api/#dom-jsonldoptions-usenativetypes
+     */
     bool useNativeTypes_ = false;
+
+    /**
+     * https://www.w3.org/TR/json-ld-api/#dom-jsonldoptions-producegeneralizedrdf
+     */
     bool produceGeneralizedRdf_ = false;
 
 public:
@@ -157,7 +176,7 @@ public:
         this->embed_ = embed;
     }
 
-    bool getExplicit() {
+    bool getExplicit() const {
         return explicit_;
     }
 
@@ -165,7 +184,7 @@ public:
         this->explicit_ = explicitFlag;
     }
 
-    bool getOmitDefault() {
+    bool getOmitDefault() const {
         return omitDefault_;
     }
 
@@ -173,7 +192,7 @@ public:
         this->omitDefault_ = omitDefault;
     }
 
-    bool getOmitGraph() {
+    bool getOmitGraph() const {
         return omitGraph_;
     }
 
@@ -181,7 +200,7 @@ public:
         this->omitGraph_ = omitGraph;
     }
 
-    bool getRequireAll() {
+    bool getRequireAll() const {
         return requireAll_;
     }
 
@@ -189,7 +208,7 @@ public:
         this->requireAll_ = requireAll;
     }
 
-    bool getCompactArrays() {
+    bool getCompactArrays() const {
         return compactArrays_;
     }
 
@@ -197,7 +216,7 @@ public:
         this->compactArrays_ = compactArrays;
     }
 
-    nlohmann::json getExpandContext() {
+    nlohmann::json getExpandContext() const {
         return expandContext_;
     }
 
@@ -205,7 +224,7 @@ public:
         this->expandContext_ = std::move(expandContext);
     }
 
-    std::string getProcessingMode() {
+    std::string getProcessingMode() const {
         return processingMode_;
     }
 
@@ -216,7 +235,7 @@ public:
         }
     }
 
-    std::string getBase() {
+    std::string getBase() const {
         return base_;
     }
 
@@ -224,7 +243,7 @@ public:
         this->base_ = std::move(base);
     }
 
-    bool getUseRdfType() {
+    bool getUseRdfType() const {
         return useRdfType_;
     }
 
@@ -232,7 +251,7 @@ public:
         this->useRdfType_ = useRdfType;
     }
 
-    bool getUseNativeTypes() {
+    bool getUseNativeTypes() const {
         return useNativeTypes_;
     }
 
@@ -240,7 +259,7 @@ public:
         this->useNativeTypes_ = useNativeTypes;
     }
 
-    bool getProduceGeneralizedRdf() {
+    bool getProduceGeneralizedRdf() const {
         return produceGeneralizedRdf_;
     }
 

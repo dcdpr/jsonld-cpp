@@ -7,7 +7,7 @@ namespace ObjUtils {
 
     using json = nlohmann::json;
 
-    // predicates for JSON-LD object types
+    // predicates for some JSON-LD object types
     // see https://www.w3.org/TR/json-ld11/#json-ld-specific-term-definitions
 
     bool isDefaultObject(const json& object);

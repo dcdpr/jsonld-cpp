@@ -9,13 +9,6 @@ namespace JsonLdUtils {
 
     bool deepCompare(json v1, json v2);
 
-    /**
-     * Returns whether or not the given value is a keyword (or a keyword alias).
-     *
-     * @param property
-     *            the value to check.
-     * @return true if the value is a keyword, false if not.
-     */
     bool isKeyword(const std::string& property);
 
     bool isKeywordForm(const std::string& property);

@@ -17,17 +17,23 @@ JsonLdOptions JsonLdApi::getOptions() const {
     return options;
 }
 
-json JsonLdApi::expand(Context activeCtx, std::string * activeProperty, json element, const std::string & baseUrl,
-                       bool frameExpansion, bool ordered, bool fromMap) {
+json JsonLdApi::expand(
+        Context activeContext,
+        std::string * activeProperty,
+        json element,
+        const std::string & baseUrl,
+        bool frameExpansion,
+        bool ordered,
+        bool fromMap) {
 
     // Comments in this function are labelled with numbers that correspond to sections
     // from the description of the Expansion algorithm.
-    // See: https://w3c.github.io/json-ld-api/#expansion-algorithm
+    // See: https://www.w3.org/TR/json-ld11-api/#expansion-algorithm
 
     // 1)
     // If element is null, return null.
-    if (element.empty()) {
-        return element; // todo: was null...
+    if (element.is_null()) {
+        return element;
     }
 
     // 2)
@@ -41,24 +47,27 @@ json JsonLdApi::expand(Context activeCtx, std::string * activeProperty, json ele
     // context, initialize property-scoped context to that local context.
     std::unique_ptr<json> propertyScopedContext;
     if(activeProperty != nullptr &&
-       !activeCtx.getTermDefinition(*activeProperty).is_null() &&
-       activeCtx.getTermDefinition(*activeProperty).contains(JsonLdConsts::LOCALCONTEXT) ) {
-        propertyScopedContext.reset(new json(activeCtx.getTermDefinition(*activeProperty)[JsonLdConsts::LOCALCONTEXT]));
+       !activeContext.getTermDefinition(*activeProperty).is_null() &&
+       activeContext.getTermDefinition(*activeProperty).contains(JsonLdConsts::LOCALCONTEXT) ) {
+        propertyScopedContext.reset(new json(activeContext.getTermDefinition(*activeProperty)[JsonLdConsts::LOCALCONTEXT]));
     }
 
     // 5)
+    // If element is an array
     if(element.is_array())
-        return expandArrayElement(activeCtx, activeProperty, element, baseUrl, frameExpansion, ordered, fromMap);
+        return expandArrayElement(activeContext, activeProperty, element, baseUrl, frameExpansion, ordered, fromMap);
     // 6)
+    // [If] element is a map.
     else if(element.is_object())
-        return expandObjectElement(activeCtx, activeProperty, element, baseUrl, propertyScopedContext.get(), frameExpansion, ordered, fromMap);
+        return expandObjectElement(activeContext, activeProperty, element, baseUrl, propertyScopedContext.get(), frameExpansion, ordered, fromMap);
     // 4)
-    else // scalar
+    // [else] element is a scalar
+    else
     {
         // 4.1)
         // If active property is null or @graph, drop the free-floating scalar by returning null.
         if (activeProperty == nullptr || *activeProperty == JsonLdConsts::GRAPH) {
-            return nullptr;
+            return json();
         }
 
         // 4.2)
@@ -67,27 +76,33 @@ json JsonLdApi::expand(Context activeCtx, std::string * activeProperty, json ele
         // as local context, and base URL from the term definition for active property in
         // active context.
         if(propertyScopedContext != nullptr) {
-            auto termDef = activeCtx.getTermDefinition(*activeProperty);
-            std::string baseUrl;
+            auto termDef = activeContext.getTermDefinition(*activeProperty);
+            std::string termsBaseUrl;
             if(termDef.contains(JsonLdConsts::BASEURL))
-                baseUrl = termDef[JsonLdConsts::BASEURL];
+                termsBaseUrl = termDef[JsonLdConsts::BASEURL];
             std::vector<std::string> remoteContexts;
-            activeCtx = activeCtx.parse(*propertyScopedContext, baseUrl, remoteContexts, true);
+            activeContext = activeContext.parse(*propertyScopedContext, termsBaseUrl, remoteContexts, true);
         }
 
         // 4.3)
         // Return the result of the Value Expansion algorithm, passing the active
         // context, active property, and element as value.
-        return activeCtx.expandValue(*activeProperty, element);
+        return activeContext.expandValue(*activeProperty, element);
     }
 }
 
-json JsonLdApi::expandArrayElement(Context activeCtx, std::string * activeProperty, const json& element, const std::string & baseUrl,
-                                   bool frameExpansion, bool ordered, bool fromMap) {
+json JsonLdApi::expandArrayElement(
+        Context activeContext,
+        std::string * activeProperty,
+        const json& element,
+        const std::string & baseUrl,
+        bool frameExpansion,
+        bool ordered,
+        bool fromMap) {
 
     // Comments in this function are labelled with numbers that correspond to sections
     // from the description of the Expansion algorithm.
-    // See: https://w3c.github.io/json-ld-api/#expansion-algorithm
+    // See: https://www.w3.org/TR/json-ld11-api/#expansion-algorithm
 
     // 5.1)
     // Initialize an empty array, result.
@@ -100,14 +115,14 @@ json JsonLdApi::expandArrayElement(Context activeCtx, std::string * activeProper
         // Initialize expanded item to the result of using this algorithm recursively, passing
         // active context, active property, item as element, base URL, the frameExpansion,
         // ordered, and from map flags.
-        json expandedItem = expand(activeCtx, activeProperty, item, baseUrl, frameExpansion, ordered, fromMap);
+        json expandedItem = expand(activeContext, activeProperty, item, baseUrl, frameExpansion, ordered, fromMap);
 
         // 5.2.2)
         // If the container mapping of active property includes @list, and expanded item is
         // an array, set expanded item to a new map containing the entry @list where the value
         // is the original expanded item.
         if(activeProperty != nullptr) {
-            auto termDefinition = activeCtx.getTermDefinition(*activeProperty);
+            auto termDefinition = activeContext.getTermDefinition(*activeProperty);
             if (!termDefinition.empty()) {
                 if (termDefinition.contains(JsonLdConsts::CONTAINER)) {
                     auto containerMapping = termDefinition[JsonLdConsts::CONTAINER];
@@ -133,15 +148,19 @@ json JsonLdApi::expandArrayElement(Context activeCtx, std::string * activeProper
     return result;
 }
 
-json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activeProperty, json element, const std::string & baseUrl,
-                                    nlohmann::json * propertyScopedContext, bool frameExpansion, bool ordered, bool fromMap) {
+json JsonLdApi::expandObjectElement(
+        Context activeContext,
+        std::string * activeProperty,
+        json element,
+        const std::string & baseUrl,
+        nlohmann::json * propertyScopedContext,
+        bool frameExpansion,
+        bool ordered,
+        bool fromMap) {
 
     // Comments in this function are labelled with numbers that correspond to sections
     // from the description of the Expansion algorithm.
-    // See: https://www.w3.org/TR/2014/REC-json-ld-api-20140116/#expansion-algorithm
-
-    // todo: This needs to be upgraded to conform with
-    // https://w3c.github.io/json-ld-api/#expansion-algorithm
+    // See: https://www.w3.org/TR/json-ld11-api/#expansion-algorithm
 
     // 7)
     // If active context has a previous context, the active context is not propagated. If
@@ -149,7 +168,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
     // @value, and element does not consist of a single entry expanding to @id (where entries
     // are IRI expanded, set active context to previous context from active context, as the
     // scope of a term-scoped context does not apply when processing new node objects.
-    if(activeCtx.getPreviousContext() != nullptr && !fromMap) {
+    if(activeContext.getPreviousContext() != nullptr && !fromMap) {
 
         bool usePrevious = true;
         std::vector<std::string> element_keys;
@@ -159,7 +178,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
 
         for (auto & key : element_keys) {
 
-            std::string expandedKey = activeCtx.expandIri(key, false, true);
+            std::string expandedKey = activeContext.expandIri(key, false, true);
 
             if(expandedKey == JsonLdConsts::VALUE ||
                (element.size() == 1 && expandedKey == JsonLdConsts::ID)) {
@@ -168,37 +187,43 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
             }
         }
         if(usePrevious)
-            activeCtx = * activeCtx.getPreviousContext();
+            activeContext = * activeContext.getPreviousContext();
 
     }
 
     // 8)
     // If property-scoped context is defined, set active context to the result of the
     // Context Processing algorithm, passing active context, property-scoped context as
-    // local context, base URL from the term definition for active property, in active
+    // local context, base URL from the term definition for active property in active
     // context and true for override protected.
     if(propertyScopedContext != nullptr) {
-        auto termDef = activeCtx.getTermDefinition(*activeProperty);
-        std::string baseUrl;
+        auto termDef = activeContext.getTermDefinition(*activeProperty);
+        std::string termsBaseUrl;
         if(termDef.contains(JsonLdConsts::BASEURL))
-            baseUrl = termDef[JsonLdConsts::BASEURL];
+            termsBaseUrl = termDef[JsonLdConsts::BASEURL];
         std::vector<std::string> remoteContexts;
-        activeCtx = activeCtx.parse(*propertyScopedContext, baseUrl, remoteContexts, true);
+        activeContext = activeContext.parse(*propertyScopedContext, termsBaseUrl, remoteContexts, true);
     }
 
     // 9)
+    // If element contains the entry @context, set active context to the result of the
+    // Context Processing algorithm, passing active context, the value of the @context entry
+    // as local context and base URL.
     if (element.contains(JsonLdConsts::CONTEXT)) {
-        activeCtx = activeCtx.parse(element[JsonLdConsts::CONTEXT], baseUrl);
+        activeContext = activeContext.parse(element[JsonLdConsts::CONTEXT], baseUrl);
     }
 
     // 10)
-    Context typeScopedContext = activeCtx;
+    // Initialize type-scoped context to active context. This is used for expanding values
+    // that may be relevant to any previous type-scoped context.
+    Context typeScopedContext = activeContext;
 
-    // 11), 12)
-    std::string inputType = findInputType(activeCtx, typeScopedContext, element); // only used in 13.4.7.1 and 13.4.16
-
+    // 11, 12)
+    // Initialize two empty maps, result and nests. [Find input type...]
     json result = json::object();
     json nests = json::object();
+    std::string inputType = findInputType(activeContext, typeScopedContext, element);
+    // todo: inputType only used in 13.4.7.1 and 13.4.16. wait until then to create?
 
     // 13)
     // For each key and value in element, ordered lexicographically by key if ordered is true:
@@ -222,8 +247,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
 
         // 13.2)
         // Initialize expanded property to the result of IRI expanding key.
-        std::string expandedProperty = activeCtx.expandIri(key, false, true);
-        json expandedValue;
+        std::string expandedProperty = activeContext.expandIri(key, false, true);
 
         // 13.3)
         // If expanded property is null or it neither contains a colon (:) nor it is a
@@ -234,6 +258,8 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                   JsonLdUtils::isKeyword(expandedProperty))) {
             continue;
         }
+
+        json expandedValue;
 
         // 13.4)
         // If expanded property is a keyword:
@@ -250,7 +276,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
             // (unless processing mode is json-ld-1.0), a colliding keywords error has been
             // detected and processing is aborted.
             if (result.contains(expandedProperty)) {
-                if (activeCtx.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
+                if (activeContext.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
                     throw JsonLdError(JsonLdError::CollidingKeywords,
                                       expandedProperty + " already exists in result");
                 }
@@ -268,7 +294,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                 // of one or more of the values, with string values expanded using the IRI
                 // Expansion algorithm as above.
                 if (element_value.is_string()) {
-                    expandedValue = activeCtx.expandIri(element_value.get<std::string>(), true, false);
+                    expandedValue = activeContext.expandIri(element_value.get<std::string>(), true, false);
                 } else if (frameExpansion) {
                     if (element_value.is_object()) {
                         if (!element_value.empty()) {
@@ -282,7 +308,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                                 throw JsonLdError(JsonLdError::InvalidIdValue,
                                                   "@id value must be a string, an array of strings or an empty dictionary");
                             }
-                            expandedValue.push_back(activeCtx.expandIri(v.get<std::string>(), true, false));
+                            expandedValue.push_back(activeContext.expandIri(v.get<std::string>(), true, false));
                         }
                         // 13.4.3.1)
                         // If value is not a string, an invalid @id value error has been
@@ -379,30 +405,43 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                 }
             }
             // 13.4.5)
+            // If expanded property is @graph, set expanded value to the result of using
+            // this algorithm recursively passing active context, @graph for active
+            // property, value for element, base URL, and the frameExpansion and ordered
+            // flags, ensuring that expanded value is an array of one or more maps.
             else if (expandedProperty == JsonLdConsts::GRAPH) {
                 std::string currentProperty = JsonLdConsts::GRAPH;
-                expandedValue = expand(activeCtx, &currentProperty, element_value, baseUrl, frameExpansion, ordered, fromMap);
+                expandedValue = expand(activeContext, &currentProperty, element_value, baseUrl, frameExpansion, ordered, fromMap); // todo: do we need to pass fromMap? spec does not.
                 if(!expandedValue.is_array()) {
                     expandedValue = json::array({expandedValue});
                 }
             }
             // 13.4.6)
+            // If expanded property is @included:
             else if (expandedProperty == JsonLdConsts::INCLUDED) {
                 // 13.4.6.1)
-                if (activeCtx.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
+                // If processing mode is json-ld-1.0, continue with the next key from element.
+                if (activeContext.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
                     continue;
                 }
                 // 13.4.6.2)
-                expandedValue = expand(activeCtx, nullptr, element_value, baseUrl, frameExpansion, ordered, fromMap);
+                // Set expanded value to the result of using this algorithm recursively passing
+                // active context, null for active property, value for element, base URL, and the
+                // frameExpansion and ordered flags, ensuring that the result is an array.
+                expandedValue = expand(activeContext, nullptr, element_value, baseUrl, frameExpansion, ordered);
                 if(!expandedValue.is_array()) {
                     expandedValue = json::array({expandedValue});
                 }
                 // 13.4.6.3)
+                // If any element of expanded value is not a node object, an invalid @included
+                // value error has been detected and processing is aborted.
                 for(const auto& v : expandedValue) {
                     if(!ObjUtils::isNodeObject(v))
                         throw JsonLdError(JsonLdError::InvalidIncludedValue);
                 }
                 // 13.4.6.4)
+                // If result already has an entry for @included, prepend the value of @included
+                // in result to expanded value.
                 if (result.contains(JsonLdConsts::INCLUDED)) {
 
                     json t = json::array();
@@ -429,7 +468,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                 // is json-ld-1.0, an invalid value object value error has been detected and
                 // processing is aborted.
                 if(inputType == JsonLdConsts::JSON) {
-                    if (activeCtx.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
+                    if (activeContext.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
                         throw JsonLdError(JsonLdError::InvalidValueObjectValue);
                     }
                     expandedValue = element_value;
@@ -465,15 +504,25 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                 }
             }
             // 13.4.8)
+            // If expanded property is @language:
             else if (expandedProperty == JsonLdConsts::LANGUAGE) {
                 // 13.4.8.1)
+                // If value is not a string, an invalid language-tagged string error has been
+                // detected and processing is aborted. When the frameExpansion flag is set, value
+                // MAY be an empty map or an array of zero or more strings.
                 if (element_value.is_string() ||
                 (frameExpansion && (JsonLdUtils::isEmptyObject(element_value) ||
                 JsonLdUtils::isEmptyArray(element_value) ||
                 JsonLdUtils::isArrayOfStrings(element_value)))) {
                     // 13.4.8.2)
+                    //  Otherwise, set expanded value to value. If value is not well-formed
+                    //  according to section 2.2.9 of [BCP47], processors SHOULD issue a
+                    //  warning. When the frameExpansion flag is set, expanded value will
+                    //  be an array of one or more string values or an array containing
+                    //  an empty map.
                     std::string v = element_value.get<std::string>();
                     // todo: add warning about non-well-formed language strings
+                    // todo: When the frameExpansion flag is set...
                     std::transform(v.begin(), v.end(), v.begin(), &::tolower);
                     expandedValue = v;
                 } else {
@@ -481,17 +530,25 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                 }
             }
             // 13.4.9)
+            // If expanded property is @direction:
             else if (expandedProperty == JsonLdConsts::DIRECTION) {
                 // 13.4.9.1)
-                if (activeCtx.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
+                // If processing mode is json-ld-1.0, continue with the next key from element.
+                if (activeContext.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
                     continue;
                 }
                 // 13.4.9.2)
+                // If value is neither "ltr" nor "rtl", an invalid base direction error has been
+                // detected and processing is aborted. When the frameExpansion flag is set, value
+                // MAY be an empty map or an array of zero or more strings.
                 if ((element_value.is_string() && (element_value == "ltr" || element_value == "rtl")) ||
                     (frameExpansion && (JsonLdUtils::isEmptyObject(element_value) ||
                                         JsonLdUtils::isEmptyArray(element_value) ||
                                         JsonLdUtils::isArrayOfStrings(element_value)))) {
                     // 13.4.9.3)
+                    // Otherwise, set expanded value to value. When the frameExpansion flag is
+                    // set, expanded value will be an array of one or more string values or an
+                    // array containing an empty map.
                     expandedValue = element_value;
                     if(frameExpansion) {
                         if(!expandedValue.is_array()) {
@@ -499,67 +556,96 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                         }
                     }
                 } else {
-                    throw JsonLdError(JsonLdError::InvalidLanguageTaggedString);
+                    throw JsonLdError(JsonLdError::InvalidBaseDirection);
                 }
             }
             // 13.4.10)
+            // If expanded property is @index:
             else if (expandedProperty == JsonLdConsts::INDEX) {
+                // 13.4.10.1
+                // If value is not a string, an invalid @index value error has been detected
+                // and processing is aborted.
                 if (!element_value.is_string()) {
-                    throw JsonLdError(JsonLdError::InvalidIndexValue,
-                                          "Value of " + expandedProperty + " must be a string");
+                    throw JsonLdError(JsonLdError::InvalidIndexValue);
                 }
+                // 13.4.10.2
+                // Otherwise, set expanded value to value.
                 expandedValue = element_value;
             }
             // 13.4.11)
+            // If expanded property is @list:
             else if (expandedProperty == JsonLdConsts::LIST) {
                 // 13.4.11.1)
+                // If active property is null or @graph, continue with the next key from
+                // element to remove the free-floating list.
                 if (activeProperty == nullptr || *activeProperty == JsonLdConsts::GRAPH) {
                     continue;
                 }
                 // 13.4.11.2)
-                expandedValue = expand(activeCtx, activeProperty, element_value, baseUrl, frameExpansion, ordered);
+                // Otherwise, initialize expanded value to the result of using this algorithm
+                // recursively passing active context, active property, value for element, base
+                // URL, and the frameExpansion and ordered flags, ensuring that the result is
+                // an array.
+                expandedValue = expand(activeContext, activeProperty, element_value, baseUrl, frameExpansion, ordered);
                 if (!expandedValue.is_array()) {
                     expandedValue = json::array({expandedValue});
                 }
             }
             // 13.4.12)
+            // If expanded property is @set, set expanded value to the result of using this
+            // algorithm recursively, passing active context, active property, value for
+            // element, base URL, and the frameExpansion and ordered flags.
             else if (expandedProperty == JsonLdConsts::SET) {
-                expandedValue = expand(activeCtx, activeProperty, element_value, baseUrl, frameExpansion, ordered);
+                expandedValue = expand(activeContext, activeProperty, element_value, baseUrl, frameExpansion, ordered);
             }
             // 13.4.13)
+            // If expanded property is @reverse:
             else if (expandedProperty == JsonLdConsts::REVERSE) {
                 // 13.4.13.1)
+                // If value is not a map, an invalid @reverse value error has been detected and
+                // processing is aborted.
                 if (!element_value.is_object()) {
                     throw JsonLdError(JsonLdError::InvalidReverseValue,
                                           "@reverse value must be an object");
                 }
                 // 13.4.13.2)
+                // Otherwise initialize expanded value to the result of using this algorithm
+                // recursively, passing active context, @reverse as active property, value as
+                // element, base URL, and the frameExpansion and ordered flags.
                 {
                     std::string currentProperty = JsonLdConsts::REVERSE;
-                    expandedValue = expand(activeCtx, &currentProperty, element_value, baseUrl, frameExpansion, ordered);
+                    expandedValue = expand(activeContext, &currentProperty, element_value, baseUrl, frameExpansion, ordered);
                 }
                 // 13.4.13.3)
+                // If expanded value contains an @reverse entry, i.e., properties that are
+                // reversed twice, execute for each of its property and item the following steps:
                 if (expandedValue.contains(JsonLdConsts::REVERSE)) {
                     // 13.4.13.3.1)
+                    // Use add value to add item to the property entry in result using true for as array.
                     for (const auto& entry : expandedValue[JsonLdConsts::REVERSE].items()) {
                         JsonLdUtils::addValue(result, entry.key(), entry.value(), true);
                     }
                 }
                 // 13.4.13.4)
+                // If expanded value contains an entry other than @reverse:
                 if (expandedValue.size() > (expandedValue.contains(JsonLdConsts::REVERSE) ? 1 : 0)) {
                     // 13.4.13.4.1)
+                    // Set reverse map to the value of the @reverse entry in result, initializing
+                    // it to an empty map, if necessary.
                     if (!result.contains(JsonLdConsts::REVERSE)) {
                         result[JsonLdConsts::REVERSE] = json::object();
                     }
                     auto & reverseMap = result[JsonLdConsts::REVERSE];
 
                     // 13.4.13.4.2)
+                    // For each property and items in expanded value other than @reverse:
                     for (const auto& entry : expandedValue.items())
                     {
                         if(entry.key() == JsonLdConsts::REVERSE)
                             continue;
 
                         // 13.4.13.4.2.1)
+                        // For each item in items:
                         for(const auto& item : entry.value()) {
                             // 13.4.13.4.2.1.1)
                             // If item is a value object or list object, an invalid reverse property
@@ -575,10 +661,13 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                     }
                 }
                 // 13.4.13.5)
+                // Continue with the next key from element.
                 continue;
             }
 
             // 13.4.14)
+            // If expanded property is @nest, add key to nests, initializing it to an empty
+            // array, if necessary. Continue with the next key from element.
             if (expandedProperty == JsonLdConsts::NEST) {
                 if (!nests.contains(key)) {
                     nests[key] = json::array();
@@ -587,13 +676,18 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
             }
 
             // 13.4.15)
+            // When the frameExpansion flag is set, if expanded property is any other framing
+            // keyword (@default, @embed, @explicit, @omitDefault, or @requireAll), set expanded
+            // value to the result of performing the Expansion Algorithm recursively, passing
+            // active context, active property, value for element, base URL, and the
+            // frameExpansion and ordered flags.
             if (frameExpansion &&
                 (expandedProperty == JsonLdConsts::DEFAULT ||
                 expandedProperty == JsonLdConsts::EMBED ||
                 expandedProperty == JsonLdConsts::EXPLICIT ||
-                expandedProperty == JsonLdConsts::REQUIRE_ALL ||
-                expandedProperty == JsonLdConsts::OMIT_DEFAULT)) {
-                expandedValue = expand(activeCtx, &expandedProperty, element_value, baseUrl, frameExpansion, ordered);
+                expandedProperty == JsonLdConsts::OMIT_DEFAULT ||
+                expandedProperty == JsonLdConsts::REQUIRE_ALL)) {
+                expandedValue = expand(activeContext, activeProperty, element_value, baseUrl, frameExpansion, ordered);
             }
 
             // 13.4.16)
@@ -609,11 +703,13 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
             }
 
             // 13.4.17
+            // Continue with the next key from element.
             continue;
         }
 
         // 13.5)
-        auto keyTermDefinition = activeCtx.getTermDefinition(key);
+        // Initialize container mapping to key's container mapping in active context.
+        auto keyTermDefinition = activeContext.getTermDefinition(key);
 
         json containerMapping;
         if(keyTermDefinition.contains(JsonLdConsts::CONTAINER)) {
@@ -621,6 +717,8 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
         }
 
         // 13.6)
+        // If key's term definition in active context has a type mapping of @json, set expanded
+        // value to a new map, set the entry @value to value, and set the entry @type to @json.
         if(keyTermDefinition.contains(JsonLdConsts::TYPE) &&
            keyTermDefinition.at(JsonLdConsts::TYPE) == JsonLdConsts::JSON) {
             expandedValue = json::object();
@@ -636,7 +734,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
             expandedValue = json::array();
             // 13.7.2)
             // Initialize direction to the default base direction from active context.
-            json direction = activeCtx.getDefaultBaseDirection();
+            json direction = activeContext.getDefaultBaseDirection();
             // 13.7.3)
             // If key's term definition in active context has a direction mapping, update
             // direction with that value.
@@ -692,7 +790,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                     // 13.7.4.2.4)
                     // If language is @none, or expands to @none, remove @language from v.
                     if(language == JsonLdConsts::NONE ||
-                       activeCtx.expandIri(language, false, true) == JsonLdConsts::NONE) {
+                       activeContext.expandIri(language, false, true) == JsonLdConsts::NONE) {
                         v.erase(JsonLdConsts::LANGUAGE);
                     }
 
@@ -743,17 +841,17 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                 // 13.8.3.1)
                 // If container mapping includes @id or @type, initialize map context to the previous context
                 // from active context if it exists, otherwise, set map context to active context.
-                Context mapContext = activeCtx;
+                Context mapContext = activeContext;
                 if(arrayContains(containerMapping, JsonLdConsts::TYPE) ||
                    arrayContains(containerMapping, JsonLdConsts::ID)) {
-                    if(activeCtx.getPreviousContext())
-                        mapContext = *activeCtx.getPreviousContext();
+                    if(activeContext.getPreviousContext())
+                        mapContext = *activeContext.getPreviousContext();
                 }
 
                 // 13.8.3.2)
                 // If container mapping includes @type and index's term definition in map
                 // context has a local context, update map context to the result of the
-                // Context Processing algorithm, passing map context as active context the
+                // Context Processing algorithm, passing map context as active context, the
                 // value of the index's local context as local context and base URL from
                 // the term definition for index in map context.
                 if(arrayContains(containerMapping, JsonLdConsts::TYPE)) {
@@ -767,11 +865,11 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                 // 13.8.3.3)
                 // Otherwise, set map context to active context.
                 else
-                    mapContext = activeCtx;
+                    mapContext = activeContext;
 
                 // 13.8.3.4)
                 // Initialize expanded index to the result of IRI expanding index.
-                auto expandedIndex = activeCtx.expandIri(index, false, true);
+                auto expandedIndex = activeContext.expandIri(index, false, true);
 
                 // 13.8.3.5)
                 // If index value is not an array set index value to an array containing only
@@ -812,11 +910,11 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                         // Initialize re-expanded index to the result of calling the Value Expansion
                         // algorithm, passing the active context, index key as active property, and
                         // index as value.
-                        auto reExpandedIndex = activeCtx.expandValue(indexKey, index);
+                        auto reExpandedIndex = activeContext.expandValue(indexKey, index);
 
                         // 13.8.3.7.2.2)
                         // Initialize expanded index key to the result of IRI expanding index key.
-                        auto expandedIndexKey = activeCtx.expandIri(indexKey, false, true);
+                        auto expandedIndexKey = activeContext.expandIri(indexKey, false, true);
 
                         // 13.8.3.7.2.3)
                         // Initialize index property values to an array consisting of re-expanded
@@ -855,7 +953,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
                     else if(arrayContains(containerMapping, JsonLdConsts::ID) &&
                             !item.contains(JsonLdConsts::ID) &&
                             expandedIndex != JsonLdConsts::NONE) {
-                        auto expandedIndex2 = activeCtx.expandIri(index, true, false);
+                        auto expandedIndex2 = activeContext.expandIri(index, true, false);
                         item[JsonLdConsts::ID] = expandedIndex2;
                     }
 
@@ -888,7 +986,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
         // recursively, passing active context, key for active property, value for element,
         // base URL, and the frameExpansion and ordered flags.
         else {
-            expandedValue = expand(activeCtx, &key, element_value, baseUrl, frameExpansion, ordered, false);
+            expandedValue = expand(activeContext, &key, element_value, baseUrl, frameExpansion, ordered, false);
         }
 
         // 13.10)
@@ -935,11 +1033,9 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
             expandedValue = t;
         }
 
-
-
         // 13.13)
         // If the term definition associated to key indicates that it is a reverse property
-        if (activeCtx.isReverseProperty(key)) {
+        if (activeContext.isReverseProperty(key)) {
             // 13.13.1)
             // If result has no @reverse entry, create one and initialize its value to an empty map.
             if (!result.contains(JsonLdConsts::REVERSE)) {
@@ -957,7 +1053,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
 
             // 13.13.4)
             // For each item in expanded value
-            for ( auto item : expandedValue) {
+            for ( const auto& item : expandedValue) {
                 // 13.13.4.1)
                 // If item is a value object or list object, an invalid reverse property value
                 // has been detected and processing is aborted.
@@ -977,7 +1073,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
             }
         }
         // 13.14)
-        // Otherwise, key is not a reverse property use add value to add expanded value to
+        // Otherwise, key is not a reverse property. Use add value to add expanded value to
         // the expanded property entry in result using true for as array.
         else {
             JsonLdUtils::addValue(result, expandedProperty, expandedValue, true);
@@ -1004,7 +1100,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
 
         // 14.2)
         // For each nested value in nested values:
-        for(auto nestedValue : nestedValues) {
+        for(const auto& nestedValue : nestedValues) {
 
             // 14.2.1)
             // If nested value is not a map, or any key within nested value expands to
@@ -1018,7 +1114,7 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
             // property, and nested value for element.
 
             // todo: ...
-            throw JsonLdError(JsonLdError::NotImplemented, "need to add implement @nest handling");
+            throw JsonLdError(JsonLdError::NotImplemented, "need to implement @nest handling");
 
         }
     }
@@ -1053,7 +1149,8 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
             // 15.3)
             // Otherwise, if the value of result's @value entry is null, or an empty
             // array, return null.
-            if(result[JsonLdConsts::VALUE].is_null() || (result[JsonLdConsts::VALUE].is_array() && result[JsonLdConsts::VALUE].empty()))
+            if(result[JsonLdConsts::VALUE].is_null() ||
+               (result[JsonLdConsts::VALUE].is_array() && result[JsonLdConsts::VALUE].empty()))
                 return json();
 
             // 15.4)
@@ -1107,18 +1204,19 @@ json JsonLdApi::expandObjectElement(Context activeCtx, std::string * activePrope
     // If active property is null or @graph, drop free-floating values as follows:
     if (activeProperty == nullptr || *activeProperty == JsonLdConsts::GRAPH) {
         // 19.1)
-        // If result is a map which is empty, or contains only the entries @value or @list, set result to null.
-        json j;
+        // If result is a map which is empty, or contains only the entries @value or
+        // @list, set result to null.
+        //std::cout << "{{ ... " << *activeProperty << "\n" << result.dump() << "\n}}\n" << std::endl;
         if (!result.is_null() && result.is_object() &&
             (result.empty() || result.contains(JsonLdConsts::VALUE) || result.contains(JsonLdConsts::LIST))) {
-            result = j;
+            result = json();
         }
         // 19.2)
         // Otherwise, if result is a map whose only entry is @id, set result to null. When the
         // frameExpansion flag is set, a map containing only the @id entry is retained.
         else if (!result.is_null() && !frameExpansion && result.contains(JsonLdConsts::ID)
                  && result.size() == 1) {
-            result = j;
+            result = json();
         }
     }
 
@@ -1430,7 +1528,10 @@ std::string JsonLdApi::normalize(const RDF::RDFDataset& dataset) {
     return normalizeUtils.hashBlankNodes(bnodes_insertion_order_keys);
 }
 
-std::string JsonLdApi::findInputType(Context &activeContext, Context &typeScopedContext, nlohmann::json &element) {
+std::string JsonLdApi::findInputType(
+        Context &activeContext,
+        Context &typeScopedContext,
+        nlohmann::json &element) {
 
     std::string inputType;
     std::string typeKey;
@@ -1489,9 +1590,9 @@ std::string JsonLdApi::findInputType(Context &activeContext, Context &typeScoped
     }
 
     // 12)
-    // Initialize two empty maps, result and nests. Initialize input type to expansion of the
-    // last value of the first entry in element expanding to @type (if any), ordering entries
-    // lexicographically by key. Both the key and value of the matched entry are IRI expanded.
+    // [...] Initialize input type to expansion of the last value of the first entry in
+    // element expanding to @type (if any), ordering entries lexicographically by key. Both
+    // the key and value of the matched entry are IRI expanded.
     if(!typeKey.empty()) {
 
         auto t = element.at(typeKey);

@@ -21,20 +21,20 @@ public:
     /**
      * Expansion Algorithm
      *
-     * http://json-ld.org/spec/latest/json-ld-api/#expansion-algorithm
+     * This algorithm expands a JSON-LD document, such that all context definitions are
+     * removed, all terms and compact IRIs are expanded to IRIs, blank node identifiers, or
+     * keywords and all JSON-LD values are expressed in arrays in expanded form.
      *
-     * @param activeCtx
-     *            The Active Context
-     * @param activeProperty
-     *            The Active Property
-     * @param element
-     *            The current element
-     * @param baseUrl
-     *            The base URL of the document
-     * @return The expanded JSON-LD object.
+     * https://www.w3.org/TR/json-ld11-api/#expansion-algorithm
      */
-    nlohmann::json expand(Context activeCtx, std::string *activeProperty, nlohmann::json element, const std::string & baseUrl,
-                          bool frameExpansion=false, bool ordered=false, bool fromMap=false);
+    nlohmann::json expand(
+            Context activeContext,
+            std::string *activeProperty,
+            nlohmann::json element,
+            const std::string & baseUrl,
+            bool frameExpansion=false,
+            bool ordered=false,
+            bool fromMap=false);
 
     /**
      * Adds RDF triples for each graph in the current node map to an RDF
@@ -57,11 +57,24 @@ public:
 
 private:
 
-    nlohmann::json expandArrayElement(Context activeCtx, std::string *activeProperty, const nlohmann::json& element, const std::string & baseUrl,
-                                      bool frameExpansion, bool ordered, bool fromMap);
+    nlohmann::json expandArrayElement(
+            Context activeContext,
+            std::string *activeProperty,
+            const nlohmann::json& element,
+            const std::string & baseUrl,
+            bool frameExpansion,
+            bool ordered,
+            bool fromMap);
 
-    nlohmann::json expandObjectElement(Context activeCtx, std::string *activeProperty, nlohmann::json element, const std::string & baseUrl,
-                                       nlohmann::json * propertyScopedContext, bool frameExpansion, bool ordered, bool fromMap);
+    nlohmann::json expandObjectElement(
+            Context activeContext,
+            std::string *activeProperty,
+            nlohmann::json element,
+            const std::string & baseUrl,
+            nlohmann::json * propertyScopedContext,
+            bool frameExpansion,
+            bool ordered,
+            bool fromMap);
 
     void generateNodeMap(nlohmann::json &element, nlohmann::json &nodeMap);
 

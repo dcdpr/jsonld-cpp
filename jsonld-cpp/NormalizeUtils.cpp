@@ -64,7 +64,6 @@ std::string NormalizeUtils::hashBlankNodes(const std::vector<std::string> & unna
                 }
                     // name the duplicate hash bnodes
                 else {
-                    // names duplicate hash bnodes
                     // enumerate duplicate hash groups in sorted order
                     hashes.clear();
                     hashes.reserve(duplicates.size());
