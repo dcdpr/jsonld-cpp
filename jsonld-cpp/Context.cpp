@@ -530,7 +530,7 @@ std::string Context::getContainer(std::string property) {
 /**
   * IRI Expansion Algorithm
   *
-  * http://json-ld.org/spec/latest/json-ld-api/#iri-expansion
+  * https://www.w3.org/TR/json-ld11-api/#iri-expansion
   *
   * Notes:
   * If context is_null(), then we don't bother creating term definitions
@@ -539,30 +539,32 @@ std::string Context::getContainer(std::string property) {
   * @param value the Iri to expand
   * @param relative flag
   * @param vocab flag
-  * @param context the context map
+  * @param localContext the local context
   * @param defined map of defined values
   * @return the expanded Iri
   * @throws JsonLdError
   */
 std::string Context::expandIri(
         std::string value, bool relative, bool vocab,
-        const json& context, std::map<std::string, bool> & defined) {
+        const json& localContext, std::map<std::string, bool> & defined) {
     // todo move to jsonldapi.cpp?
 
     // Comments in this function are labelled with numbers that correspond to sections
     // from the description of the IRI expansion algorithm.
-    // See: https://w3c.github.io/json-ld-api/#iri-expansion
+    // See: https://www.w3.org/TR/json-ld11-api/#iri-expansion
+
+    // NB: When a comment refers to "active context", that is this object.
 
     // 1)
     // If value is a keyword or null, return value as is.
-    if (JsonLdUtils::isKeyword(value)) { // todo: also checked for if value was null
+    if (JsonLdUtils::isKeyword(value)) {
         return value;
     }
 
     // 2)
     //  If value has the form of a keyword (i.e., it matches the ABNF rule "@"1*ALPHA
     //  from [RFC5234]), a processor SHOULD generate a warning and return null.
-    if (JsonLdUtils::isKeywordForm(value)) { // todo: also checked for if value was null
+    if (JsonLdUtils::isKeywordForm(value)) {
         // todo: emit a warning
         return "";
     }
@@ -573,12 +575,12 @@ std::string Context::expandIri(
     // Definition algorithm, passing active context, local context, value as term, and
     // defined. This will ensure that a term definition is created for value in active
     // context during Context Processing.
-    if (!context.is_null() && context.contains(value)) {
-        auto v = context.at(value);
+    if (!localContext.is_null() && localContext.contains(value)) {
+        auto v = localContext.at(value);
         if(v.is_string() &&
            defined.find(v.get<std::string>()) != defined.end() &&
            !defined.at(v.get<std::string>())) {
-            createTermDefinition(context, value, defined);
+            createTermDefinition(localContext, value, defined);
         }
     }
 
@@ -627,9 +629,9 @@ std::string Context::expandIri(
         // entry in defined is not true, invoke the Create Term Definition algorithm, passing
         // active context, local context, prefix as term, and defined. This will ensure that a
         // term definition is created for prefix in active context during Context Processing.
-        if (!context.is_null() && context.contains(prefix)
+        if (!localContext.is_null() && localContext.contains(prefix)
             && (defined.find(prefix) == defined.end() || !defined.at(prefix))) {
-            createTermDefinition(context, prefix, defined);
+            createTermDefinition(localContext, prefix, defined);
         }
 
         // 6.4)
@@ -659,7 +661,7 @@ std::string Context::expandIri(
     }
 
     // 8)
-    // Otherwise, if document relative is true set value to the result of resolving value
+    // Otherwise, if document relative is true, set value to the result of resolving value
     // against the base IRI from active context. Only the basic algorithm in section 5.2
     // of [RFC3986] is used; neither Syntax-Based Normalization nor Scheme-Based Normalization
     // are performed. Characters additionally allowed in IRI references are treated in the
@@ -670,9 +672,6 @@ std::string Context::expandIri(
             return JsonLdUrl::resolve(&(this->at(JsonLdConsts::BASE)), &value);
         else
             return JsonLdUrl::resolve(nullptr, &value);
-    } else if (!context.is_null() && JsonLdUtils::isRelativeIri(value)) {
-        // todo: this isn't part of the spec--do we need it?
-        throw JsonLdError(JsonLdError::InvalidIriMapping, "not an absolute IRI: " + value);
     }
 
     // 9)

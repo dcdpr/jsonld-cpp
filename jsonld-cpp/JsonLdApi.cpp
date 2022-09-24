@@ -1224,8 +1224,7 @@ json JsonLdApi::expandObjectElement(
     return result;
 }
 
-bool JsonLdApi::arrayContains(const json &array,
-                              const std::string &value) const {
+bool JsonLdApi::arrayContains(const json &array, const std::string &value) {
     return array.is_array() && std::find(array.cbegin(), array.cend(), value) != array.end();
 }
 
