@@ -13,14 +13,14 @@ using nlohmann::json;
 namespace {
 
     // 1.1 spec provides for returning error if too many remote contexts are loaded
-    static const int MAX_REMOTE_CONTEXTS = 256;
+    const int MAX_REMOTE_CONTEXTS = 256;
 
 }
 
 /**
  * Context Processing Algorithm
  *
- * http://json-ld.org/spec/latest/json-ld-api/#context-processing-algorithms
+ * https://www.w3.org/TR/json-ld11-api/#context-processing-algorithm
  *
  * @param localContext
  *            The Local Context object.
@@ -35,7 +35,7 @@ Context Context::parse(const nlohmann::json & localContext, const std::string & 
 /**
  * Context Processing Algorithm
  *
- * https://w3c.github.io/json-ld-api/#context-processing-algorithm
+ * https://www.w3.org/TR/json-ld11-api/#context-processing-algorithm
  *
  * @return The parsed and merged Context.
  * @throws JsonLdError
@@ -49,7 +49,7 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
 
     // Comments in this function are labelled with numbers that correspond to sections
     // from the description of the context processing algorithm.
-    // See: https://w3c.github.io/json-ld-api/#context-processing-algorithm
+    // See: https://www.w3.org/TR/json-ld11-api/#context-processing-algorithm
 
     originalBaseURL = baseURL;
     remoteContexts = iremoteContexts;
@@ -133,7 +133,7 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
             // document failed error has been detected and processing is aborted.
             std::string contextUri = context.get<std::string>();
 
-            if (!baseURL.empty()) {  // todo: was null
+            if (!baseURL.empty()) {
                 contextUri = JsonLdUrl::resolve(&baseURL, &contextUri);
             } else if (!JsonLdUtils::isAbsoluteIri(contextUri)) {
                 throw JsonLdError(JsonLdError::LoadingRemoteContextFailed, contextUri);
@@ -244,7 +244,7 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
             if (value.is_string())
                 str = value.get<std::string>();
             else
-                //todo need a better conversion operation
+                // todo: need a better conversion operation
                 // str = std::to_string(value.get<float>());
                 str = "1.1";
 
@@ -354,22 +354,23 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
                 if (JsonLdUtils::isAbsoluteIri(value)) {
                     result.insert(std::make_pair(JsonLdConsts::BASE,
                                                  value.get<std::string>())); // todo: change code like this to use member vars in context?
-                } else {
+                } else if (JsonLdUtils::isRelativeIri(value)){
                     // 5.7.4)
                     // Otherwise, if value is a relative IRI reference and the base IRI of
                     // result is not null, set the base IRI of result to the result of resolving
                     // value against the current base IRI of result.
-                    std::cout << "DEBUG: within context parse 5.7.4\n";
                     std::string baseUri = result.at(JsonLdConsts::BASE);
-                    std::cout << "DEBUG: baseUri = [" << baseUri << "]\n";
 
                     if (baseUri.empty())
                         throw JsonLdError(JsonLdError::InvalidBaseIri, "baseUri is empty");
                     std::string tmpIri = value.get<std::string>();
-                    std::cout << "DEBUG: tmpIri = [" << tmpIri << "]\n";
                     std::string resolvedIri = JsonLdUrl::resolve(&baseUri, &tmpIri);
-                    std::cout << "DEBUG: resolvedIri = [" << resolvedIri << "]\n";
                     result.insert(std::make_pair(JsonLdConsts::BASE, resolvedIri));
+                }
+                else {
+                    // 5.7.5)
+                    // Otherwise, an invalid base IRI error has been detected and processing is aborted.
+                    throw JsonLdError(JsonLdError::InvalidBaseIri, "@base must be a string");
                 }
             } else {
                 // 5.7.5)
@@ -422,9 +423,12 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
                 // 5.9.3)
                 // Otherwise, if value is a string, the default language of result is set
                 // to value. If it is not a string, an invalid default language error has
-                // been detected and processing is aborted.
+                // been detected and processing is aborted. If value is not well-formed
+                // according to section 2.2.9 of [BCP47], processors SHOULD issue a warning.
+                std::string v = value.get<std::string>();
+                std::transform(v.begin(), v.end(), v.begin(), &::tolower);
                 result.insert(
-                        std::make_pair(JsonLdConsts::LANGUAGE, value.get<std::string>())); // todo: value to lowercase
+                        std::make_pair(JsonLdConsts::LANGUAGE, v));
                 // todo: need to check if language is not well-formed, and if so, emit a warning
             } else {
                 throw JsonLdError(JsonLdError::InvalidDefaultLanguage);
@@ -478,9 +482,16 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
         }
 
         // 5.12)
+        // Create a map defined to keep track of whether or not a term has already been
+        // defined or is currently being defined during recursion.
         std::map<std::string, bool> defined;
 
         // 5.13)
+        // For each key-value pair in context where key is not @base, @direction, @import,
+        // @language, @propagate, @protected, @version, or @vocab, invoke the Create Term
+        // Definition algorithm, passing result for active context, context for local
+        // context, key, defined, base URL, the value of the @protected entry from
+        // context, if any, for protected, override protected, and a copy of remote contexts.
         for (const auto &el : context.items()) {
             const auto &key = el.key();
             if (key == JsonLdConsts::BASE || key == JsonLdConsts::DIRECTION || key == JsonLdConsts::IMPORT ||
@@ -498,34 +509,6 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
 
     return result;
  }
-
-std::string Context::getContainer(std::string property) {
-    // todo: is this function valid anymore?
-//        if (property == null) {
-//            return null;
-//        }
-    if (property == JsonLdConsts::GRAPH) {
-        return JsonLdConsts::SET;
-    }
-    if (property != JsonLdConsts::TYPE && JsonLdUtils::isKeyword(property)) {
-        return property;
-    }
-    if(!termDefinitions.contains(property))
-        return "";
-    auto td = termDefinitions[property];
-//        if (td == null) {
-//            return null;
-//        }
-    if(td.empty())
-        return "";
-    auto c = td[JsonLdConsts::CONTAINER];
-    if(!c.is_string()) {
-        return "";
-    }
-    else {
-        return c.get<std::string>();
-    }
-}
 
 /**
   * IRI Expansion Algorithm

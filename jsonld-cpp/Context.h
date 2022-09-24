@@ -65,15 +65,6 @@ public:
 
     nlohmann::json getTermDefinition(const std::string & key);
 
-    /**
-     * Retrieve container mapping.
-     *
-     * @param property
-     *            The Property to get a container mapping for.
-     * @return The container mapping if any, else null
-     */
-    std::string getContainer(std::string property);
-
     std::string expandIri(std::string value, bool relative, bool vocab);
     std::string expandIri(std::string value, bool relative, bool vocab, const nlohmann::json& context, std::map<std::string, bool> & defined);
     nlohmann::json expandValue(const std::string & activeProperty, const nlohmann::json& value);
