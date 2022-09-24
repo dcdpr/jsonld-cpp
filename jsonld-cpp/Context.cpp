@@ -1474,7 +1474,7 @@ json Context::expandValue(const std::string & activeProperty, const json& value)
 
     // Comments in this function are labelled with numbers that correspond to sections
     // from the description of the Value Expansion algorithm.
-    // See: https://w3c.github.io/json-ld-api/#value-expansion
+    // See: https://www.w3.org/TR/json-ld11-api/#value-expansion
 
     json result;
     json termDefinition = getTermDefinition(activeProperty);
