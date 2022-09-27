@@ -36,7 +36,7 @@ private:
 
 
     void createTermDefinition(
-            nlohmann::json context,
+            nlohmann::json localContext,
             const std::string& term,
             std::map<std::string, bool> & defined,
             std::string baseURL = "",

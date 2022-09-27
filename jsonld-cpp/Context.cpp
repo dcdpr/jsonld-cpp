@@ -242,7 +242,7 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
             auto value = context.at(JsonLdConsts::VERSION);
             std::string str;
             if (value.is_string())
-                str = value.get<std::string>();
+                str = value;
             else
                 // todo: need a better conversion operation
                 // str = std::to_string(value.get<float>());
@@ -281,7 +281,7 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
             // 5.6.3)
             // Initialize import to the result of resolving the value of @import
             // against base URL.
-            std::string importStr = value.get<std::string>();
+            std::string importStr = value;
             std::string importUri = JsonLdUrl::resolve(&baseURL, &importStr);
 
             // 5.6.4)
@@ -673,16 +673,11 @@ std::string Context::expandIri(
 /**
  * Create Term Definition Algorithm
  *
- * http://json-ld.org/spec/latest/json-ld-api/#create-term-definition
- * https://w3c.github.io/json-ld-api/#create-term-definition
+ * https://www.w3.org/TR/json-ld11-api/#create-term-definition
  *
- * @param context the context
- * @param term the term to define
- * @param defined map of defined values
- * @throws JsonLdError
  */
 void Context::createTermDefinition(
-        nlohmann::json context,
+        nlohmann::json localContext,
         const std::string& term,
         std::map<std::string, bool> & defined,
         std::string baseURL,
@@ -693,14 +688,14 @@ void Context::createTermDefinition(
 
     // Comments in this function are labelled with numbers that correspond to sections
     // from the description of the create term definition algorithm.
-    // See: https://w3c.github.io/json-ld-api/#create-term-definition
+    // See: https://www.w3.org/TR/json-ld11-api/#create-term-definition
 
     // 1)
     // If defined contains the entry term and the associated value is true (indicating
     // that the term definition has already been created), return. Otherwise, if the
     // value is false, a cyclic IRI mapping error has been detected and processing is aborted.
-    if (defined.find(term) != defined.end()) {
-        if (defined.at(term)) {
+    if (defined.count(term)) {
+        if (defined[term]) {
             return;
         }
         throw JsonLdError(JsonLdError::CyclicIriMapping, term);
@@ -719,7 +714,7 @@ void Context::createTermDefinition(
 
     // 3)
     // Initialize value to a copy of the value associated with the entry term in local context.
-    auto value = context.at(term);
+    auto value = localContext.at(term);
 
     // 4)
     // If term is @type, and processing mode is json-ld-1.0, a keyword redefinition error has
@@ -803,12 +798,18 @@ void Context::createTermDefinition(
     }
 
     // 10)
+    // Create a new term definition, definition, initializing prefix flag to false, protected
+    // to protected, and reverse property to false.
     auto definition = json::object();
     definition[JsonLdConsts::IS_PREFIX_FLAG] = false;
-    definition[JsonLdConsts::IS_REVERSE_PROPERTY_FLAG] = false;
     definition[JsonLdConsts::IS_PROTECTED_FLAG] = isProtected;
+    definition[JsonLdConsts::IS_REVERSE_PROPERTY_FLAG] = false;
 
     // 11)
+    // If value has an @protected entry, set the protected flag in definition to the value
+    // of this entry. If the value of @protected is not a boolean, an invalid @protected value
+    // error has been detected and processing is aborted. If processing mode is json-ld-1.0, an
+    // invalid term definition has been detected and processing is aborted.
     if (value.contains(JsonLdConsts::PROTECTED)) {
         if (isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
             throw JsonLdError(JsonLdError::InvalidTermDefinition);
@@ -824,28 +825,19 @@ void Context::createTermDefinition(
     // 12)
     // If value contains the entry @type:
     if (value.contains(JsonLdConsts::TYPE)) {
-        auto type = value.at(JsonLdConsts::TYPE);
-
         // 12.1)
         // Initialize type to the value associated with the @type entry, which MUST be a
         // string. Otherwise, an invalid type mapping error has been detected and processing
         // is aborted.
+        auto type = value.at(JsonLdConsts::TYPE);
         if (!(type.is_string())) {
             throw JsonLdError(JsonLdError::InvalidTypeMapping);
         }
-        std::string typeStr = type.get<std::string>();
+        std::string typeStr = type;
 
         // 12.2)
         // Set type to the result of IRI expanding type, using local context, and defined.
-        try {
-            typeStr = expandIri(typeStr, false, true, context, defined);
-        } catch (JsonLdError &error) {
-            std::string msg = error.what();
-            if (msg.find(JsonLdError::InvalidIriMapping) == std::string::npos) {
-                throw error;
-            }
-            throw JsonLdError(JsonLdError::InvalidTypeMapping, type);
-        }
+        typeStr = expandIri(typeStr, false, true, localContext, defined);
 
         // 12.3)
         // If the expanded type is @json or @none, and processing mode is json-ld-1.0, an invalid
@@ -890,7 +882,7 @@ void Context::createTermDefinition(
             throw JsonLdError(JsonLdError::InvalidIriMapping,
                               "Expected String for @reverse value.");
         }
-        std::string reverseStr = reverse.get<std::string>();
+        std::string reverseStr = reverse;
 
         // 13.3)
         // If the value associated with the @reverse entry is a string having the form of
@@ -906,7 +898,9 @@ void Context::createTermDefinition(
         // the value associated with the @reverse entry, using local context, and
         // defined. If the result does not have the form of an IRI or a blank node
         // identifier, an invalid IRI mapping error has been detected and processing is aborted.
-        reverseStr = expandIri(reverseStr, false, true, context, defined);
+        reverseStr = expandIri(reverseStr, false, true, localContext, defined);
+        //if (!JsonLdUtils::isAbsoluteIri(reverseStr) || !BlankNode::isBlankNodeName(reverseStr)) {
+          //todo: if we add call for isBlankNodeName as the description seems to say, we fail more tests
         if (!JsonLdUtils::isAbsoluteIri(reverseStr)) {
             throw JsonLdError(JsonLdError::InvalidIriMapping,
                               "Non-absolute @reverse IRI: " + reverseStr);
@@ -963,7 +957,7 @@ void Context::createTermDefinition(
                                   "expected value of @id to be a string");
             }
 
-            std::string idStr = id.get<std::string>();
+            std::string idStr = id;
 
             // 14.2.2)
             // If the value associated with the @id entry is not a keyword, but has the
@@ -977,7 +971,7 @@ void Context::createTermDefinition(
             // 14.2.3)
             // Otherwise, set the IRI mapping of definition to the result of IRI expanding
             // the value associated with the @id entry, using local context, and defined.
-            idStr = expandIri(idStr, false, true, context, defined);
+            idStr = expandIri(idStr, false, true, localContext, defined);
             // If the resulting IRI mapping is neither a keyword, nor an IRI, nor a blank node
             // identifier, an invalid IRI mapping error has been detected and processing is
             // aborted; if it equals @context, an invalid keyword alias error has been detected
@@ -1007,10 +1001,7 @@ void Context::createTermDefinition(
                 // If the result of IRI expanding term using local context, and defined, is
                 // not the same as the IRI mapping of definition, an invalid IRI mapping error
                 // has been detected and processing is aborted.
-                std::string expandedTerm = expandIri(term, false, true, context, defined);
-                if(expandedTerm.empty()) {
-                    std::cout << "warning: expandedTerm.empty()\n"; // todo: remove if this doesn't happen
-                }
+                std::string expandedTerm = expandIri(term, false, true, localContext, defined);
                 if(expandedTerm != definition[JsonLdConsts::ID]) {
                     throw JsonLdError(JsonLdError::InvalidIriMapping,
                                       "expanded term is not the same as IRI mapping");
@@ -1043,8 +1034,8 @@ void Context::createTermDefinition(
         auto colIndex = term.find(':');
         std::string prefix(term, 0, colIndex);
         std::string suffix(term, colIndex + 1);
-        if (context.contains(prefix)) {
-            createTermDefinition(context, prefix, defined);
+        if (localContext.contains(prefix)) {
+            createTermDefinition(localContext, prefix, defined);
         }
         // 15.2)
         // If term's prefix has a term definition in active context, set the IRI mapping of
@@ -1067,15 +1058,13 @@ void Context::createTermDefinition(
     else if (term.find('/') != std::string::npos) {
         // 16.1
         // Term is a relative IRI reference.
+        assert(JsonLdUtils::isRelativeIri(term));
 
         // 16.2)
         // Set the IRI mapping of definition to the result of IRI expanding term. If the
         // resulting IRI mapping is not an IRI, an invalid IRI mapping error has been detected
         // and processing is aborted.
-        std::string expandedTerm = expandIri(term, false, true, context, defined);
-        if(expandedTerm.empty()) {
-            std::cout << "warning: expandedTerm.empty()\n"; // todo: remove if this doesn't happen
-        }
+        std::string expandedTerm = expandIri(term, false, true, localContext, defined);
         definition[JsonLdConsts::ID] = expandedTerm;
         if(!JsonLdUtils::isAbsoluteIri(definition[JsonLdConsts::ID])) {
             throw JsonLdError(JsonLdError::InvalidIriMapping,
@@ -1083,10 +1072,15 @@ void Context::createTermDefinition(
         }
     }
     // 17)
+    // Otherwise, if term is @type, set the IRI mapping of definition to @type.
     else if (term == JsonLdConsts::TYPE) {
         definition[JsonLdConsts::ID] = JsonLdConsts::TYPE;
     }
     // 18)
+    // Otherwise, if active context has a vocabulary mapping, the IRI mapping of definition
+    // is set to the result of concatenating the value associated with the vocabulary mapping
+    // and term. If it does not have a vocabulary mapping, an invalid IRI mapping error been
+    // detected and processing is aborted.
     else if (contextMap.find(JsonLdConsts::VOCAB) != contextMap.end()) {
         definition[JsonLdConsts::ID] = contextMap.at(JsonLdConsts::VOCAB) + term;
     }
@@ -1175,6 +1169,7 @@ void Context::createTermDefinition(
                               "@container must be a string or array");
 
         // 19.3
+        // Set the container mapping of definition to container coercing to an array, if necessary.
         if(container.is_array())
             definition[JsonLdConsts::CONTAINER] = container;
         else {
@@ -1224,11 +1219,11 @@ void Context::createTermDefinition(
             throw JsonLdError(JsonLdError::InvalidTermDefinition,"");
         }
 
-        std::string indexStr = index.get<std::string>(); // todo will this just autoconvert to string?
+        std::string indexStr = index;
 
-        std::string expandedIndex = expandIri(indexStr, false, true, context, defined);
+        std::string expandedIndex = expandIri(indexStr, false, true, localContext, defined);
 
-        if (expandedIndex.empty() || !JsonLdUtils::isAbsoluteIri(expandedIndex)) {
+        if (!JsonLdUtils::isAbsoluteIri(expandedIndex)) {
             throw JsonLdError(JsonLdError::InvalidTermDefinition,"");
         }
 
@@ -1251,7 +1246,7 @@ void Context::createTermDefinition(
         // 21.2)
         // Initialize context to the value associated with the @context entry, which is treated
         // as a local context.
-        auto localContext = value.at(JsonLdConsts::CONTEXT);
+        auto theContext = value.at(JsonLdConsts::CONTEXT);
 
         // 21.3)
         // Invoke the Context Processing algorithm using the active context, context as local
@@ -1259,28 +1254,32 @@ void Context::createTermDefinition(
         // for validate scoped context. If any error is detected, an invalid scoped context
         // error has been detected and processing is aborted.
         try {
-            Context activeContext = *this;
-            activeContext.parse(localContext, baseURL, remoteContexts, true, propagate, false);
+            parse(theContext, baseURL, remoteContexts, true, propagate, false);
         } catch (JsonLdError &error) {
-            std::string msg = error.what();
-            throw JsonLdError(JsonLdError::InvalidScopedContext,msg);
+            throw JsonLdError(JsonLdError::InvalidScopedContext,error.what());
         }
 
         // 21.4)
         // Set the local context of definition to context, and base URL to base URL.
-        definition[JsonLdConsts::LOCALCONTEXT] = localContext;
-        definition[JsonLdConsts::BASEURL] = baseIRI;
+        definition[JsonLdConsts::LOCALCONTEXT] = theContext;
+        definition[JsonLdConsts::BASEURL] = baseURL;
     }
 
     // 22)
+    // If value contains the entry @language and does not contain the entry @type:
     if (value.contains(JsonLdConsts::LANGUAGE) && !value.contains(JsonLdConsts::TYPE)) {
         // 22.1)
+        // Initialize language to the value associated with the @language entry, which MUST
+        // be either null or a string. If language is not well-formed according to section
+        // 2.2.9 of [BCP47], processors SHOULD issue a warning. Otherwise, an invalid language
+        // mapping error has been detected and processing is aborted.
         auto language = value.at(JsonLdConsts::LANGUAGE);
 
         if (language.is_null() || language.is_string()) {
             // todo: need to check if language is not well-formed, and if so, emit a warning
             // 22.2)
-            definition[JsonLdConsts::LANGUAGE] = language; // todo: tolowercase or null?
+            // Set the language mapping of definition to language.
+            definition[JsonLdConsts::LANGUAGE] = language;
         } else {
             throw JsonLdError(JsonLdError::InvalidLanguageMapping,
                               "@language must be a string or null");
@@ -1288,9 +1287,13 @@ void Context::createTermDefinition(
     }
 
     // 23.
+    // If value contains the entry @direction and does not contain the entry @type:
     if (value.contains(JsonLdConsts::DIRECTION) && !value.contains(JsonLdConsts::TYPE)) {
 
-        // 23.1, 23.2)
+        // 23.1)
+        // Initialize direction to the value associated with the @direction entry, which
+        // MUST be either null, "ltr", or "rtl". Otherwise, an invalid base direction error
+        // has been detected and processing is aborted.
         auto direction = value.at(JsonLdConsts::DIRECTION);
 
         if (direction.is_null()) {
@@ -1300,13 +1303,13 @@ void Context::createTermDefinition(
             std::string directionStr = direction;
 
             if (directionStr == "ltr" || directionStr == "rtl") {
+                // 23.2)
+                // Set the direction mapping of definition to direction.
                 definition[JsonLdConsts::DIRECTION] = directionStr;
-
             } else {
                 throw JsonLdError(JsonLdError::InvalidBaseDirection,
                                   R"(@direction must be either "ltr" or "rtl")");
             }
-
         } else {
             throw JsonLdError(JsonLdError::InvalidBaseDirection,
                               R"(@direction must be either null, "ltr" or "rtl")");
@@ -1314,14 +1317,21 @@ void Context::createTermDefinition(
     }
 
     // 24)
+    // If value contains the entry @nest:
     if (value.contains(JsonLdConsts::NEST)) {
 
         // 24.1)
+        // If processing mode is json-ld-1.0, an invalid term definition has been detected
+        // and processing is aborted.
         if (isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
             throw JsonLdError(JsonLdError::InvalidTermDefinition,"");
         }
 
         // 24.2)
+        // Initialize nest value in definition to the value associated with the
+        // @nest entry, which MUST be a string and MUST NOT be a keyword other
+        // than @nest. Otherwise, an invalid @nest value error has been detected
+        // and processing is aborted.
         auto nest = value.at(JsonLdConsts::NEST);
 
         if (!nest.is_string()) {
@@ -1370,6 +1380,9 @@ void Context::createTermDefinition(
     }
 
     // 26)
+    // If value contains any entry other than @id, @reverse, @container, @context,
+    // @direction, @index, @language, @nest, @prefix, @protected, or @type, an invalid
+    // term definition error has been detected and processing is aborted.
     std::set<std::string> validKeywords {
             JsonLdConsts::ID,JsonLdConsts::REVERSE,JsonLdConsts::CONTAINER,JsonLdConsts::CONTEXT,
             JsonLdConsts::DIRECTION,JsonLdConsts::INDEX,JsonLdConsts::LANGUAGE,JsonLdConsts::NEST,
@@ -1392,8 +1405,6 @@ void Context::createTermDefinition(
         // processing is aborted.
         json copyOfDefinition = definition;
         json copyOfPrevious = previousDefinition;
-        //std::cout << copyOfDefinition.dump() << std::endl;
-        //std::cout << copyOfPrevious.dump() << std::endl;
         copyOfDefinition.erase(JsonLdConsts::IS_PROTECTED_FLAG);
         copyOfPrevious.erase(JsonLdConsts::IS_PROTECTED_FLAG);
         if(copyOfDefinition != copyOfPrevious)
