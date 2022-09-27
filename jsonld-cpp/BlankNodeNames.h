@@ -18,7 +18,7 @@ public:
     explicit BlankNodeNames(std::string prefix);
 
     std::string get();
-    std::string get(const std::string & key);
+    std::string get(const std::string & identifier);
 
     bool exists(const std::string & key);
     std::vector<std::string> getKeys();

@@ -8,14 +8,6 @@ BlankNodeNames::BlankNodeNames() = default;
 BlankNodeNames::BlankNodeNames(std::string iprefix)
         : prefix(std::move(iprefix)) { }
 
-/**
- * Generates a blank node name for the given key using the algorithm
- * specified in:
- *
- * http://www.w3.org/TR/json-ld-api/#generate-blank-node-identifier
- *
- * @return A fresh, unused, blank node name.
- */
 std::string BlankNodeNames::get() {
     std::stringstream ss;
     ss << prefix << counter++;
@@ -23,21 +15,21 @@ std::string BlankNodeNames::get() {
 }
 
 /**
- * Generates a blank node name for the given key using the algorithm
+ * Generates a blank node name for the given identifier using the algorithm
  * specified in:
  *
- * http://www.w3.org/TR/json-ld-api/#generate-blank-node-identifier
+ * https://www.w3.org/TR/json-ld11-api/#generate-blank-node-identifier
  *
- * @param key
- *            The key.
- * @return A blank node name based on key.
+ * @param identifier
+ *            The identifier.
+ * @return A blank node name based on identifier.
  */
-std::string BlankNodeNames::get(const std::string & key) {
-    if(keysToNames.count(key))
-        return keysToNames.at(key);
+std::string BlankNodeNames::get(const std::string & identifier) {
+    if(keysToNames.count(identifier))
+        return keysToNames.at(identifier);
     std::string name = get();
-    keysToNames[key] = name;
-    keysInInsertionOrder.push_back(key);
+    keysToNames[identifier] = name;
+    keysInInsertionOrder.push_back(identifier);
     return name;
 }
 

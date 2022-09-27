@@ -1268,11 +1268,7 @@ void JsonLdApi::generateNodeMap(json & element, json &nodeMap, std::string *acti
 {
     // Comments in this function are labelled with numbers that correspond to sections
     // from the description of the node map generation algorithm.
-    // See: https://www.w3.org/TR/2014/REC-json-ld-api-20140116/#node-map-generation
-
-    // todo: This needs to be upgraded to conform with
-    // https://w3c.github.io/json-ld-api/#node-map-generation
-
+    // See: https://www.w3.org/TR/json-ld11-api/#node-map-generation
 
     // 1)
     if (element.is_array()) {
