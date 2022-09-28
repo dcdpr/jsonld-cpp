@@ -181,7 +181,14 @@ bool JsonLdUtils::deepContains(const json& values, const json& value) {
     return false;
 }
 
-
+/**
+ * Merges value into the array at obj[key], if array at obj[key] doe not yet contain it. If
+ * array at obj[key] does not exist, create it and add value.
+ *
+ * @param obj
+ * @param key
+ * @param value
+ */
 void JsonLdUtils::mergeValue(json & obj, const std::string& key, const json& value) {
     if (obj.is_null()) {
         return;

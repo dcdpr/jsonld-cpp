@@ -1270,9 +1270,15 @@ void JsonLdApi::generateNodeMap(json & element, json &nodeMap, std::string *acti
     // from the description of the node map generation algorithm.
     // See: https://www.w3.org/TR/json-ld11-api/#node-map-generation
 
+    // Also including some of the clarifications provided in the more recently published
+    // https://w3c.github.io/json-ld-api/#node-map-generation
+
     // 1)
+    // If element is an array, process each item in element as follows and then return:
     if (element.is_array()) {
         // 1.1)
+        // Run this algorithm recursively by passing item for element, node map, active
+        // graph, active subject, active property, and list.
         for (auto item : element) {
             generateNodeMap(item, nodeMap, activeGraph, activeSubject, activeProperty, list);
         }
@@ -1280,20 +1286,31 @@ void JsonLdApi::generateNodeMap(json & element, json &nodeMap, std::string *acti
     }
 
     // 2)
+    // Otherwise element is a map. Reference the map which is the value of the active graph
+    // entry of node map using the variable graph. If the active subject is null or a
+    // map, set subject node to null otherwise reference the active subject entry of graph
+    // using the variable subject node.
     if (!nodeMap.contains(*activeGraph)) {
         nodeMap[*activeGraph] = json::object();
     }
     json & graph = nodeMap[*activeGraph];
 
-    json * node = nullptr;
-    if (activeSubject != nullptr && activeSubject->is_string() &&
+    json * subjectNode = nullptr;
+    if(activeSubject == nullptr || activeSubject->is_object()) {
+        subjectNode = nullptr;
+    }
+    else if (activeSubject != nullptr && activeSubject->is_string() &&
         graph.contains(activeSubject->get<std::string>())) {
-        node = &graph[activeSubject->get<std::string>()];
+        subjectNode = &graph[activeSubject->get<std::string>()];
     }
 
     // 3)
+    // For each item in the @type entry of element, if any, or for the value of
+    // @type, if the value of @type exists and is not an array:
     if (element.contains(JsonLdConsts::TYPE)) {
         // 3.1)
+        // If item is a blank node identifier, replace it with a newly generated blank
+        // node identifier passing item for identifier.
         json oldTypes;
         json newTypes;
         oldTypes = element[JsonLdConsts::TYPE];
@@ -1314,102 +1331,162 @@ void JsonLdApi::generateNodeMap(json & element, json &nodeMap, std::string *acti
     }
 
     // 4)
+    // If element has an @value entry, perform the following steps:
     if (element.contains(JsonLdConsts::VALUE)) {
         // 4.1)
+        // If list is null:
         if (list == nullptr) {
-            // todo: seems like at this point there shouldn't ever be a way for activeProperty to be null, but we might want to check anyway
-            if(activeProperty == nullptr)
-                throw  std::runtime_error("activeProperty should not be nullptr");
-            JsonLdUtils::mergeValue(*node, *activeProperty, element);
+            // 4.1.1)
+            // If subject node (which must necessarily be a map) does not have an active
+            // property entry, create one and initialize its value to an array containing element.
+            // 4.1.2)
+            // Otherwise, compare element against every item in the array associated with
+            // the active property entry of subject node. If there is no item equivalent
+            // to element, append element to the array. Two maps are considered equal if
+            // they have equivalent map entries.
+            JsonLdUtils::mergeValue(*subjectNode, *activeProperty, element);
         }
-            // 4.2)
+        // 4.2)
+        // Otherwise, append element to the @list entry of list.
         else {
-            JsonLdUtils::mergeValue(*list, JsonLdConsts::LIST, element);
+            list->at(JsonLdConsts::LIST).push_back(element);
         }
     }
 
-        // 5)
+    // 5)
+    // Otherwise, if element has an @list entry, perform the following steps:
     else if (element.contains(JsonLdConsts::LIST)) {
         // 5.1)
+        // Initialize a new map result consisting of a single entry @list whose value
+        // is initialized to an empty array.
         json result = { { JsonLdConsts::LIST, json::array() } };
         // 5.2)
+        // Recursively call this algorithm passing the value of element's @list entry for
+        // element, node map, active graph, active subject, active property, and result for list.
         generateNodeMap(element[JsonLdConsts::LIST], nodeMap, activeGraph, activeSubject,
                         activeProperty, &result);
         // 5.3)
-        JsonLdUtils::mergeValue(*node, *activeProperty, result);
+        // If list is null, append result to the value of the active property entry of subject
+        // node (which must necessarily be a map).
+        if (list == nullptr) {
+            JsonLdUtils::mergeValue(*subjectNode, *activeProperty, result);
+        }
+        // 5.4)
+        // Otherwise, append result to the @list entry of list.
+        else {
+            list->at(JsonLdConsts::LIST).push_back(result);
+        }
     }
 
+    // 6)
+    // Otherwise element is a node object, perform the following steps:
     else {
-
         // 6.1)
+        // If element has an @id entry, set id to its value and remove the entry from
+        // element. If id is a blank node identifier, replace it with a newly generated
+        // blank node identifier passing id for identifier.
         std::string id;
         if(element.contains(JsonLdConsts::ID)) {
             id = element[JsonLdConsts::ID];
             element.erase(JsonLdConsts::ID);
-            if (id.find_first_of("_:") == 0) {
+            if (BlankNode::isBlankNodeName(id)) {
                 id = blankNodeNames.get(id);
             }
         }
         // 6.2)
+        // Otherwise, set id to the result of the Generate Blank Node Identifier algorithm
+        // passing null for identifier.
         else {
             id = blankNodeNames.get();
         }
         // 6.3)
+        // If graph does not contain an entry id, create one and initialize its value to
+        // a map consisting of a single entry @id whose value is id.
         if (!graph.contains(id)) {
             json tmp = { { JsonLdConsts::ID, id } };
             graph[id] = tmp;
+            // knowing the insertion order comes in handy later in RDFDataset::graphToRDF()
             graph["key_insertion_order"].push_back(id);
         }
-        // 6.4) removed for now
+        // 6.4)
+        // Reference the value of the id entry of graph using the variable node.
+        json &node = graph[id];
+
         // 6.5)
+        // If active subject is a map, a reverse property relationship is being
+        // processed. Perform the following steps:
         if (activeSubject != nullptr && activeSubject->is_object()) {
             // 6.5.1)
-            JsonLdUtils::mergeValue(graph[id], *activeProperty, *activeSubject);
+            // If node does not have a active property entry, create one and initialize its
+            // value to an array containing active subject.
+            // 6.5.2
+            // Otherwise, compare active subject against every item in the array associated
+            // with the active property entry of node. If there is no item equivalent to
+            // active subject, append active subject to the array. Two maps are considered
+            // equal if they have equivalent map entries.
+            JsonLdUtils::mergeValue(node, *activeProperty, *activeSubject);
         }
-            // 6.6)
+        // 6.6)
+        // Otherwise, if active property is not null, perform the following steps:
         else if (activeProperty != nullptr) {
+            // 6.6.1)
+            // Create a new map reference consisting of a single entry @id whose value is id.
             json reference = { { JsonLdConsts::ID, id } };
             // 6.6.2)
+            // If list is null:
             if (list == nullptr) {
-                // 6.6.2.1+2)
-                JsonLdUtils::mergeValue(*node, *activeProperty, reference);
+                // 6.6.2.1)
+                // If subject node does not have an active property entry, create one and
+                // initialize its value to an array containing reference.
+                // 6.6.2.2)
+                // Otherwise, compare reference against every item in the array associated
+                // with the active property entry of subject node. If there is no item
+                // equivalent to reference, append reference to the array. Two maps are
+                // considered equal if they have equivalent map entries.
+                JsonLdUtils::mergeValue(*subjectNode, *activeProperty, reference);
             }
-                // 6.6.3) TODO: SPEC says to add ELEMENT to @list member, should be REFERENCE
+            // 6.6.3)
+            // Otherwise, append reference to the @list entry of list.
             else {
-                JsonLdUtils::mergeValue(*list, JsonLdConsts::LIST, reference);
+                list->at(JsonLdConsts::LIST).push_back(reference);
             }
         }
-        // TODO: SPEC this is removed in the spec now, but it's still needed
-        // (see 6.4)
-        node = &graph[id];
         // 6.7)
+        // If element has an @type entry, append each item of its associated array to the array
+        // associated with the @type entry of node unless it is already in that array. Finally
+        // remove the @type entry from element.
         if (element.contains(JsonLdConsts::TYPE)) {
-            json types = element[JsonLdConsts::TYPE];
-            element.erase(JsonLdConsts::TYPE);
-            for (const auto& type : types) {
-                JsonLdUtils::mergeValue(*node, JsonLdConsts::TYPE, type);
+            for (const auto& type : element[JsonLdConsts::TYPE]) {
+                JsonLdUtils::mergeValue(node, JsonLdConsts::TYPE, type);
             }
+            element.erase(JsonLdConsts::TYPE);
         }
         // 6.8)
+        // If element has an @index entry, set the @index entry of node to its value. If node
+        // already has an @index entry with a different value, a conflicting indexes error has
+        // been detected and processing is aborted. Otherwise, continue by removing the @index
+        // entry from element.
         if (element.contains(JsonLdConsts::INDEX)) {
             json elemIndex = element[JsonLdConsts::INDEX];
-            element.erase(JsonLdConsts::INDEX);
-            if (node->contains(JsonLdConsts::INDEX)) {
-                if (!JsonLdUtils::deepCompare(node->at(JsonLdConsts::INDEX), elemIndex)) {
+            if (node.contains(JsonLdConsts::INDEX)) {
+                if (!JsonLdUtils::deepCompare(node.at(JsonLdConsts::INDEX), elemIndex)) {
                     throw JsonLdError(JsonLdError::ConflictingIndexes);
                 }
-            } else {
-                (*node)[JsonLdConsts::INDEX] = elemIndex;
             }
+            node[JsonLdConsts::INDEX] = elemIndex;
+            element.erase(JsonLdConsts::INDEX);
         }
         // 6.9)
+        // If element has an @reverse entry:
         if (element.contains(JsonLdConsts::REVERSE)) {
             // 6.9.1)
+            // Create a map referenced node with a single entry @id whose value is id.
             json referencedNode = { { JsonLdConsts::ID, id } };
-            // 6.9.2+6.9.4)
+            // 6.9.2)
+            // Initialize reverse map to the value of the @reverse entry of element.
             json reverseMap = element[JsonLdConsts::REVERSE];
-            element.erase(JsonLdConsts::REVERSE);
             // 6.9.3)
+            // For each key-value pair property-values in reverse map:
             std::vector<std::string> reverseMap_keys;
             for (json::iterator it = reverseMap.begin(); it != reverseMap.end(); ++it) {
                 reverseMap_keys.push_back(it.key());
@@ -1417,19 +1494,42 @@ void JsonLdApi::generateNodeMap(json & element, json &nodeMap, std::string *acti
             for (auto property : reverseMap_keys) {
                 json values = reverseMap[property];
                 // 6.9.3.1)
+                // For each value of values:
                 for (auto reverseMap_value : values) {
                     // 6.9.3.1.1)
-                    generateNodeMap(reverseMap_value, nodeMap, activeGraph, &referencedNode, &property, nullptr);
+                    // Recursively invoke this algorithm passing value for element, node
+                    // map, active graph, referenced node for active subject, and property
+                    // for active property. Passing a map for active subject indicates to
+                    // the algorithm that a reverse property relationship is being processed.
+                    generateNodeMap(reverseMap_value, nodeMap, activeGraph,
+                                    &referencedNode, &property, nullptr);
                 }
             }
+            // 6.9.4)
+            // Remove the @reverse entry from element.
+            element.erase(JsonLdConsts::REVERSE);
         }
         // 6.10)
+        // If element has an @graph entry, recursively invoke this algorithm passing the value
+        // of the @graph entry for element, node map, and id for active graph before removing
+        // the @graph entry from element.
         if (element.contains(JsonLdConsts::GRAPH)) {
             json elemGraph = element[JsonLdConsts::GRAPH];
-            element.erase(JsonLdConsts::GRAPH);
             generateNodeMap(elemGraph, nodeMap, &id, nullptr, nullptr, nullptr);
+            element.erase(JsonLdConsts::GRAPH);
         }
         // 6.11)
+        // If element has an @included entry, recursively invoke this algorithm passing
+        // the value of the @included entry for element, node map, and active graph before
+        // removing the @included entry from element.
+        if (element.contains(JsonLdConsts::INCLUDED)) {
+            json elemIncluded = element[JsonLdConsts::INCLUDED];
+            generateNodeMap(elemIncluded, nodeMap, activeGraph, nullptr, nullptr, nullptr);
+            element.erase(JsonLdConsts::INCLUDED);
+        }
+        // 6.12)
+        // Finally, for each key-value pair property-value in element ordered by property
+        // perform the following steps:
         std::vector<std::string> keys;
         for (json::iterator it = element.begin(); it != element.end(); ++it) {
             keys.push_back(it.key());
@@ -1437,21 +1537,25 @@ void JsonLdApi::generateNodeMap(json & element, json &nodeMap, std::string *acti
         std::sort(keys.begin(), keys.end());
         for (auto property : keys) {
             json & propertyValue = element[property];
-            // 6.11.1)
-            if (property.find_first_of("_:") == 0) {
+            // 6.12.1)
+            // If property is a blank node identifier, replace it with a newly generated
+            // blank node identifier passing property for identifier.
+            if (BlankNode::isBlankNodeName(property)) {
                 property = blankNodeNames.get(property);
             }
-            // 6.11.2)
-            if (node != nullptr && !node->contains(property)) {
-                (*node)[property] = json::array();
+            // 6.12.2)
+            // If node does not have a property entry, create one and initialize its value
+            // to an empty array.
+            if (!node.contains(property)) {
+                node[property] = json::array();
             }
-            // 6.11.3)
+            // 6.12.3)
+            // Recursively invoke this algorithm passing value for element, node map, active
+            // graph, id for active subject, and property for active property.
             json jid = id;
             generateNodeMap(propertyValue, nodeMap, activeGraph, &jid, &property, nullptr);
         }
-
     }
-
 }
 
 void JsonLdApi::generateNodeMap(json & element, json & nodeMap)
