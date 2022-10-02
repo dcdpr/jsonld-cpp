@@ -35,8 +35,8 @@ std::vector<std::vector<std::string>> ConfigReader::getTestsuites()
     for ( const auto &s : document["testsuites"])
     {
         std::vector<std::string> ts;
-        ts.push_back(s["file"]);
-        ts.push_back(s["manifest"]);
+        ts.push_back(s["file"].get<std::string>());
+        ts.push_back(s["manifest"].get<std::string>());
         testsuites.push_back(ts);
     }
     return testsuites;

@@ -1,10 +1,8 @@
-#include <cstring>
-#include <fstream>
 #include "jsonld-cpp/sha256.h"
+#include <cstring>
 
 #define SHA2_SHFR(x, n)    (x >> n)
 #define SHA2_ROTR(x, n)   ((x >> n) | (x << ((sizeof(x) << 3) - n)))
-#define SHA2_ROTL(x, n)   ((x << n) | (x >> ((sizeof(x) << 3) - n)))
 #define SHA2_CH(x, y, z)  ((x & y) ^ (~x & z))
 #define SHA2_MAJ(x, y, z) ((x & y) ^ (x & z) ^ (y & z))
 #define SHA256_F1(x) (SHA2_ROTR(x,  2) ^ SHA2_ROTR(x, 13) ^ SHA2_ROTR(x, 22))
@@ -13,17 +11,17 @@
 #define SHA256_F4(x) (SHA2_ROTR(x, 17) ^ SHA2_ROTR(x, 19) ^ SHA2_SHFR(x, 10))
 #define SHA2_UNPACK32(x, str)                 \
 {                                             \
-    *((str) + 3) = (uint8) ((x)      );       \
-    *((str) + 2) = (uint8) ((x) >>  8);       \
-    *((str) + 1) = (uint8) ((x) >> 16);       \
-    *((str) + 0) = (uint8) ((x) >> 24);       \
+    *((str) + 3) = static_cast<uint8> ((x)      );       \
+    *((str) + 2) = static_cast<uint8> ((x) >>  8);       \
+    *((str) + 1) = static_cast<uint8> ((x) >> 16);       \
+    *((str) + 0) = static_cast<uint8> ((x) >> 24);       \
 }
 #define SHA2_PACK32(str, x)                   \
 {                                             \
-    *(x) =   ((uint32) *((str) + 3)      )    \
-           | ((uint32) *((str) + 2) <<  8)    \
-           | ((uint32) *((str) + 1) << 16)    \
-           | ((uint32) *((str) + 0) << 24);   \
+    *(x) =   (static_cast<uint32> (*((str) + 3))      )    \
+           | (static_cast<uint32> (*((str) + 2) <<  8))    \
+           | (static_cast<uint32> (*((str) + 1) << 16))    \
+           | (static_cast<uint32> (*((str) + 0) << 24));   \
 }
 
 const unsigned int SHA256::sha256_k[64] = //UL = uint32
@@ -44,18 +42,18 @@ const unsigned int SHA256::sha256_k[64] = //UL = uint32
          0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
          0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2};
 
-void SHA256::transform(const unsigned char *message, unsigned int block_nb)
+void SHA256::transform(const unsigned char *message, std::size_t block_nb)
 {
     uint32 w[64];
     uint32 wv[8];
     uint32 t1, t2;
     const unsigned char *sub_block;
-    int i;
-    int j;
-    for (i = 0; i < (int) block_nb; i++) {
+    unsigned int i;
+    unsigned int j;
+    for (i = 0; i < block_nb; i++) {
         sub_block = message + (i << 6);
         for (j = 0; j < 16; j++) {
-            SHA2_PACK32(&sub_block[j << 2], &w[j]);
+            SHA2_PACK32(&sub_block[j << 2], &w[j])
         }
         for (j = 16; j < 64; j++) {
             w[j] =  SHA256_F4(w[j -  2]) + w[j -  7] + SHA256_F3(w[j - 15]) + w[j - 16];
@@ -98,7 +96,7 @@ void SHA256::init()
 
 void SHA256::update(const unsigned char *message, std::size_t len)
 {
-    unsigned int block_nb;
+    std::size_t block_nb;
     std::size_t new_len, rem_len, tmp_len;
     const unsigned char *shifted_message;
     tmp_len = SHA224_256_BLOCK_SIZE - m_len;
@@ -120,8 +118,7 @@ void SHA256::update(const unsigned char *message, std::size_t len)
 }
 
 void SHA256::update(const std::string & s) {
-    std::string c(s);
-    update((unsigned char*)c.c_str(), c.length());
+    update(reinterpret_cast<const unsigned char *>(s.c_str()), s.length());
 }
 
 std::string SHA256::final()
@@ -131,23 +128,22 @@ std::string SHA256::final()
 
     unsigned int block_nb;
     unsigned int pm_len;
-    unsigned int len_b;
-    int i;
+    std::size_t len_b;
     block_nb = (1 + ((SHA224_256_BLOCK_SIZE - 9)
                      < (m_len % SHA224_256_BLOCK_SIZE)));
     len_b = (m_tot_len + m_len) << 3;
     pm_len = block_nb << 6;
     memset(m_block + m_len, 0, pm_len - m_len);
     m_block[m_len] = 0x80;
-    SHA2_UNPACK32(len_b, m_block + pm_len - 4);
+    SHA2_UNPACK32(len_b, m_block + pm_len - 4)
     transform(m_block, block_nb);
-    for (i = 0 ; i < 8; i++) {
-        SHA2_UNPACK32(m_h[i], &digest[i << 2]);
+    for (int i = 0 ; i < 8; i++) {
+        SHA2_UNPACK32(m_h[i], &digest[i << 2])
     }
 
     char buf[2*SHA256::DIGEST_SIZE+1];
     buf[2*SHA256::DIGEST_SIZE] = 0;
-    for (int i = 0; i < SHA256::DIGEST_SIZE; i++)
+    for (unsigned int i = 0; i < SHA256::DIGEST_SIZE; i++)
         sprintf(buf+i*2, "%02x", digest[i]);
 
     // Reset for next run

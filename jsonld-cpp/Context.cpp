@@ -1,9 +1,10 @@
 #include "jsonld-cpp/Context.h"
 #include "jsonld-cpp/JsonLdUrl.h"
-#include "jsonld-cpp/ObjUtils.h"
+#include "jsonld-cpp/JsonLdError.h"
+#include "jsonld-cpp/JsonLdUtils.h"
 #include "jsonld-cpp/Uri.h"
-#include "jsonld-cpp/BlankNode.h"
-#include <iostream>
+#include "jsonld-cpp/BlankNodeNames.h"
+#include "jsonld-cpp/RemoteDocument.h"
 #include <memory>
 #include <utility>
 #include <set>
@@ -14,6 +15,914 @@ namespace {
 
     // 1.1 spec provides for returning error if too many remote contexts are loaded
     const int MAX_REMOTE_CONTEXTS = 256;
+
+    std::string expandIri(Context & activeContext,
+                          std::string value, bool relative, bool vocab,
+                          const json& localContext, std::map<std::string, bool> & defined);
+
+    /**
+     * Create Term Definition Algorithm
+     *
+     * https://www.w3.org/TR/json-ld11-api/#create-term-definition
+     *
+     */
+    void createTermDefinition(
+            Context & activeContext,
+            nlohmann::json localContext,
+            const std::string& term,
+            std::map<std::string, bool> & defined,
+            const std::string& baseURL = "",
+            bool isProtected = false,
+            bool ioverrideProtected = false,
+            std::vector<std::string> iremoteContexts = std::vector<std::string>()) {
+
+        // Comments in this function are labelled with numbers that correspond to sections
+        // from the description of the create term definition algorithm.
+        // See: https://www.w3.org/TR/json-ld11-api/#create-term-definition
+
+        // 1)
+        // If defined contains the entry term and the associated value is true (indicating
+        // that the term definition has already been created), return. Otherwise, if the
+        // value is false, a cyclic IRI mapping error has been detected and processing is aborted.
+        if (defined.count(term)) {
+            if (defined[term]) {
+                return;
+            }
+            throw JsonLdError(JsonLdError::CyclicIriMapping, term);
+        }
+
+        // 2)
+        // If term is the empty string (""), an invalid term definition error has been detected
+        // and processing is aborted.
+        if (term.empty())
+            throw JsonLdError(JsonLdError::InvalidTermDefinition, term);
+
+        // 2)
+        // Otherwise, set the value associated with defined's term entry to false. This indicates
+        // that the term definition is now being created but is not yet complete.
+        defined[term] = false;
+
+        // 3)
+        // Initialize value to a copy of the value associated with the entry term in local context.
+        auto value = localContext.at(term);
+
+        // 4)
+        // If term is @type, and processing mode is json-ld-1.0, a keyword redefinition error has
+        // been detected and processing is aborted.
+        if(term == JsonLdConsts::TYPE) {
+            if(activeContext.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
+                throw JsonLdError(JsonLdError::KeywordRedefinition, term);
+            }
+            // At this point, value MUST be a map with only either or both of the following entries:
+            // * An entry for @container with value @set.
+            // * An entry for @protected.
+            // Any other value means that a keyword redefinition error has been detected and
+            // processing is aborted.
+            if(value.is_object()) {
+                if(value.size() == 1 &&
+                   value.contains(JsonLdConsts::CONTAINER)) {
+                    auto container = value.at(JsonLdConsts::CONTAINER);
+                    if(!container.is_string() || container != JsonLdConsts::SET) {
+                        throw JsonLdError(JsonLdError::KeywordRedefinition, term);
+                    }
+                } else if(value.size() == 2 &&
+                          value.contains(JsonLdConsts::CONTAINER) &&
+                          value.contains(JsonLdConsts::PROTECTED)) {
+                    auto container = value.at(JsonLdConsts::CONTAINER);
+                    if(!container.is_string() || container != JsonLdConsts::SET) {
+                        throw JsonLdError(JsonLdError::KeywordRedefinition, term);
+                    }
+                } else if (value.size() != 1 || !value.contains(JsonLdConsts::PROTECTED)) {
+                    throw JsonLdError(JsonLdError::KeywordRedefinition, term);
+                }
+
+            }
+            else {
+                throw JsonLdError(JsonLdError::KeywordRedefinition, term);
+            }
+
+        }
+        // 5)
+        // Otherwise, since keywords cannot be overridden, term MUST NOT be a keyword and
+        // a keyword redefinition error has been detected and processing is aborted.
+        else if (JsonLdUtils::isKeyword(term)) {
+            throw JsonLdError(JsonLdError::KeywordRedefinition, term);
+        } else if (JsonLdUtils::isKeywordForm(term)){
+            // If term has the form of a keyword (i.e., it matches the ABNF rule "@"1*ALPHA from [RFC5234]),
+            // return; processors SHOULD generate a warning.
+            return;
+            // todo: emit a warning
+        }
+
+        // 6)
+        // Initialize previous definition to any existing term definition for term in
+        // active context, removing that term definition from active context.
+        json previousDefinition;
+        if (activeContext.termDefinitions.count(term)) {
+            previousDefinition = activeContext.termDefinitions[term];
+            activeContext.termDefinitions.erase(term);
+        }
+
+        bool simpleTerm = false;
+
+        // 7)
+        // If value is null, convert it to a map consisting of a single entry whose key
+        // is @id and whose value is null.
+        if(value.is_null()) {
+            value = { { JsonLdConsts::ID, nullptr} };
+        }
+
+        // 8)
+        // Otherwise, if value is a string, convert it to a map consisting of a single entry whose
+        // key is @id and whose value is value. Set simple term to true.
+        else if (value.is_string()) {
+            value = { { JsonLdConsts::ID, value} };
+            simpleTerm = true;
+        }
+
+        // 9)
+        // Otherwise, value MUST be a map, if not, an invalid term definition error has been
+        // detected and processing is aborted. Set simple term to false.
+        else if (!(value.is_object())) {
+            throw JsonLdError(JsonLdError::InvalidTermDefinition);
+        }
+
+        // 10)
+        // Create a new term definition, definition, initializing prefix flag to false, protected
+        // to protected, and reverse property to false.
+        auto definition = json::object();
+        definition[JsonLdConsts::IS_PREFIX_FLAG] = false;
+        definition[JsonLdConsts::IS_PROTECTED_FLAG] = isProtected;
+        definition[JsonLdConsts::IS_REVERSE_PROPERTY_FLAG] = false;
+
+        // 11)
+        // If value has an @protected entry, set the protected flag in definition to the value
+        // of this entry. If the value of @protected is not a boolean, an invalid @protected value
+        // error has been detected and processing is aborted. If processing mode is json-ld-1.0, an
+        // invalid term definition has been detected and processing is aborted.
+        if (value.contains(JsonLdConsts::PROTECTED)) {
+            if (activeContext.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
+                throw JsonLdError(JsonLdError::InvalidTermDefinition);
+            }
+
+            if (!value.at(JsonLdConsts::PROTECTED).is_boolean()) {
+                throw JsonLdError(JsonLdError::InvalidProtectedValue);
+            }
+
+            definition[JsonLdConsts::IS_PROTECTED_FLAG] = value.at(JsonLdConsts::PROTECTED).get<bool>();
+        }
+
+        // 12)
+        // If value contains the entry @type:
+        if (value.contains(JsonLdConsts::TYPE)) {
+            // 12.1)
+            // Initialize type to the value associated with the @type entry, which MUST be a
+            // string. Otherwise, an invalid type mapping error has been detected and processing
+            // is aborted.
+            auto type = value.at(JsonLdConsts::TYPE);
+            if (!(type.is_string())) {
+                throw JsonLdError(JsonLdError::InvalidTypeMapping);
+            }
+            std::string typeStr = type.get<std::string>();
+
+            // 12.2)
+            // Set type to the result of IRI expanding type, using local context, and defined.
+            typeStr = expandIri(activeContext, typeStr, false, true, localContext, defined);
+
+            // 12.3)
+            // If the expanded type is @json or @none, and processing mode is json-ld-1.0, an invalid
+            // type mapping error has been detected and processing is aborted.
+            if (activeContext.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
+                if(typeStr == JsonLdConsts::JSON || typeStr == JsonLdConsts::NONE) {
+                    throw JsonLdError(JsonLdError::InvalidTypeMapping, type);
+                }
+            }
+
+            // 12.4)
+            // Otherwise, if the expanded type is neither @id, nor @json, nor @none, nor @vocab, nor
+            // an IRI, an invalid type mapping error has been detected and processing is aborted.
+            if(!(typeStr == JsonLdConsts::ID ||
+                 typeStr == JsonLdConsts::JSON ||
+                 typeStr == JsonLdConsts::NONE ||
+                 typeStr == JsonLdConsts::VOCAB ||
+                 JsonLdUtils::isAbsoluteIri(typeStr))) {
+                throw JsonLdError(JsonLdError::InvalidTypeMapping, type);
+            }
+
+            // 12.5)
+            // Set the type mapping for definition to type.
+            definition[JsonLdConsts::TYPE] = typeStr;
+        }
+
+        // 13)
+        // If value contains the entry @reverse:
+        if (value.contains(JsonLdConsts::REVERSE)) {
+            // 13.1)
+            // If value contains @id or @nest, entries, an invalid reverse property error
+            // has been detected and processing is aborted.
+            if (value.contains(JsonLdConsts::ID) || value.contains(JsonLdConsts::NEST)) {
+                throw JsonLdError(JsonLdError::InvalidReverseProperty);
+            }
+
+            // 13.2)
+            // If the value associated with the @reverse entry is not a string, an invalid IRI
+            // mapping error has been detected and processing is aborted.
+            auto reverse = value.at(JsonLdConsts::REVERSE);
+            if (!(reverse.is_string())) {
+                throw JsonLdError(JsonLdError::InvalidIriMapping,
+                                  "Expected String for @reverse value.");
+            }
+            std::string reverseStr = reverse.get<std::string>();
+
+            // 13.3)
+            // If the value associated with the @reverse entry is a string having the form of
+            // a keyword (i.e., it matches the ABNF rule "@"1*ALPHA from [RFC5234]), return;
+            // processors SHOULD generate a warning.
+            if(JsonLdUtils::isKeywordForm(reverseStr)) {
+                // todo: emit a warning
+                return;
+            }
+
+            // 13.4)
+            // Otherwise, set the IRI mapping of definition to the result of IRI expanding
+            // the value associated with the @reverse entry, using local context, and
+            // defined. If the result does not have the form of an IRI or a blank node
+            // identifier, an invalid IRI mapping error has been detected and processing is aborted.
+            reverseStr = expandIri(activeContext, reverseStr, false, true, localContext, defined);
+            //if (!JsonLdUtils::isAbsoluteIri(reverseStr) || !BlankNodeNames::isBlankNodeName(reverseStr)) {
+            //todo: if we add call for isBlankNodeName as the description seems to say, we fail more tests
+            if (!JsonLdUtils::isAbsoluteIri(reverseStr)) {
+                throw JsonLdError(JsonLdError::InvalidIriMapping,
+                                  "Non-absolute @reverse IRI: " + reverseStr);
+            }
+            definition[JsonLdConsts::ID] = reverseStr;
+
+            // 13.5)
+            // If value contains an @container entry, set the container mapping of definition
+            // to an array containing its value; if its value is neither @set, nor @index, nor
+            // null, an invalid reverse property error has been detected (reverse properties only
+            // support set- and index-containers) and processing is aborted.
+            if (value.contains(JsonLdConsts::CONTAINER)) {
+                auto container = value.at(JsonLdConsts::CONTAINER);
+                if (container == JsonLdConsts::SET || container == JsonLdConsts::INDEX || container.is_null()) {
+                    definition[JsonLdConsts::CONTAINER] = json::array({container});
+                } else {
+                    throw JsonLdError(JsonLdError::InvalidReverseProperty,
+                                      "reverse properties only support set- and index-containers");
+                }
+            }
+
+            // 13.6)
+            // Set the reverse property flag of definition to true.
+            definition[JsonLdConsts::REVERSE] = true;
+
+            // 13.7)
+            // Set the term definition of term in active context to definition and the value
+            // associated with defined's entry term to true and return.
+            activeContext.termDefinitions[term] = definition;
+            defined[term] = true;
+            return;
+        }
+
+        // 14)
+        // If value contains the entry @id and its value does not equal term
+        if (value.contains(JsonLdConsts::ID) &&
+            (!value.at(JsonLdConsts::ID).is_string() || term != value.at(JsonLdConsts::ID))) {
+
+            auto id = value.at(JsonLdConsts::ID);
+
+            // 14.1)
+            // If the @id entry of value is null, the term is not used for IRI expansion, but is
+            // retained to be able to detect future redefinitions of this term.
+            if(!id.is_null()) {
+
+                // 14.2)
+                // otherwise
+
+                // 14.2.1)
+                // If the value associated with the @id entry is not a string, an invalid IRI
+                // mapping error has been detected and processing is aborted.
+                if (!id.is_string()) {
+                    throw JsonLdError(JsonLdError::InvalidIriMapping,
+                                      "expected value of @id to be a string");
+                }
+
+                std::string idStr = id.get<std::string>();
+
+                // 14.2.2)
+                // If the value associated with the @id entry is not a keyword, but has the
+                // form of a keyword (i.e., it matches the ABNF rule "@"1*ALPHA from [RFC5234]),
+                // return; processors SHOULD generate a warning.
+                if(!JsonLdUtils::isKeyword(idStr) && JsonLdUtils::isKeywordForm(idStr)) {
+                    // todo: emit a warning
+                    return;
+                }
+
+                // 14.2.3)
+                // Otherwise, set the IRI mapping of definition to the result of IRI expanding
+                // the value associated with the @id entry, using local context, and defined.
+                idStr = expandIri(activeContext, idStr, false, true, localContext, defined);
+                // If the resulting IRI mapping is neither a keyword, nor an IRI, nor a blank node
+                // identifier, an invalid IRI mapping error has been detected and processing is
+                // aborted; if it equals @context, an invalid keyword alias error has been detected
+                // and processing is aborted.
+                if (JsonLdUtils::isKeyword(idStr) || JsonLdUtils::isAbsoluteIri(idStr) ||
+                    BlankNodeNames::isBlankNodeName(idStr)) {
+                    if (idStr == JsonLdConsts::CONTEXT) {
+                        throw JsonLdError(JsonLdError::InvalidKeywordAlias, "cannot alias @context");
+                    }
+                    definition[JsonLdConsts::ID] = idStr;
+                } else {
+                    throw JsonLdError(JsonLdError::InvalidIriMapping,
+                                      "resulting IRI mapping should be a keyword, absolute IRI or blank node");
+                }
+
+                // 14.2.4)
+                // If the term contains a colon (:) anywhere but as the first or last character
+                // of term, or if it contains a slash (/) anywhere:
+                if(term.substr(0, term.size()-1).find(':',1) != std::string::npos ||
+                   term.find('/') != std::string::npos) {
+
+                    // 14.2.4.1)
+                    // Set the value associated with defined's term entry to true.
+                    defined[term] = true;
+
+                    // 14.2.4.2)
+                    // If the result of IRI expanding term using local context, and defined, is
+                    // not the same as the IRI mapping of definition, an invalid IRI mapping error
+                    // has been detected and processing is aborted.
+                    std::string expandedTerm = expandIri(activeContext, term, false, true, localContext, defined);
+                    if(expandedTerm != definition[JsonLdConsts::ID]) {
+                        throw JsonLdError(JsonLdError::InvalidIriMapping,
+                                          "expanded term is not the same as IRI mapping");
+                    }
+                }
+
+                // 14.2.5)
+                // If term contains neither a colon (:) nor a slash (/), simple term is true,
+                // and if the IRI mapping of definition is either an IRI ending with a gen-delim
+                // character, or a blank node identifier, set the prefix flag in definition to true.
+                if (term.find(':') == std::string::npos &&
+                    term.find('/') == std::string::npos &&
+                    simpleTerm &&
+                    ((JsonLdUtils::isAbsoluteIri(definition[JsonLdConsts::ID].get<std::string>()) &&
+                      JsonLdUtils::iriEndsWithGeneralDelimiterCharacter(definition[JsonLdConsts::ID].get<std::string>())) ||
+                     BlankNodeNames::isBlankNodeName(definition[JsonLdConsts::ID].get<std::string>())))
+                {
+                    definition[JsonLdConsts::IS_PREFIX_FLAG] = true;
+                }
+            }
+        }
+        // 15)
+        // Otherwise if the term contains a colon (:) anywhere after the first character:
+        else if (term.find(':', 1) != std::string::npos) {
+            // todo: maybe need a new "compact uri" class? See https://www.w3.org/TR/curie/ ...
+            // 15.1)
+            // If term is a compact IRI with a prefix that is an entry in local context
+            // a dependency has been found. Use this algorithm recursively passing active
+            // context, local context, the prefix as term, and defined.
+            auto colIndex = term.find(':');
+            std::string prefix(term, 0, colIndex);
+            std::string suffix(term, colIndex + 1);
+            if (localContext.contains(prefix)) {
+                createTermDefinition(activeContext, localContext, prefix, defined);
+            }
+            // 15.2)
+            // If term's prefix has a term definition in active context, set the IRI mapping of
+            // definition to the result of concatenating the value associated with the prefix's
+            // IRI mapping and the term's suffix.
+            if (activeContext.termDefinitions.find(prefix) != activeContext.termDefinitions.end()) {
+                auto id = activeContext.termDefinitions.at(prefix).at(JsonLdConsts::ID);
+                id = id.get<std::string>() + suffix;
+                definition[JsonLdConsts::ID] = id;
+            }
+                // 15.3)
+                // Otherwise, term is an IRI or blank node identifier. Set the IRI mapping of
+                // definition to term.
+            else {
+                definition[JsonLdConsts::ID] = term;
+            }
+        }
+        // 16)
+        // Otherwise if the term contains a slash (/):
+        else if (term.find('/') != std::string::npos) {
+            // 16.1
+            // Term is a relative IRI reference.
+            assert(JsonLdUtils::isRelativeIri(term));
+
+            // 16.2)
+            // Set the IRI mapping of definition to the result of IRI expanding term. If the
+            // resulting IRI mapping is not an IRI, an invalid IRI mapping error has been detected
+            // and processing is aborted.
+            std::string expandedTerm = expandIri(activeContext, term, false, true, localContext, defined);
+            definition[JsonLdConsts::ID] = expandedTerm;
+            if(!JsonLdUtils::isAbsoluteIri(definition[JsonLdConsts::ID].get<std::string>())) {
+                throw JsonLdError(JsonLdError::InvalidIriMapping,
+                                  "expanded term is not an IRI");
+            }
+        }
+        // 17)
+        // Otherwise, if term is @type, set the IRI mapping of definition to @type.
+        else if (term == JsonLdConsts::TYPE) {
+            definition[JsonLdConsts::ID] = JsonLdConsts::TYPE;
+        }
+        // 18)
+        // Otherwise, if active context has a vocabulary mapping, the IRI mapping of definition
+        // is set to the result of concatenating the value associated with the vocabulary mapping
+        // and term. If it does not have a vocabulary mapping, an invalid IRI mapping error been
+        // detected and processing is aborted.
+        else if (!activeContext.getVocabularyMapping().empty()) {
+            definition[JsonLdConsts::ID] = activeContext.getVocabularyMapping() + term;
+        }
+        else {
+            throw JsonLdError(JsonLdError::InvalidIriMapping,
+                              "relative term definition without vocab mapping");
+        }
+
+        // 19)
+        // If value contains the entry @container:
+        if (value.contains(JsonLdConsts::CONTAINER)) {
+
+            // 19.1) (partial)
+            // Initialize container to the value associated with the @container entry
+            auto container = value.at(JsonLdConsts::CONTAINER);
+
+            // 19.2)
+            // If the container value is @graph, @id, or @type, or is otherwise not a string,
+            // generate an invalid container mapping error and abort processing if processing
+            // mode is json-ld-1.0.
+            if (activeContext.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
+                if (!container.is_string())
+                    throw JsonLdError(JsonLdError::InvalidContainerMapping,
+                                      "@container must be a string");
+                if(container != JsonLdConsts::LIST &&
+                   container != JsonLdConsts::SET &&
+                   container != JsonLdConsts::INDEX &&
+                   container != JsonLdConsts::LANGUAGE) {
+                    throw JsonLdError(JsonLdError::InvalidContainerMapping,
+                                      "@container must be either @list, @set, @index, or @language");
+                }
+            }
+
+            // 19.1)
+            // ... container ... MUST be either @graph, @id, @index, @language, @list, @set,
+            // @type, or an array containing exactly any one of those keywords, an array
+            // containing @graph and either @id or @index optionally including @set, or an
+            // array containing a combination of @set and any of @index, @graph, @id, @type,
+            // @language in any order. Otherwise, an invalid container mapping has been
+            // detected and processing is aborted.
+            if(container.is_array() && container.size() == 1)
+                container = container.at(0);
+
+            if(!JsonLdUtils::containsOrEquals(container, JsonLdConsts::GRAPH) &&
+               !JsonLdUtils::containsOrEquals(container, JsonLdConsts::ID) &&
+               !JsonLdUtils::containsOrEquals(container, JsonLdConsts::INDEX) &&
+               !JsonLdUtils::containsOrEquals(container, JsonLdConsts::LANGUAGE) &&
+               !JsonLdUtils::containsOrEquals(container, JsonLdConsts::LIST) &&
+               !JsonLdUtils::containsOrEquals(container, JsonLdConsts::SET) &&
+               !JsonLdUtils::containsOrEquals(container, JsonLdConsts::TYPE)) {
+                throw JsonLdError(JsonLdError::InvalidContainerMapping);
+            }
+
+            if(container.is_array()) {
+
+                if (container.size() > 3)
+                    throw JsonLdError(JsonLdError::InvalidContainerMapping);
+
+                if (JsonLdUtils::containsOrEquals(container, JsonLdConsts::GRAPH) &&
+                    JsonLdUtils::containsOrEquals(container, JsonLdConsts::ID)) {
+                    if (container.size() != 2 && !JsonLdUtils::containsOrEquals(container, JsonLdConsts::SET))
+                        throw JsonLdError(JsonLdError::InvalidContainerMapping);
+                }
+
+                else if (JsonLdUtils::containsOrEquals(container, JsonLdConsts::GRAPH) &&
+                         JsonLdUtils::containsOrEquals(container, JsonLdConsts::INDEX)) {
+                    if (container.size() != 2 && !JsonLdUtils::containsOrEquals(container, JsonLdConsts::SET))
+                        throw JsonLdError(JsonLdError::InvalidContainerMapping);
+                }
+
+                else if (container.size() > 2)
+                    throw JsonLdError(JsonLdError::InvalidContainerMapping);
+
+                if (JsonLdUtils::containsOrEquals(container, JsonLdConsts::SET)) {
+                    if (!JsonLdUtils::containsOrEquals(container, JsonLdConsts::GRAPH) &&
+                        !JsonLdUtils::containsOrEquals(container, JsonLdConsts::ID) &&
+                        !JsonLdUtils::containsOrEquals(container, JsonLdConsts::INDEX) &&
+                        !JsonLdUtils::containsOrEquals(container, JsonLdConsts::LANGUAGE) &&
+                        !JsonLdUtils::containsOrEquals(container, JsonLdConsts::TYPE)) {
+                        throw JsonLdError(JsonLdError::InvalidContainerMapping);
+                    }
+                }
+            }
+            else if(!container.is_string())
+                throw JsonLdError(JsonLdError::InvalidContainerMapping,
+                                  "@container must be a string or array");
+
+            // 19.3
+            // Set the container mapping of definition to container coercing to an array, if necessary.
+            if(container.is_array())
+                definition[JsonLdConsts::CONTAINER] = container;
+            else {
+                definition[JsonLdConsts::CONTAINER] = json::array();
+                definition[JsonLdConsts::CONTAINER].push_back(container);
+            }
+
+            // 19.4)
+            // If the container mapping of definition includes @type:
+            if(JsonLdUtils::containsOrEquals(definition[JsonLdConsts::CONTAINER], JsonLdConsts::TYPE)){
+                // 19.4.1)
+                // If type mapping in definition is undefined, set it to @id.
+                // todo this is a place where termdef having member vars like 'containermapping'
+                //  and 'typemapping' would come in handy
+                if(!definition.contains(JsonLdConsts::TYPE))
+                    definition[JsonLdConsts::TYPE] = JsonLdConsts::ID;
+
+                // 19.4.2)
+                // If type mapping in definition is neither @id nor @vocab, an invalid type
+                // mapping error has been detected and processing is aborted.
+                if (definition[JsonLdConsts::TYPE] != JsonLdConsts::ID &&
+                    definition[JsonLdConsts::TYPE] != JsonLdConsts::VOCAB) {
+                    throw JsonLdError(JsonLdError::InvalidTypeMapping,"");
+                }
+            }
+        }
+
+        // 20)
+        // If value contains the entry @index:
+        if (value.contains(JsonLdConsts::INDEX)) {
+
+            // 20.1)
+            // If processing mode is json-ld-1.0 or container mapping does not include
+            // @index, an invalid term definition has been detected and processing is aborted.
+            if (activeContext.isProcessingMode(JsonLdOptions::JSON_LD_1_0) ||
+                !JsonLdUtils::containsOrEquals(definition[JsonLdConsts::CONTAINER], JsonLdConsts::INDEX)) {
+                throw JsonLdError(JsonLdError::InvalidTermDefinition,"");
+            }
+
+            // 20.2)
+            // Initialize index to the value associated with the @index entry. If the result of
+            // IRI expanding that value is not an IRI, an invalid term definition has been detected
+            // and processing is aborted.
+            auto index = value.at(JsonLdConsts::INDEX);
+
+            if (!index.is_string()) {
+                throw JsonLdError(JsonLdError::InvalidTermDefinition,"");
+            }
+
+            std::string indexStr = index.get<std::string>();
+
+            std::string expandedIndex = expandIri(activeContext, indexStr, false, true, localContext, defined);
+
+            if (!JsonLdUtils::isAbsoluteIri(expandedIndex)) {
+                throw JsonLdError(JsonLdError::InvalidTermDefinition,"");
+            }
+
+            // 20.3)
+            // Set the index mapping of definition to index
+            definition[JsonLdConsts::INDEX] = indexStr;
+        }
+
+        // 21)
+        // If value contains the entry @context:
+        if (value.contains(JsonLdConsts::CONTEXT)) {
+
+            // 21.1)
+            // If processing mode is json-ld-1.0, an invalid term definition has been detected
+            // and processing is aborted.
+            if (activeContext.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
+                throw JsonLdError(JsonLdError::InvalidTermDefinition,"");
+            }
+
+            // 21.2)
+            // Initialize context to the value associated with the @context entry, which is treated
+            // as a local context.
+            auto theContext = value.at(JsonLdConsts::CONTEXT);
+
+            // 21.3)
+            // Invoke the Context Processing algorithm using the active context, context as local
+            // context, base URL, true for override protected, a copy of remote contexts, and false
+            // for validate scoped context. If any error is detected, an invalid scoped context
+            // error has been detected and processing is aborted.
+            try {
+                activeContext.process(theContext, baseURL, iremoteContexts, true, activeContext.propagate, false);
+            } catch (JsonLdError &error) {
+                throw JsonLdError(JsonLdError::InvalidScopedContext,error.what());
+            }
+
+            // 21.4)
+            // Set the local context of definition to context, and base URL to base URL.
+            definition[JsonLdConsts::LOCALCONTEXT] = theContext;
+            definition[JsonLdConsts::BASEURL] = baseURL;
+        }
+
+        // 22)
+        // If value contains the entry @language and does not contain the entry @type:
+        if (value.contains(JsonLdConsts::LANGUAGE) && !value.contains(JsonLdConsts::TYPE)) {
+            // 22.1)
+            // Initialize language to the value associated with the @language entry, which MUST
+            // be either null or a string. If language is not well-formed according to section
+            // 2.2.9 of [BCP47], processors SHOULD issue a warning. Otherwise, an invalid language
+            // mapping error has been detected and processing is aborted.
+            auto language = value.at(JsonLdConsts::LANGUAGE);
+
+            if (language.is_null() || language.is_string()) {
+                // todo: need to check if language is not well-formed, and if so, emit a warning
+                // 22.2)
+                // Set the language mapping of definition to language.
+                definition[JsonLdConsts::LANGUAGE] = language;
+            } else {
+                throw JsonLdError(JsonLdError::InvalidLanguageMapping,
+                                  "@language must be a string or null");
+            }
+        }
+
+        // 23.
+        // If value contains the entry @direction and does not contain the entry @type:
+        if (value.contains(JsonLdConsts::DIRECTION) && !value.contains(JsonLdConsts::TYPE)) {
+
+            // 23.1)
+            // Initialize direction to the value associated with the @direction entry, which
+            // MUST be either null, "ltr", or "rtl". Otherwise, an invalid base direction error
+            // has been detected and processing is aborted.
+            auto direction = value.at(JsonLdConsts::DIRECTION);
+
+            if (direction.is_null()) {
+                definition[JsonLdConsts::DIRECTION] = direction;
+            } else if (direction.is_string()) {
+
+                std::string directionStr = direction.get<std::string>();
+
+                if (directionStr == "ltr" || directionStr == "rtl") {
+                    // 23.2)
+                    // Set the direction mapping of definition to direction.
+                    definition[JsonLdConsts::DIRECTION] = directionStr;
+                } else {
+                    throw JsonLdError(JsonLdError::InvalidBaseDirection,
+                                      R"(@direction must be either "ltr" or "rtl")");
+                }
+            } else {
+                throw JsonLdError(JsonLdError::InvalidBaseDirection,
+                                  R"(@direction must be either null, "ltr" or "rtl")");
+            }
+        }
+
+        // 24)
+        // If value contains the entry @nest:
+        if (value.contains(JsonLdConsts::NEST)) {
+
+            // 24.1)
+            // If processing mode is json-ld-1.0, an invalid term definition has been detected
+            // and processing is aborted.
+            if (activeContext.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
+                throw JsonLdError(JsonLdError::InvalidTermDefinition,"");
+            }
+
+            // 24.2)
+            // Initialize nest value in definition to the value associated with the
+            // @nest entry, which MUST be a string and MUST NOT be a keyword other
+            // than @nest. Otherwise, an invalid @nest value error has been detected
+            // and processing is aborted.
+            auto nest = value.at(JsonLdConsts::NEST);
+
+            if (!nest.is_string()) {
+                throw JsonLdError(JsonLdError::InvalidNestValue,"");
+            }
+
+            std::string nestStr = nest.get<std::string>();
+
+            if (JsonLdUtils::isKeyword(nestStr) && nestStr != JsonLdConsts::NEST) {
+                throw JsonLdError(JsonLdError::InvalidNestValue,"");
+            }
+            definition[JsonLdConsts::NEST] = nestStr;
+        }
+
+        // 25)
+        // If value contains the entry @prefix:
+        if (value.contains(JsonLdConsts::PREFIX)) {
+
+            // 25.1)
+            // If processing mode is json-ld-1.0, or if term contains a colon (:) or
+            // slash (/), an invalid term definition has been detected and processing
+            // is aborted.
+            if (activeContext.isProcessingMode(JsonLdOptions::JSON_LD_1_0) ||
+                term.find(':') != std::string::npos ||
+                term.find('/') != std::string::npos) {
+                throw JsonLdError(JsonLdError::InvalidTermDefinition);
+            }
+
+            // 25.2)
+            // Set the prefix flag to the value associated with the @prefix entry, which
+            // MUST be a boolean. Otherwise, an invalid @prefix value error has been detected
+            // and processing is aborted.
+            auto prefix = value.at(JsonLdConsts::PREFIX);
+
+            if(!prefix.is_boolean())
+                throw JsonLdError(JsonLdError::InvalidPrefixValue,"");
+
+            definition[JsonLdConsts::IS_PREFIX_FLAG] = prefix;
+
+            // 25.3)
+            // If the prefix flag of definition is set to true, and its IRI mapping is a
+            // keyword, an invalid term definition has been detected and processing is aborted.
+            if (definition[JsonLdConsts::IS_PREFIX_FLAG] && JsonLdUtils::isKeyword(definition[JsonLdConsts::ID].get<std::string>())) {
+                throw JsonLdError(JsonLdError::InvalidTermDefinition,"");
+            }
+        }
+
+        // 26)
+        // If value contains any entry other than @id, @reverse, @container, @context,
+        // @direction, @index, @language, @nest, @prefix, @protected, or @type, an invalid
+        // term definition error has been detected and processing is aborted.
+        std::set<std::string> validKeywords {
+                JsonLdConsts::ID,JsonLdConsts::REVERSE,JsonLdConsts::CONTAINER,JsonLdConsts::CONTEXT,
+                JsonLdConsts::DIRECTION,JsonLdConsts::INDEX,JsonLdConsts::LANGUAGE,JsonLdConsts::NEST,
+                JsonLdConsts::PREFIX,JsonLdConsts::PROTECTED,JsonLdConsts::TYPE
+        };
+        for (auto& el : value.items()) {
+            if(validKeywords.find(el.key()) == validKeywords.end())
+                throw JsonLdError(JsonLdError::InvalidTermDefinition,el.key() + " not in list of valid keywords");
+        }
+
+        // 27)
+        // If override protected is false and previous definition exists and is protected;
+        if(!ioverrideProtected &&
+           !previousDefinition.is_null() &&
+           previousDefinition.contains(JsonLdConsts::IS_PROTECTED_FLAG) &&
+           previousDefinition[JsonLdConsts::IS_PROTECTED_FLAG]) {
+            // 27.1)
+            // If definition is not the same as previous definition (other than the value
+            // of protected), a protected term redefinition error has been detected, and
+            // processing is aborted.
+            json copyOfDefinition = definition;
+            json copyOfPrevious = previousDefinition;
+            copyOfDefinition.erase(JsonLdConsts::IS_PROTECTED_FLAG);
+            copyOfPrevious.erase(JsonLdConsts::IS_PROTECTED_FLAG);
+            if(copyOfDefinition != copyOfPrevious)
+                throw JsonLdError(JsonLdError::ProtectedTermRedefinition);
+
+            // 27.2)
+            // Set definition to previous definition to retain the value of protected.
+            definition = previousDefinition;
+        }
+
+        // 28)
+        activeContext.termDefinitions[term] = definition;
+        defined[term] = true;
+
+    }
+
+/**
+  * IRI Expansion Algorithm
+  *
+  * https://www.w3.org/TR/json-ld11-api/#iri-expansion
+  *
+  * Notes:
+  * If context is_null(), then we don't bother creating term definitions
+  * We don't want to bother with a nullable 'defined' so it can just be empty if context is_null()
+  *
+  * @param value the Iri to expand
+  * @param relative flag
+  * @param vocab flag
+  * @param localContext the local context
+  * @param defined map of defined values
+  * @return the expanded Iri
+  * @throws JsonLdError
+  */
+    std::string expandIri(Context & activeContext,
+            std::string value, bool relative, bool vocab,
+            const json& localContext, std::map<std::string, bool> & defined) {
+        // todo move to jsonldapi.cpp?
+
+        // Comments in this function are labelled with numbers that correspond to sections
+        // from the description of the IRI expansion algorithm.
+        // See: https://www.w3.org/TR/json-ld11-api/#iri-expansion
+
+        // NB: When a comment refers to "active context", that is this object.
+
+        // 1)
+        // If value is a keyword or null, return value as is.
+        if (JsonLdUtils::isKeyword(value)) {
+            return value;
+        }
+
+        // 2)
+        //  If value has the form of a keyword (i.e., it matches the ABNF rule "@"1*ALPHA
+        //  from [RFC5234]), a processor SHOULD generate a warning and return null.
+        if (JsonLdUtils::isKeywordForm(value)) {
+            // todo: emit a warning
+            return "";
+        }
+
+        // 3)
+        // If local context is not null, it contains an entry with a key that equals value, and
+        // the value of the entry for value in defined is not true, invoke the Create Term
+        // Definition algorithm, passing active context, local context, value as term, and
+        // defined. This will ensure that a term definition is created for value in active
+        // context during Context Processing.
+        if (!localContext.is_null() && localContext.contains(value)) {
+            auto v = localContext.at(value);
+            if(v.is_string() &&
+               defined.find(v.get<std::string>()) != defined.end() &&
+               !defined.at(v.get<std::string>())) {
+                createTermDefinition(activeContext, localContext, value, defined);
+            }
+        }
+
+        // 4)
+        // If active context has a term definition for value, and the associated IRI mapping
+        // is a keyword, return that keyword.
+        if (activeContext.termDefinitions.find(value) != activeContext.termDefinitions.end()) {
+            auto td = activeContext.termDefinitions.at(value);
+            if (!td.is_null() &&
+                td.contains(JsonLdConsts::ID) &&
+                JsonLdUtils::isKeyword(td.at(JsonLdConsts::ID).get<std::string>()))
+                return td.at(JsonLdConsts::ID).get<std::string>();
+        }
+
+        // 5)
+        // If vocab is true and the active context has a term definition for value, return the
+        // associated IRI mapping.
+        if (vocab && activeContext.termDefinitions.find(value) != activeContext.termDefinitions.end()) {
+            auto td = activeContext.termDefinitions.at(value);
+            if (!td.is_null() &&
+                td.contains(JsonLdConsts::ID))
+                return td.at(JsonLdConsts::ID).get<std::string>();
+            else
+                return ""; // todo: this return isn't in the spec, but expand_t0032 test fails without it
+        }
+
+        // 6)
+        // If value contains a colon (:) anywhere after the first character, it is either an IRI, a
+        // compact IRI, or a blank node identifier:
+        auto colIndex = value.find(':', 1);
+        if (colIndex != std::string::npos) {
+            // 6.1)
+            // Split value into a prefix and suffix at the first occurrence of a colon (:).
+            std::string prefix(value, 0, colIndex);
+            std::string suffix(value, colIndex+1);
+
+            // 6.2)
+            // If prefix is underscore (_) or suffix begins with double-forward-slash (//), return
+            // value as it is already an IRI or a blank node identifier.
+            if (prefix == "_" || suffix.find("//") == 0) {
+                return value;
+            }
+
+            // 6.3)
+            // If local context is not null, it contains a prefix entry, and the value of the prefix
+            // entry in defined is not true, invoke the Create Term Definition algorithm, passing
+            // active context, local context, prefix as term, and defined. This will ensure that a
+            // term definition is created for prefix in active context during Context Processing.
+            if (!localContext.is_null() && localContext.contains(prefix)
+                && (defined.find(prefix) == defined.end() || !defined.at(prefix))) {
+                createTermDefinition(activeContext, localContext, prefix, defined);
+            }
+
+            // 6.4)
+            // If active context contains a term definition for prefix having a non-null IRI mapping
+            // and the prefix flag of the term definition is true, return the result of concatenating
+            // the IRI mapping associated with prefix and suffix.
+            if (activeContext.termDefinitions.find(prefix) != activeContext.termDefinitions.end()) {
+                auto prefixDef = activeContext.termDefinitions.at(prefix);
+                if (prefixDef.find(JsonLdConsts::ID) != prefixDef.end() &&
+                    prefixDef.contains(JsonLdConsts::IS_PREFIX_FLAG) &&
+                    prefixDef.at(JsonLdConsts::IS_PREFIX_FLAG)) {
+                    return prefixDef.at(JsonLdConsts::ID).get<std::string>() + suffix;
+                }
+            }
+
+            // 6.5)
+            // If value has the form of an IRI, return value.
+            if(Uri::isAbsolute(value))
+                return value;
+        }
+
+        // 7)
+        // If vocab is true, and active context has a vocabulary mapping, return the result of
+        // concatenating the vocabulary mapping with value.
+        if (vocab && !activeContext.getVocabularyMapping().empty()) {
+            return activeContext.getVocabularyMapping() + value;
+        }
+
+            // 8)
+            // Otherwise, if document relative is true, set value to the result of resolving value
+            // against the base IRI from active context. Only the basic algorithm in section 5.2
+            // of [RFC3986] is used; neither Syntax-Based Normalization nor Scheme-Based Normalization
+            // are performed. Characters additionally allowed in IRI references are treated in the
+            // same way that unreserved characters are treated in URI references, per section 6.5
+            // of [RFC3987].
+        else if (relative) {
+            if(!activeContext.getBaseIri().empty())
+                return JsonLdUrl::resolve(&(activeContext.getBaseIri()), &value);
+            else
+                return JsonLdUrl::resolve(nullptr, &value);
+        }
+
+        // 9)
+        // Return value as is.
+        return value;
+    }
+
 
 }
 
@@ -28,8 +937,8 @@ namespace {
  * @throws JsonLdError
  *             If there is an error parsing the contexts.
  */
-Context Context::parse(const nlohmann::json & localContext, const std::string & baseURL) {
-    return parse(localContext, baseURL, remoteContexts);
+Context Context::process(const nlohmann::json & localContext, const std::string & baseURL) {
+    return process(localContext, baseURL, remoteContexts);
 }
 
 /**
@@ -41,7 +950,7 @@ Context Context::parse(const nlohmann::json & localContext, const std::string & 
  * @throws JsonLdError
  *             If there is an error parsing the contexts.
  */
-Context Context::parse(const json & ilocalContext, const std::string & baseURL,
+Context Context::process(const json & ilocalContext, const std::string & baseURL,
                          std::vector<std::string> & iremoteContexts,
                          bool ioverrideProtected,
                          bool ipropagate,
@@ -216,8 +1125,8 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
             // result for active context, loaded context for local context, the documentUrl
             // of context document for base URL, a copy of remote contexts, and validate
             // scoped context.
-            result = result.parse(loadedContext, rd->getDocumentUrl(), remoteContexts, overrideProtected, propagate,
-                                  validateScopedContext);
+            result = result.process(loadedContext, rd->getDocumentUrl(), remoteContexts, overrideProtected, propagate,
+                                    validateScopedContext);
 
             // 5.2.7)
             // Continue with the next context.
@@ -242,7 +1151,7 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
             auto value = context.at(JsonLdConsts::VERSION);
             std::string str;
             if (value.is_string())
-                str = value;
+                str = value.get<std::string>();
             else
                 // todo: need a better conversion operation
                 // str = std::to_string(value.get<float>());
@@ -281,7 +1190,7 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
             // 5.6.3)
             // Initialize import to the result of resolving the value of @import
             // against base URL.
-            std::string importStr = value;
+            std::string importStr = value.get<std::string>();
             std::string importUri = JsonLdUrl::resolve(&baseURL, &importStr);
 
             // 5.6.4)
@@ -347,25 +1256,22 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
             // 5.7.2)
             // If value is null, remove the base IRI of result.
             if (value.is_null()) {
-                result.erase(JsonLdConsts::BASE);
+                result.setBaseIri("");
             } else if (value.is_string()) {
                 // 5.7.3)
                 // Otherwise, if value is an IRI, the base IRI of result is set to value.
-                if (JsonLdUtils::isAbsoluteIri(value)) {
-                    result.insert(std::make_pair(JsonLdConsts::BASE,
-                                                 value.get<std::string>())); // todo: change code like this to use member vars in context?
-                } else if (JsonLdUtils::isRelativeIri(value)){
+                if (JsonLdUtils::isAbsoluteIri(value.get<std::string>())) {
+                    result.setBaseIri(value.get<std::string>());
+                } else if (JsonLdUtils::isRelativeIri(value.get<std::string>())){
                     // 5.7.4)
                     // Otherwise, if value is a relative IRI reference and the base IRI of
                     // result is not null, set the base IRI of result to the result of resolving
                     // value against the current base IRI of result.
-                    std::string baseUri = result.at(JsonLdConsts::BASE);
-
-                    if (baseUri.empty())
+                    if (result.getBaseIri().empty())
                         throw JsonLdError(JsonLdError::InvalidBaseIri, "baseUri is empty");
                     std::string tmpIri = value.get<std::string>();
-                    std::string resolvedIri = JsonLdUrl::resolve(&baseUri, &tmpIri);
-                    result.insert(std::make_pair(JsonLdConsts::BASE, resolvedIri));
+                    std::string resolvedIri = JsonLdUrl::resolve(&result.getBaseIri(), &tmpIri);
+                    result.setBaseIri(resolvedIri);
                 }
                 else {
                     // 5.7.5)
@@ -388,7 +1294,7 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
             // 5.8.2)
             // If value is null, remove any vocabulary mapping from result.
             if (value.is_null()) {
-                result.erase(JsonLdConsts::VOCAB);
+                result.setVocabularyMapping("");
             } else if (value.is_string()) {
                 // 5.8.3)
                 // Otherwise, if value is an IRI or blank node identifier, the vocabulary
@@ -396,9 +1302,9 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
                 // true for document relative. If it is not an IRI, or a blank node
                 // identifier, an invalid vocab mapping error has been detected and
                 // processing is aborted.
-                if (value.get<std::string>().empty() || BlankNode::isBlankNodeName(value) || JsonLdUtils::isIri(value)) {
+                if (value.get<std::string>().empty() || BlankNodeNames::isBlankNodeName(value.get<std::string>()) || JsonLdUtils::isIri(value.get<std::string>())) {
                     std::string vocabMapping = result.expandIri(value.get<std::string>(), true, true);
-                    result.insert(std::make_pair(JsonLdConsts::VOCAB, vocabMapping));
+                    result.setVocabularyMapping(vocabMapping);
                 } else {
                     throw JsonLdError(JsonLdError::InvalidVocabMapping,
                                       "@value must be an absolute IRI");
@@ -418,7 +1324,7 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
             if (value.is_null()) {
                 // 5.9.2)
                 // If value is null, remove any default language from result.
-                result.erase(JsonLdConsts::LANGUAGE);
+                result.setDefaultLanguage("");
             } else if (value.is_string()) {
                 // 5.9.3)
                 // Otherwise, if value is a string, the default language of result is set
@@ -427,8 +1333,7 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
                 // according to section 2.2.9 of [BCP47], processors SHOULD issue a warning.
                 std::string v = value.get<std::string>();
                 std::transform(v.begin(), v.end(), v.begin(), &::tolower);
-                result.insert(
-                        std::make_pair(JsonLdConsts::LANGUAGE, v));
+                result.setDefaultLanguage(v);
                 // todo: need to check if language is not well-formed, and if so, emit a warning
             } else {
                 throw JsonLdError(JsonLdError::InvalidDefaultLanguage);
@@ -455,7 +1360,7 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
                 // Otherwise, if value is a string, the base direction of result is set
                 // to value. If it is not null, "ltr", or "rtl", an invalid base direction
                 // error has been detected and processing is aborted.
-                std::string directionStr = value;
+                std::string directionStr = value.get<std::string>();
 
                 if (directionStr == "ltr" || directionStr == "rtl") {
                     result.setDefaultBaseDirection(directionStr);
@@ -501,8 +1406,8 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
             }
             bool isProtected = false;
             if(context.contains(JsonLdConsts::PROTECTED))
-                isProtected = context[JsonLdConsts::PROTECTED];
-            result.createTermDefinition(context, key, defined, baseURL, isProtected, overrideProtected, remoteContexts);
+                isProtected = context[JsonLdConsts::PROTECTED].get<bool>();
+            createTermDefinition(result, context, key, defined, baseURL, isProtected, overrideProtected, remoteContexts);
         }
 
     }
@@ -510,936 +1415,13 @@ Context Context::parse(const json & ilocalContext, const std::string & baseURL,
     return result;
  }
 
-/**
-  * IRI Expansion Algorithm
-  *
-  * https://www.w3.org/TR/json-ld11-api/#iri-expansion
-  *
-  * Notes:
-  * If context is_null(), then we don't bother creating term definitions
-  * We don't want to bother with a nullable 'defined' so it can just be empty if context is_null()
-  *
-  * @param value the Iri to expand
-  * @param relative flag
-  * @param vocab flag
-  * @param localContext the local context
-  * @param defined map of defined values
-  * @return the expanded Iri
-  * @throws JsonLdError
-  */
-std::string Context::expandIri(
-        std::string value, bool relative, bool vocab,
-        const json& localContext, std::map<std::string, bool> & defined) {
-    // todo move to jsonldapi.cpp?
-
-    // Comments in this function are labelled with numbers that correspond to sections
-    // from the description of the IRI expansion algorithm.
-    // See: https://www.w3.org/TR/json-ld11-api/#iri-expansion
-
-    // NB: When a comment refers to "active context", that is this object.
-
-    // 1)
-    // If value is a keyword or null, return value as is.
-    if (JsonLdUtils::isKeyword(value)) {
-        return value;
-    }
-
-    // 2)
-    //  If value has the form of a keyword (i.e., it matches the ABNF rule "@"1*ALPHA
-    //  from [RFC5234]), a processor SHOULD generate a warning and return null.
-    if (JsonLdUtils::isKeywordForm(value)) {
-        // todo: emit a warning
-        return "";
-    }
-
-    // 3)
-    // If local context is not null, it contains an entry with a key that equals value, and
-    // the value of the entry for value in defined is not true, invoke the Create Term
-    // Definition algorithm, passing active context, local context, value as term, and
-    // defined. This will ensure that a term definition is created for value in active
-    // context during Context Processing.
-    if (!localContext.is_null() && localContext.contains(value)) {
-        auto v = localContext.at(value);
-        if(v.is_string() &&
-           defined.find(v.get<std::string>()) != defined.end() &&
-           !defined.at(v.get<std::string>())) {
-            createTermDefinition(localContext, value, defined);
-        }
-    }
-
-    // 4)
-    // If active context has a term definition for value, and the associated IRI mapping
-    // is a keyword, return that keyword.
-    if (termDefinitions.find(value) != termDefinitions.end()) {
-        auto td = termDefinitions.at(value);
-        if (!td.is_null() &&
-            td.contains(JsonLdConsts::ID) &&
-            JsonLdUtils::isKeyword(td.at(JsonLdConsts::ID)))
-            return td.at(JsonLdConsts::ID);
-    }
-
-    // 5)
-    // If vocab is true and the active context has a term definition for value, return the
-    // associated IRI mapping.
-    if (vocab && termDefinitions.find(value) != termDefinitions.end()) {
-        auto td = termDefinitions.at(value);
-        if (!td.is_null() &&
-            td.contains(JsonLdConsts::ID))
-            return td.at(JsonLdConsts::ID);
-        else
-            return ""; // todo: this return isn't in the spec, but expand_t0032 test fails without it
-    }
-
-    // 6)
-    // If value contains a colon (:) anywhere after the first character, it is either an IRI, a
-    // compact IRI, or a blank node identifier:
-    auto colIndex = value.find(':', 1);
-    if (colIndex != std::string::npos) {
-        // 6.1)
-        // Split value into a prefix and suffix at the first occurrence of a colon (:).
-        std::string prefix(value, 0, colIndex);
-        std::string suffix(value, colIndex+1);
-
-        // 6.2)
-        // If prefix is underscore (_) or suffix begins with double-forward-slash (//), return
-        // value as it is already an IRI or a blank node identifier.
-        if (prefix == "_" || suffix.find("//") == 0) {
-            return value;
-        }
-
-        // 6.3)
-        // If local context is not null, it contains a prefix entry, and the value of the prefix
-        // entry in defined is not true, invoke the Create Term Definition algorithm, passing
-        // active context, local context, prefix as term, and defined. This will ensure that a
-        // term definition is created for prefix in active context during Context Processing.
-        if (!localContext.is_null() && localContext.contains(prefix)
-            && (defined.find(prefix) == defined.end() || !defined.at(prefix))) {
-            createTermDefinition(localContext, prefix, defined);
-        }
-
-        // 6.4)
-        // If active context contains a term definition for prefix having a non-null IRI mapping
-        // and the prefix flag of the term definition is true, return the result of concatenating
-        // the IRI mapping associated with prefix and suffix.
-        if (termDefinitions.find(prefix) != termDefinitions.end()) {
-            auto prefixDef = termDefinitions.at(prefix);
-            if (prefixDef.find(JsonLdConsts::ID) != prefixDef.end() &&
-                prefixDef.contains(JsonLdConsts::IS_PREFIX_FLAG) &&
-                prefixDef.at(JsonLdConsts::IS_PREFIX_FLAG)) {
-                return prefixDef.at(JsonLdConsts::ID).get<std::string>() + suffix;
-            }
-        }
-
-        // 6.5)
-        // If value has the form of an IRI, return value.
-        if(Uri::isAbsolute(value))
-            return value;
-    }
-
-    // 7)
-    // If vocab is true, and active context has a vocabulary mapping, return the result of
-    // concatenating the vocabulary mapping with value.
-    if (vocab && contextMap.find(JsonLdConsts::VOCAB) != contextMap.end()) {
-        return contextMap.at(JsonLdConsts::VOCAB) + value;
-    }
-
-    // 8)
-    // Otherwise, if document relative is true, set value to the result of resolving value
-    // against the base IRI from active context. Only the basic algorithm in section 5.2
-    // of [RFC3986] is used; neither Syntax-Based Normalization nor Scheme-Based Normalization
-    // are performed. Characters additionally allowed in IRI references are treated in the
-    // same way that unreserved characters are treated in URI references, per section 6.5
-    // of [RFC3987].
-    else if (relative) {
-        if(this->count(JsonLdConsts::BASE))
-            return JsonLdUrl::resolve(&(this->at(JsonLdConsts::BASE)), &value);
-        else
-            return JsonLdUrl::resolve(nullptr, &value);
-    }
-
-    // 9)
-    // Return value as is.
-    return value;
-}
 
 std::string Context::expandIri(
         std::string value, bool relative, bool vocab) {
     // dummy objects
     json j;
     std::map<std::string, bool> m;
-    return expandIri(std::move(value), relative, vocab, j, m);
-}
-
-/**
- * Create Term Definition Algorithm
- *
- * https://www.w3.org/TR/json-ld11-api/#create-term-definition
- *
- */
-void Context::createTermDefinition(
-        nlohmann::json localContext,
-        const std::string& term,
-        std::map<std::string, bool> & defined,
-        std::string baseURL,
-        bool isProtected,
-        bool overrideProtected,
-        std::vector<std::string> remoteContexts,
-        bool validateScopedContext) {
-
-    // Comments in this function are labelled with numbers that correspond to sections
-    // from the description of the create term definition algorithm.
-    // See: https://www.w3.org/TR/json-ld11-api/#create-term-definition
-
-    // 1)
-    // If defined contains the entry term and the associated value is true (indicating
-    // that the term definition has already been created), return. Otherwise, if the
-    // value is false, a cyclic IRI mapping error has been detected and processing is aborted.
-    if (defined.count(term)) {
-        if (defined[term]) {
-            return;
-        }
-        throw JsonLdError(JsonLdError::CyclicIriMapping, term);
-    }
-
-    // 2)
-    // If term is the empty string (""), an invalid term definition error has been detected
-    // and processing is aborted.
-    if (term.empty())
-        throw JsonLdError(JsonLdError::InvalidTermDefinition, term);
-
-    // 2)
-    // Otherwise, set the value associated with defined's term entry to false. This indicates
-    // that the term definition is now being created but is not yet complete.
-    defined[term] = false;
-
-    // 3)
-    // Initialize value to a copy of the value associated with the entry term in local context.
-    auto value = localContext.at(term);
-
-    // 4)
-    // If term is @type, and processing mode is json-ld-1.0, a keyword redefinition error has
-    // been detected and processing is aborted.
-    if(term == JsonLdConsts::TYPE) {
-        if(isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
-            throw JsonLdError(JsonLdError::KeywordRedefinition, term);
-        }
-        // At this point, value MUST be a map with only either or both of the following entries:
-        // * An entry for @container with value @set.
-        // * An entry for @protected.
-        // Any other value means that a keyword redefinition error has been detected and
-        // processing is aborted.
-        if(value.is_object()) {
-            if(value.size() == 1 &&
-               value.contains(JsonLdConsts::CONTAINER)) {
-                auto container = value.at(JsonLdConsts::CONTAINER);
-                if(!container.is_string() || container != JsonLdConsts::SET) {
-                    throw JsonLdError(JsonLdError::KeywordRedefinition, term);
-                }
-            } else if(value.size() == 2 &&
-                      value.contains(JsonLdConsts::CONTAINER) &&
-                      value.contains(JsonLdConsts::PROTECTED)) {
-                auto container = value.at(JsonLdConsts::CONTAINER);
-                if(!container.is_string() || container != JsonLdConsts::SET) {
-                    throw JsonLdError(JsonLdError::KeywordRedefinition, term);
-                }
-            } else if (value.size() != 1 || !value.contains(JsonLdConsts::PROTECTED)) {
-                throw JsonLdError(JsonLdError::KeywordRedefinition, term);
-            }
-
-        }
-        else {
-            throw JsonLdError(JsonLdError::KeywordRedefinition, term);
-        }
-
-    }
-    // 5)
-    // Otherwise, since keywords cannot be overridden, term MUST NOT be a keyword and
-    // a keyword redefinition error has been detected and processing is aborted.
-    else if (JsonLdUtils::isKeyword(term)) {
-        throw JsonLdError(JsonLdError::KeywordRedefinition, term);
-    } else if (JsonLdUtils::isKeywordForm(term)){
-        // If term has the form of a keyword (i.e., it matches the ABNF rule "@"1*ALPHA from [RFC5234]),
-        // return; processors SHOULD generate a warning.
-        return;
-        // todo: emit a warning
-    }
-
-    // 6)
-    // Initialize previous definition to any existing term definition for term in
-    // active context, removing that term definition from active context.
-    json previousDefinition;
-    if (termDefinitions.count(term)) {
-        previousDefinition = termDefinitions[term];
-        termDefinitions.erase(term);
-    }
-
-    bool simpleTerm = false;
-
-    // 7)
-    // If value is null, convert it to a map consisting of a single entry whose key
-    // is @id and whose value is null.
-    if(value.is_null()) {
-        value = { { JsonLdConsts::ID, nullptr} };
-    }
-
-    // 8)
-    // Otherwise, if value is a string, convert it to a map consisting of a single entry whose
-    // key is @id and whose value is value. Set simple term to true.
-    else if (value.is_string()) {
-        value = { { JsonLdConsts::ID, value} };
-        simpleTerm = true;
-    }
-
-    // 9)
-    // Otherwise, value MUST be a map, if not, an invalid term definition error has been
-    // detected and processing is aborted. Set simple term to false.
-    else if (!(value.is_object())) {
-        throw JsonLdError(JsonLdError::InvalidTermDefinition);
-    }
-
-    // 10)
-    // Create a new term definition, definition, initializing prefix flag to false, protected
-    // to protected, and reverse property to false.
-    auto definition = json::object();
-    definition[JsonLdConsts::IS_PREFIX_FLAG] = false;
-    definition[JsonLdConsts::IS_PROTECTED_FLAG] = isProtected;
-    definition[JsonLdConsts::IS_REVERSE_PROPERTY_FLAG] = false;
-
-    // 11)
-    // If value has an @protected entry, set the protected flag in definition to the value
-    // of this entry. If the value of @protected is not a boolean, an invalid @protected value
-    // error has been detected and processing is aborted. If processing mode is json-ld-1.0, an
-    // invalid term definition has been detected and processing is aborted.
-    if (value.contains(JsonLdConsts::PROTECTED)) {
-        if (isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
-            throw JsonLdError(JsonLdError::InvalidTermDefinition);
-        }
-
-        if (!value.at(JsonLdConsts::PROTECTED).is_boolean()) {
-            throw JsonLdError(JsonLdError::InvalidProtectedValue);
-        }
-
-        definition[JsonLdConsts::IS_PROTECTED_FLAG] = value.at(JsonLdConsts::PROTECTED).get<bool>();
-    }
-
-    // 12)
-    // If value contains the entry @type:
-    if (value.contains(JsonLdConsts::TYPE)) {
-        // 12.1)
-        // Initialize type to the value associated with the @type entry, which MUST be a
-        // string. Otherwise, an invalid type mapping error has been detected and processing
-        // is aborted.
-        auto type = value.at(JsonLdConsts::TYPE);
-        if (!(type.is_string())) {
-            throw JsonLdError(JsonLdError::InvalidTypeMapping);
-        }
-        std::string typeStr = type;
-
-        // 12.2)
-        // Set type to the result of IRI expanding type, using local context, and defined.
-        typeStr = expandIri(typeStr, false, true, localContext, defined);
-
-        // 12.3)
-        // If the expanded type is @json or @none, and processing mode is json-ld-1.0, an invalid
-        // type mapping error has been detected and processing is aborted.
-        if (isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
-            if(typeStr == JsonLdConsts::JSON || typeStr == JsonLdConsts::NONE) {
-                throw JsonLdError(JsonLdError::InvalidTypeMapping, type);
-            }
-        }
-
-        // 12.4)
-        // Otherwise, if the expanded type is neither @id, nor @json, nor @none, nor @vocab, nor
-        // an IRI, an invalid type mapping error has been detected and processing is aborted.
-        if(!(typeStr == JsonLdConsts::ID ||
-                typeStr == JsonLdConsts::JSON ||
-                typeStr == JsonLdConsts::NONE ||
-                typeStr == JsonLdConsts::VOCAB ||
-                JsonLdUtils::isAbsoluteIri(typeStr))) {
-            throw JsonLdError(JsonLdError::InvalidTypeMapping, type);
-        }
-
-        // 12.5)
-        // Set the type mapping for definition to type.
-        definition[JsonLdConsts::TYPE] = typeStr;
-    }
-
-    // 13)
-    // If value contains the entry @reverse:
-    if (value.contains(JsonLdConsts::REVERSE)) {
-        // 13.1)
-        // If value contains @id or @nest, entries, an invalid reverse property error
-        // has been detected and processing is aborted.
-        if (value.contains(JsonLdConsts::ID) || value.contains(JsonLdConsts::NEST)) {
-            throw JsonLdError(JsonLdError::InvalidReverseProperty);
-        }
-
-        // 13.2)
-        // If the value associated with the @reverse entry is not a string, an invalid IRI
-        // mapping error has been detected and processing is aborted.
-        auto reverse = value.at(JsonLdConsts::REVERSE);
-        if (!(reverse.is_string())) {
-            throw JsonLdError(JsonLdError::InvalidIriMapping,
-                              "Expected String for @reverse value.");
-        }
-        std::string reverseStr = reverse;
-
-        // 13.3)
-        // If the value associated with the @reverse entry is a string having the form of
-        // a keyword (i.e., it matches the ABNF rule "@"1*ALPHA from [RFC5234]), return;
-        // processors SHOULD generate a warning.
-        if(JsonLdUtils::isKeywordForm(reverseStr)) {
-            // todo: emit a warning
-            return;
-        }
-
-        // 13.4)
-        // Otherwise, set the IRI mapping of definition to the result of IRI expanding
-        // the value associated with the @reverse entry, using local context, and
-        // defined. If the result does not have the form of an IRI or a blank node
-        // identifier, an invalid IRI mapping error has been detected and processing is aborted.
-        reverseStr = expandIri(reverseStr, false, true, localContext, defined);
-        //if (!JsonLdUtils::isAbsoluteIri(reverseStr) || !BlankNode::isBlankNodeName(reverseStr)) {
-          //todo: if we add call for isBlankNodeName as the description seems to say, we fail more tests
-        if (!JsonLdUtils::isAbsoluteIri(reverseStr)) {
-            throw JsonLdError(JsonLdError::InvalidIriMapping,
-                              "Non-absolute @reverse IRI: " + reverseStr);
-        }
-        definition[JsonLdConsts::ID] = reverseStr;
-
-        // 13.5)
-        // If value contains an @container entry, set the container mapping of definition
-        // to an array containing its value; if its value is neither @set, nor @index, nor
-        // null, an invalid reverse property error has been detected (reverse properties only
-        // support set- and index-containers) and processing is aborted.
-        if (value.contains(JsonLdConsts::CONTAINER)) {
-            auto container = value.at(JsonLdConsts::CONTAINER);
-            if (container == JsonLdConsts::SET || container == JsonLdConsts::INDEX || container.is_null()) {
-                definition[JsonLdConsts::CONTAINER] = json::array({container});
-            } else {
-                throw JsonLdError(JsonLdError::InvalidReverseProperty,
-                                  "reverse properties only support set- and index-containers");
-            }
-        }
-
-        // 13.6)
-        // Set the reverse property flag of definition to true.
-        definition[JsonLdConsts::REVERSE] = true;
-
-        // 13.7)
-        // Set the term definition of term in active context to definition and the value
-        // associated with defined's entry term to true and return.
-        termDefinitions[term] = definition;
-        defined[term] = true;
-        return;
-    }
-
-    // 14)
-    // If value contains the entry @id and its value does not equal term
-    if (value.contains(JsonLdConsts::ID) &&
-        (!value.at(JsonLdConsts::ID).is_string() || term != value.at(JsonLdConsts::ID))) {
-
-        auto id = value.at(JsonLdConsts::ID);
-
-        // 14.1)
-        // If the @id entry of value is null, the term is not used for IRI expansion, but is
-        // retained to be able to detect future redefinitions of this term.
-        if(!id.is_null()) {
-
-            // 14.2)
-            // otherwise
-
-            // 14.2.1)
-            // If the value associated with the @id entry is not a string, an invalid IRI
-            // mapping error has been detected and processing is aborted.
-            if (!id.is_string()) {
-                throw JsonLdError(JsonLdError::InvalidIriMapping,
-                                  "expected value of @id to be a string");
-            }
-
-            std::string idStr = id;
-
-            // 14.2.2)
-            // If the value associated with the @id entry is not a keyword, but has the
-            // form of a keyword (i.e., it matches the ABNF rule "@"1*ALPHA from [RFC5234]),
-            // return; processors SHOULD generate a warning.
-            if(!JsonLdUtils::isKeyword(idStr) && JsonLdUtils::isKeywordForm(idStr)) {
-                // todo: emit a warning
-                return;
-            }
-
-            // 14.2.3)
-            // Otherwise, set the IRI mapping of definition to the result of IRI expanding
-            // the value associated with the @id entry, using local context, and defined.
-            idStr = expandIri(idStr, false, true, localContext, defined);
-            // If the resulting IRI mapping is neither a keyword, nor an IRI, nor a blank node
-            // identifier, an invalid IRI mapping error has been detected and processing is
-            // aborted; if it equals @context, an invalid keyword alias error has been detected
-            // and processing is aborted.
-            if (JsonLdUtils::isKeyword(idStr) || JsonLdUtils::isAbsoluteIri(idStr) ||
-                BlankNode::isBlankNodeName(idStr)) {
-                if (idStr == JsonLdConsts::CONTEXT) {
-                    throw JsonLdError(JsonLdError::InvalidKeywordAlias, "cannot alias @context");
-                }
-                definition[JsonLdConsts::ID] = idStr;
-            } else {
-                throw JsonLdError(JsonLdError::InvalidIriMapping,
-                                  "resulting IRI mapping should be a keyword, absolute IRI or blank node");
-            }
-
-            // 14.2.4)
-            // If the term contains a colon (:) anywhere but as the first or last character
-            // of term, or if it contains a slash (/) anywhere:
-            if(term.substr(0, term.size()-1).find(':',1) != std::string::npos ||
-               term.find('/') != std::string::npos) {
-
-                // 14.2.4.1)
-                // Set the value associated with defined's term entry to true.
-                defined[term] = true;
-
-                // 14.2.4.2)
-                // If the result of IRI expanding term using local context, and defined, is
-                // not the same as the IRI mapping of definition, an invalid IRI mapping error
-                // has been detected and processing is aborted.
-                std::string expandedTerm = expandIri(term, false, true, localContext, defined);
-                if(expandedTerm != definition[JsonLdConsts::ID]) {
-                    throw JsonLdError(JsonLdError::InvalidIriMapping,
-                                      "expanded term is not the same as IRI mapping");
-                }
-            }
-
-            // 14.2.5)
-            // If term contains neither a colon (:) nor a slash (/), simple term is true,
-            // and if the IRI mapping of definition is either an IRI ending with a gen-delim
-            // character, or a blank node identifier, set the prefix flag in definition to true.
-            if (term.find(':') == std::string::npos &&
-                term.find('/') == std::string::npos &&
-                simpleTerm &&
-                ((JsonLdUtils::isAbsoluteIri(definition[JsonLdConsts::ID]) &&
-                  JsonLdUtils::iriEndsWithGeneralDelimiterCharacter(definition[JsonLdConsts::ID])) ||
-                 BlankNode::isBlankNodeName(definition[JsonLdConsts::ID])))
-            {
-                definition[JsonLdConsts::IS_PREFIX_FLAG] = true;
-            }
-        }
-    }
-    // 15)
-    // Otherwise if the term contains a colon (:) anywhere after the first character:
-    else if (term.find(':', 1) != std::string::npos) {
-        // todo: maybe need a new "compact uri" class? See https://www.w3.org/TR/curie/ ...
-        // 15.1)
-        // If term is a compact IRI with a prefix that is an entry in local context
-        // a dependency has been found. Use this algorithm recursively passing active
-        // context, local context, the prefix as term, and defined.
-        auto colIndex = term.find(':');
-        std::string prefix(term, 0, colIndex);
-        std::string suffix(term, colIndex + 1);
-        if (localContext.contains(prefix)) {
-            createTermDefinition(localContext, prefix, defined);
-        }
-        // 15.2)
-        // If term's prefix has a term definition in active context, set the IRI mapping of
-        // definition to the result of concatenating the value associated with the prefix's
-        // IRI mapping and the term's suffix.
-        if (termDefinitions.find(prefix) != termDefinitions.end()) {
-            auto id = termDefinitions.at(prefix).at(JsonLdConsts::ID);
-            id = id.get<std::string>() + suffix;
-            definition[JsonLdConsts::ID] = id;
-        }
-        // 15.3)
-        // Otherwise, term is an IRI or blank node identifier. Set the IRI mapping of
-        // definition to term.
-        else {
-            definition[JsonLdConsts::ID] = term;
-        }
-    }
-    // 16)
-    // Otherwise if the term contains a slash (/):
-    else if (term.find('/') != std::string::npos) {
-        // 16.1
-        // Term is a relative IRI reference.
-        assert(JsonLdUtils::isRelativeIri(term));
-
-        // 16.2)
-        // Set the IRI mapping of definition to the result of IRI expanding term. If the
-        // resulting IRI mapping is not an IRI, an invalid IRI mapping error has been detected
-        // and processing is aborted.
-        std::string expandedTerm = expandIri(term, false, true, localContext, defined);
-        definition[JsonLdConsts::ID] = expandedTerm;
-        if(!JsonLdUtils::isAbsoluteIri(definition[JsonLdConsts::ID])) {
-            throw JsonLdError(JsonLdError::InvalidIriMapping,
-                              "expanded term is not an IRI");
-        }
-    }
-    // 17)
-    // Otherwise, if term is @type, set the IRI mapping of definition to @type.
-    else if (term == JsonLdConsts::TYPE) {
-        definition[JsonLdConsts::ID] = JsonLdConsts::TYPE;
-    }
-    // 18)
-    // Otherwise, if active context has a vocabulary mapping, the IRI mapping of definition
-    // is set to the result of concatenating the value associated with the vocabulary mapping
-    // and term. If it does not have a vocabulary mapping, an invalid IRI mapping error been
-    // detected and processing is aborted.
-    else if (contextMap.find(JsonLdConsts::VOCAB) != contextMap.end()) {
-        definition[JsonLdConsts::ID] = contextMap.at(JsonLdConsts::VOCAB) + term;
-    }
-    else {
-        throw JsonLdError(JsonLdError::InvalidIriMapping,
-                          "relative term definition without vocab mapping");
-    }
-
-    // 19)
-    // If value contains the entry @container:
-    if (value.contains(JsonLdConsts::CONTAINER)) {
-
-        // 19.1) (partial)
-        // Initialize container to the value associated with the @container entry
-        auto container = value.at(JsonLdConsts::CONTAINER);
-
-        // 19.2)
-        // If the container value is @graph, @id, or @type, or is otherwise not a string,
-        // generate an invalid container mapping error and abort processing if processing
-        // mode is json-ld-1.0.
-        if (isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
-            if (!container.is_string())
-                throw JsonLdError(JsonLdError::InvalidContainerMapping,
-                                  "@container must be a string");
-            if(container != JsonLdConsts::LIST &&
-               container != JsonLdConsts::SET &&
-               container != JsonLdConsts::INDEX &&
-               container != JsonLdConsts::LANGUAGE) {
-                throw JsonLdError(JsonLdError::InvalidContainerMapping,
-                                  "@container must be either @list, @set, @index, or @language");
-            }
-        }
-
-        // 19.1)
-        // ... container ... MUST be either @graph, @id, @index, @language, @list, @set,
-        // @type, or an array containing exactly any one of those keywords, an array
-        // containing @graph and either @id or @index optionally including @set, or an
-        // array containing a combination of @set and any of @index, @graph, @id, @type,
-        // @language in any order. Otherwise, an invalid container mapping has been
-        // detected and processing is aborted.
-        if(container.is_array() && container.size() == 1)
-            container = container.at(0);
-
-        if(!JsonLdUtils::containsOrEquals(container, JsonLdConsts::GRAPH) &&
-           !JsonLdUtils::containsOrEquals(container, JsonLdConsts::ID) &&
-           !JsonLdUtils::containsOrEquals(container, JsonLdConsts::INDEX) &&
-           !JsonLdUtils::containsOrEquals(container, JsonLdConsts::LANGUAGE) &&
-           !JsonLdUtils::containsOrEquals(container, JsonLdConsts::LIST) &&
-           !JsonLdUtils::containsOrEquals(container, JsonLdConsts::SET) &&
-           !JsonLdUtils::containsOrEquals(container, JsonLdConsts::TYPE)) {
-            throw JsonLdError(JsonLdError::InvalidContainerMapping);
-        }
-
-        if(container.is_array()) {
-
-            if (container.size() > 3)
-                throw JsonLdError(JsonLdError::InvalidContainerMapping);
-
-            if (JsonLdUtils::containsOrEquals(container, JsonLdConsts::GRAPH) &&
-                JsonLdUtils::containsOrEquals(container, JsonLdConsts::ID)) {
-                if (container.size() != 2 && !JsonLdUtils::containsOrEquals(container, JsonLdConsts::SET))
-                    throw JsonLdError(JsonLdError::InvalidContainerMapping);
-            }
-
-            else if (JsonLdUtils::containsOrEquals(container, JsonLdConsts::GRAPH) &&
-                JsonLdUtils::containsOrEquals(container, JsonLdConsts::INDEX)) {
-                if (container.size() != 2 && !JsonLdUtils::containsOrEquals(container, JsonLdConsts::SET))
-                    throw JsonLdError(JsonLdError::InvalidContainerMapping);
-            }
-
-            else if (container.size() > 2)
-                throw JsonLdError(JsonLdError::InvalidContainerMapping);
-
-            if (JsonLdUtils::containsOrEquals(container, JsonLdConsts::SET)) {
-                if (!JsonLdUtils::containsOrEquals(container, JsonLdConsts::GRAPH) &&
-                    !JsonLdUtils::containsOrEquals(container, JsonLdConsts::ID) &&
-                    !JsonLdUtils::containsOrEquals(container, JsonLdConsts::INDEX) &&
-                    !JsonLdUtils::containsOrEquals(container, JsonLdConsts::LANGUAGE) &&
-                    !JsonLdUtils::containsOrEquals(container, JsonLdConsts::TYPE)) {
-                    throw JsonLdError(JsonLdError::InvalidContainerMapping);
-                }
-            }
-        }
-        else if(!container.is_string())
-            throw JsonLdError(JsonLdError::InvalidContainerMapping,
-                              "@container must be a string or array");
-
-        // 19.3
-        // Set the container mapping of definition to container coercing to an array, if necessary.
-        if(container.is_array())
-            definition[JsonLdConsts::CONTAINER] = container;
-        else {
-            definition[JsonLdConsts::CONTAINER] = json::array();
-            definition[JsonLdConsts::CONTAINER].push_back(container);
-        }
-
-        // 19.4)
-        // If the container mapping of definition includes @type:
-        if(JsonLdUtils::containsOrEquals(definition[JsonLdConsts::CONTAINER], JsonLdConsts::TYPE)){
-            // 19.4.1)
-            // If type mapping in definition is undefined, set it to @id.
-            // todo this is a place where termdef having member vars like 'containermapping'
-            //  and 'typemapping' would come in handy
-            if(!definition.contains(JsonLdConsts::TYPE))
-                definition[JsonLdConsts::TYPE] = JsonLdConsts::ID;
-
-            // 19.4.2)
-            // If type mapping in definition is neither @id nor @vocab, an invalid type
-            // mapping error has been detected and processing is aborted.
-            if (definition[JsonLdConsts::TYPE] != JsonLdConsts::ID &&
-                    definition[JsonLdConsts::TYPE] != JsonLdConsts::VOCAB) {
-                throw JsonLdError(JsonLdError::InvalidTypeMapping,"");
-            }
-        }
-    }
-
-    // 20)
-    // If value contains the entry @index:
-    if (value.contains(JsonLdConsts::INDEX)) {
-
-        // 20.1)
-        // If processing mode is json-ld-1.0 or container mapping does not include
-        // @index, an invalid term definition has been detected and processing is aborted.
-        if (isProcessingMode(JsonLdOptions::JSON_LD_1_0) ||
-            !JsonLdUtils::containsOrEquals(definition[JsonLdConsts::CONTAINER], JsonLdConsts::INDEX)) {
-            throw JsonLdError(JsonLdError::InvalidTermDefinition,"");
-        }
-
-        // 20.2)
-        // Initialize index to the value associated with the @index entry. If the result of
-        // IRI expanding that value is not an IRI, an invalid term definition has been detected
-        // and processing is aborted.
-        auto index = value.at(JsonLdConsts::INDEX);
-
-        if (!index.is_string()) {
-            throw JsonLdError(JsonLdError::InvalidTermDefinition,"");
-        }
-
-        std::string indexStr = index;
-
-        std::string expandedIndex = expandIri(indexStr, false, true, localContext, defined);
-
-        if (!JsonLdUtils::isAbsoluteIri(expandedIndex)) {
-            throw JsonLdError(JsonLdError::InvalidTermDefinition,"");
-        }
-
-        // 20.3)
-        // Set the index mapping of definition to index
-        definition[JsonLdConsts::INDEX] = indexStr;
-    }
-
-    // 21)
-    // If value contains the entry @context:
-    if (value.contains(JsonLdConsts::CONTEXT)) {
-
-        // 21.1)
-        // If processing mode is json-ld-1.0, an invalid term definition has been detected
-        // and processing is aborted.
-        if (isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
-            throw JsonLdError(JsonLdError::InvalidTermDefinition,"");
-        }
-
-        // 21.2)
-        // Initialize context to the value associated with the @context entry, which is treated
-        // as a local context.
-        auto theContext = value.at(JsonLdConsts::CONTEXT);
-
-        // 21.3)
-        // Invoke the Context Processing algorithm using the active context, context as local
-        // context, base URL, true for override protected, a copy of remote contexts, and false
-        // for validate scoped context. If any error is detected, an invalid scoped context
-        // error has been detected and processing is aborted.
-        try {
-            parse(theContext, baseURL, remoteContexts, true, propagate, false);
-        } catch (JsonLdError &error) {
-            throw JsonLdError(JsonLdError::InvalidScopedContext,error.what());
-        }
-
-        // 21.4)
-        // Set the local context of definition to context, and base URL to base URL.
-        definition[JsonLdConsts::LOCALCONTEXT] = theContext;
-        definition[JsonLdConsts::BASEURL] = baseURL;
-    }
-
-    // 22)
-    // If value contains the entry @language and does not contain the entry @type:
-    if (value.contains(JsonLdConsts::LANGUAGE) && !value.contains(JsonLdConsts::TYPE)) {
-        // 22.1)
-        // Initialize language to the value associated with the @language entry, which MUST
-        // be either null or a string. If language is not well-formed according to section
-        // 2.2.9 of [BCP47], processors SHOULD issue a warning. Otherwise, an invalid language
-        // mapping error has been detected and processing is aborted.
-        auto language = value.at(JsonLdConsts::LANGUAGE);
-
-        if (language.is_null() || language.is_string()) {
-            // todo: need to check if language is not well-formed, and if so, emit a warning
-            // 22.2)
-            // Set the language mapping of definition to language.
-            definition[JsonLdConsts::LANGUAGE] = language;
-        } else {
-            throw JsonLdError(JsonLdError::InvalidLanguageMapping,
-                              "@language must be a string or null");
-        }
-    }
-
-    // 23.
-    // If value contains the entry @direction and does not contain the entry @type:
-    if (value.contains(JsonLdConsts::DIRECTION) && !value.contains(JsonLdConsts::TYPE)) {
-
-        // 23.1)
-        // Initialize direction to the value associated with the @direction entry, which
-        // MUST be either null, "ltr", or "rtl". Otherwise, an invalid base direction error
-        // has been detected and processing is aborted.
-        auto direction = value.at(JsonLdConsts::DIRECTION);
-
-        if (direction.is_null()) {
-            definition[JsonLdConsts::DIRECTION] = direction;
-        } else if (direction.is_string()) {
-
-            std::string directionStr = direction;
-
-            if (directionStr == "ltr" || directionStr == "rtl") {
-                // 23.2)
-                // Set the direction mapping of definition to direction.
-                definition[JsonLdConsts::DIRECTION] = directionStr;
-            } else {
-                throw JsonLdError(JsonLdError::InvalidBaseDirection,
-                                  R"(@direction must be either "ltr" or "rtl")");
-            }
-        } else {
-            throw JsonLdError(JsonLdError::InvalidBaseDirection,
-                              R"(@direction must be either null, "ltr" or "rtl")");
-        }
-    }
-
-    // 24)
-    // If value contains the entry @nest:
-    if (value.contains(JsonLdConsts::NEST)) {
-
-        // 24.1)
-        // If processing mode is json-ld-1.0, an invalid term definition has been detected
-        // and processing is aborted.
-        if (isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
-            throw JsonLdError(JsonLdError::InvalidTermDefinition,"");
-        }
-
-        // 24.2)
-        // Initialize nest value in definition to the value associated with the
-        // @nest entry, which MUST be a string and MUST NOT be a keyword other
-        // than @nest. Otherwise, an invalid @nest value error has been detected
-        // and processing is aborted.
-        auto nest = value.at(JsonLdConsts::NEST);
-
-        if (!nest.is_string()) {
-            throw JsonLdError(JsonLdError::InvalidNestValue,"");
-        }
-
-        std::string nestStr = nest;
-
-        if (JsonLdUtils::isKeyword(nestStr) && nestStr != JsonLdConsts::NEST) {
-            throw JsonLdError(JsonLdError::InvalidNestValue,"");
-        }
-        definition[JsonLdConsts::NEST] = nestStr;
-    }
-
-    // 25)
-    // If value contains the entry @prefix:
-    if (value.contains(JsonLdConsts::PREFIX)) {
-
-        // 25.1)
-        // If processing mode is json-ld-1.0, or if term contains a colon (:) or
-        // slash (/), an invalid term definition has been detected and processing
-        // is aborted.
-        if (isProcessingMode(JsonLdOptions::JSON_LD_1_0) ||
-            term.find(':') != std::string::npos ||
-            term.find('/') != std::string::npos) {
-            throw JsonLdError(JsonLdError::InvalidTermDefinition);
-        }
-
-        // 25.2)
-        // Set the prefix flag to the value associated with the @prefix entry, which
-        // MUST be a boolean. Otherwise, an invalid @prefix value error has been detected
-        // and processing is aborted.
-        auto prefix = value.at(JsonLdConsts::PREFIX);
-
-        if(!prefix.is_boolean())
-            throw JsonLdError(JsonLdError::InvalidPrefixValue,"");
-
-        definition[JsonLdConsts::IS_PREFIX_FLAG] = prefix;
-
-        // 25.3)
-        // If the prefix flag of definition is set to true, and its IRI mapping is a
-        // keyword, an invalid term definition has been detected and processing is aborted.
-        if (definition[JsonLdConsts::IS_PREFIX_FLAG] && JsonLdUtils::isKeyword(definition[JsonLdConsts::ID])) {
-            throw JsonLdError(JsonLdError::InvalidTermDefinition,"");
-        }
-    }
-
-    // 26)
-    // If value contains any entry other than @id, @reverse, @container, @context,
-    // @direction, @index, @language, @nest, @prefix, @protected, or @type, an invalid
-    // term definition error has been detected and processing is aborted.
-    std::set<std::string> validKeywords {
-            JsonLdConsts::ID,JsonLdConsts::REVERSE,JsonLdConsts::CONTAINER,JsonLdConsts::CONTEXT,
-            JsonLdConsts::DIRECTION,JsonLdConsts::INDEX,JsonLdConsts::LANGUAGE,JsonLdConsts::NEST,
-            JsonLdConsts::PREFIX,JsonLdConsts::PROTECTED,JsonLdConsts::TYPE
-    };
-    for (auto& el : value.items()) {
-        if(validKeywords.find(el.key()) == validKeywords.end())
-            throw JsonLdError(JsonLdError::InvalidTermDefinition,el.key() + " not in list of valid keywords");
-    }
-
-    // 27)
-    // If override protected is false and previous definition exists and is protected;
-    if(!overrideProtected &&
-       !previousDefinition.is_null() &&
-       previousDefinition.contains(JsonLdConsts::IS_PROTECTED_FLAG) &&
-       previousDefinition[JsonLdConsts::IS_PROTECTED_FLAG]) {
-        // 27.1)
-        // If definition is not the same as previous definition (other than the value
-        // of protected), a protected term redefinition error has been detected, and
-        // processing is aborted.
-        json copyOfDefinition = definition;
-        json copyOfPrevious = previousDefinition;
-        copyOfDefinition.erase(JsonLdConsts::IS_PROTECTED_FLAG);
-        copyOfPrevious.erase(JsonLdConsts::IS_PROTECTED_FLAG);
-        if(copyOfDefinition != copyOfPrevious)
-            throw JsonLdError(JsonLdError::ProtectedTermRedefinition);
-
-        // 27.2)
-        // Set definition to previous definition to retain the value of protected.
-        definition = previousDefinition;
-    }
-
-    // 28)
-    termDefinitions[term] = definition;
-    defined[term] = true;
-
-}
-
-std::string & Context::at(const std::string &s) {
-    return contextMap.at(s);
-}
-
-size_t Context::erase(const std::string &key) {
-    return contextMap.erase(key);
-}
-
-std::pair<Context::StringMap::iterator,bool> Context::insert( const StringMap::value_type& value ) {
-    // unlike a normal c++ map, which does not insert a value if the key is already present,
-    // we DO want to replace, so we have to erase first
-    if(contextMap.find(value.first) != contextMap.end()) {
-        contextMap.erase(value.first);
-    }
-    return contextMap.insert(value);
-}
-
-size_t Context::count(const std::string &key) const {
-    return contextMap.count(key);
+    return ::expandIri(*this, std::move(value), relative, vocab, j, m);
 }
 
 bool Context::isReverseProperty(const std::string &property) {
@@ -1463,99 +1445,10 @@ nlohmann::json Context::getTermDefinition(const std::string & key) {
 }
 
 
-json Context::expandValue(const std::string & activeProperty, const json& value)  {
-    // todo move to jsonldapi.cpp?
-
-    // Comments in this function are labelled with numbers that correspond to sections
-    // from the description of the Value Expansion algorithm.
-    // See: https://www.w3.org/TR/json-ld11-api/#value-expansion
-
-    json result;
-    json termDefinition = getTermDefinition(activeProperty);
-
-    if(termDefinition.contains(JsonLdConsts::TYPE)) {
-
-        std::string typeMapping = termDefinition.at(JsonLdConsts::TYPE);
-
-        // 1)
-        // If the active property has a type mapping in active context that is @id, and
-        // the value is a string, return a new map containing a single entry where the key
-        // is @id and the value is the result IRI expanding value using true for document
-        // relative and false for vocab.
-        if (typeMapping == JsonLdConsts::ID && value.is_string()) {
-            result[JsonLdConsts::ID] = expandIri(value.get<std::string>(), true, false);
-            return result;
-        }
-
-        // 2)
-        // If active property has a type mapping in active context that is @vocab, and the
-        // value is a string, return a new map containing a single entry where the key is @id
-        // and the value is the result of IRI expanding value using true for document relative.
-        if (typeMapping == JsonLdConsts::VOCAB && value.is_string()) {
-            result[JsonLdConsts::ID] = expandIri(value.get<std::string>(), true, true);
-            return result;
-        }
-    }
-
-    // 3)
-    // Otherwise, initialize result to a map with an @value entry whose value is set to value.
-    result[JsonLdConsts::VALUE] = value;
-
-    if(termDefinition.contains(JsonLdConsts::TYPE)) {
-
-        std::string typeMapping = termDefinition.at(JsonLdConsts::TYPE);
-
-        // 4)
-        // If active property has a type mapping in active context, other than @id, @vocab, or
-        // @none, add @type to result and set its value to the value associated with the
-        // type mapping.
-        if (typeMapping != JsonLdConsts::ID &&
-            typeMapping != JsonLdConsts::VOCAB &&
-            typeMapping != JsonLdConsts::NONE) {
-            result[JsonLdConsts::TYPE] = typeMapping;
-        }
-    }
-    // 5)
-    // Otherwise, if value is a string:
-    else if (value.is_string()) {
-        // 5.1)
-        // Initialize language to the language mapping for active property in active
-        // context, if any, otherwise to the default language of active context.
-        std::string language;
-        if (termDefinition.contains(JsonLdConsts::LANGUAGE)) {
-            if(!termDefinition.at(JsonLdConsts::LANGUAGE).is_null())
-                language = termDefinition.at(JsonLdConsts::LANGUAGE);
-        }
-        else if (contextMap.count(JsonLdConsts::LANGUAGE)) {
-            language = contextMap.at(JsonLdConsts::LANGUAGE);
-        }
-        // 5.2)
-        // Initialize direction to the direction mapping for active property in active
-        // context, if any, otherwise to the default base direction of active context.
-        std::string direction;
-        if (termDefinition.contains(JsonLdConsts::DIRECTION)) {
-            if(!termDefinition.at(JsonLdConsts::DIRECTION).is_null())
-                direction = termDefinition.at(JsonLdConsts::DIRECTION);
-        }
-        else  {
-            direction = getDefaultBaseDirection();
-        }
-        // 5.3)
-        // If language is not null, add @language to result with the value language.
-        if(!language.empty())
-            result[JsonLdConsts::LANGUAGE] = language;
-        // 5.4)
-        // If direction is not null, add @direction to result with the value direction.
-        if(!direction.empty() && direction != "null")
-            result[JsonLdConsts::DIRECTION] = direction;
-    }
-    return result;
-}
-
 Context::Context(const JsonLdOptions& ioptions)
         : options(ioptions)
 {
-    contextMap.insert(std::make_pair(JsonLdConsts::BASE, options.getBase()));
+    setBaseIri(options.getBase());
     termDefinitions = json::object();
     inverseContext = nullptr;
     previousContext = nullptr;
@@ -1595,4 +1488,24 @@ std::string Context::getDefaultBaseDirection() const {
 
 void Context::setDefaultBaseDirection(const std::string & direction) {
     defaultBaseDirection = direction;
+}
+
+JsonLdOptions &Context::getOptions() {
+    return options;
+}
+
+const std::string &Context::getDefaultLanguage() const {
+    return defaultLanguage;
+}
+
+void Context::setDefaultLanguage(const std::string &idefaultLanguage) {
+    defaultLanguage = idefaultLanguage;
+}
+
+const std::string &Context::getVocabularyMapping() const {
+    return vocabularyMapping;
+}
+
+void Context::setVocabularyMapping(const std::string &ivocabularyMapping) {
+    vocabularyMapping = ivocabularyMapping;
 }

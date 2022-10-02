@@ -1,11 +1,10 @@
 #pragma ide diagnostic ignored "cert-err58-cpp"
+#include <jsonld-cpp/JsonLdError.h>
 #include <jsonld-cpp/JsonLdProcessor.h>
 #include <jsonld-cpp/FileLoader.h>
-#include "UrdnaManifestLoader.h"
+#include <jsonld-cpp/RemoteDocument.h>
 #include <jsonld-cpp/RDFDatasetUtils.h>
-#include <fstream>
-
-using nlohmann::json;
+#include "UrdnaManifestLoader.h"
 
 #include <gtest/gtest.h>
 #pragma clang diagnostic push
@@ -16,6 +15,8 @@ using nlohmann::json;
 #include <rapidcheck/gtest.h>
 #pragma clang diagnostic pop
 #pragma GCC diagnostic pop
+
+using nlohmann::json;
 
 // test suite fixture class
 class JsonLdProcessorNormalizeUrdna2015Test : public ::testing::Test {
@@ -67,8 +68,6 @@ public:
 
         EXPECT_EQ(normalized, expected);
 
-        std::cout << "  Actual normalized: " << normalized << std::endl;
-        std::cout << "Expected normalized: " << expected << std::endl;
     }
 
     static void performNormalizeTestFromAlternateManifest(const std::string& testName, const std::string& manifestName) {

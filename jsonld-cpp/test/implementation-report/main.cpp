@@ -44,8 +44,8 @@ std::string usage(std::string name)
 *
 * To help create the JSON configuration file we have a HTML page that can be
 * used to input the information and generate the file in the required format.
-* This can be achieved by opening the <a href="../../configuration.html"
-* target="_blank">configuration.html</a> file that is in the
+* This can be achieved by opening the <a href="../../configuration.html" target="_blank">configuration.html</a>
+ * file that is in the
 * implementation-report folder in a browser and you will see that there are a
 * number of fields that contain default information that can be changed if
 * needed.  Scrolling down past the initial fields, you will see a section named

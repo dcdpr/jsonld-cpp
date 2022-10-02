@@ -1,5 +1,4 @@
 #include <jsonld-cpp/RDFDataset.h>
-#include <jsonld-cpp/ObjUtils.h>
 
 #include <gtest/gtest.h>
 #pragma clang diagnostic push
@@ -226,11 +225,11 @@ TEST(NodeComparisonsTest, sortingLiterals_sameValues_differentLanguages) {
 
 TEST(NodeComparisonsTest, quads_withNullGraphs_areEqual) {
 
-    Quad q1("http://example.com/s1", "http://example.com/p1",
-            "http://example.com/o1",nullptr);
+    RDFQuad q1("http://example.com/s1", "http://example.com/p1",
+               "http://example.com/o1", nullptr);
 
-    Quad q2("http://example.com/s1", "http://example.com/p1",
-            "http://example.com/o1", nullptr);
+    RDFQuad q2("http://example.com/s1", "http://example.com/p1",
+               "http://example.com/o1", nullptr);
 
     EXPECT_EQ(q1, q2);
 }
@@ -239,44 +238,44 @@ TEST(NodeComparisonsTest, quads_withSameGraphs_areEqual) {
 
     std::string graph = "foo";
 
-    Quad q1("http://example.com/s1", "http://example.com/p1",
-            "http://example.com/o1", &graph);
+    RDFQuad q1("http://example.com/s1", "http://example.com/p1",
+               "http://example.com/o1", &graph);
 
-    Quad q2("http://example.com/s1", "http://example.com/p1",
-            "http://example.com/o1", &graph);
+    RDFQuad q2("http://example.com/s1", "http://example.com/p1",
+               "http://example.com/o1", &graph);
 
     EXPECT_EQ(q1, q2);
 }
 
 TEST(NodeComparisonsTest, quads_withDifferentSubjects_areNotEqual) {
 
-    Quad q1("http://example.com/s1", "http://example.com/p1",
-            "http://example.com/o1",nullptr);
+    RDFQuad q1("http://example.com/s1", "http://example.com/p1",
+               "http://example.com/o1", nullptr);
 
-    Quad q2_diffSubject("http://example.com/s2", "http://example.com/p1",
-                        "http://example.com/o1", nullptr);
+    RDFQuad q2_diffSubject("http://example.com/s2", "http://example.com/p1",
+                           "http://example.com/o1", nullptr);
 
     EXPECT_NE(q1, q2_diffSubject);
 }
 
 TEST(NodeComparisonsTest, quads_withDifferentPredicates_areNotEqual) {
 
-    Quad q1("http://example.com/s1", "http://example.com/p1",
-            "http://example.com/o1",nullptr);
+    RDFQuad q1("http://example.com/s1", "http://example.com/p1",
+               "http://example.com/o1", nullptr);
 
-    Quad q2_diffPredicate("http://example.com/s1", "http://example.com/p2",
-                         "http://example.com/o1", nullptr);
+    RDFQuad q2_diffPredicate("http://example.com/s1", "http://example.com/p2",
+                             "http://example.com/o1", nullptr);
 
     EXPECT_NE(q1, q2_diffPredicate);
 }
 
 TEST(NodeComparisonsTest, quads_withDifferentObjects_areNotEqual) {
 
-    Quad q1("http://example.com/s1", "http://example.com/p1",
-            "http://example.com/o1",nullptr);
+    RDFQuad q1("http://example.com/s1", "http://example.com/p1",
+               "http://example.com/o1", nullptr);
 
-    Quad q2_diffObject("http://example.com/s1", "http://example.com/p1",
-                       "http://example.com/o2", nullptr);
+    RDFQuad q2_diffObject("http://example.com/s1", "http://example.com/p1",
+                          "http://example.com/o2", nullptr);
 
     EXPECT_NE(q1, q2_diffObject);
 }
@@ -286,13 +285,13 @@ TEST(NodeComparisonsTest, quads_withDifferentGraphs_sortCorrectly) {
     std::string graph1 = "aaa";
     std::string graph2 = "aab";
 
-    std::set<std::shared_ptr<Quad>, QuadPtrLess> quads;
+    std::set<std::shared_ptr<RDFQuad>, QuadPtrLess> quads;
 
-    quads.insert(std::make_shared<Quad>("http://example.com/s1", "http://example.com/p1",
-                                        "http://example.com/o1", &graph2));
+    quads.insert(std::make_shared<RDFQuad>("http://example.com/s1", "http://example.com/p1",
+                                           "http://example.com/o1", &graph2));
 
-    quads.insert(std::make_shared<Quad>("http://example.com/s1", "http://example.com/p1",
-                                        "http://example.com/o1", &graph1));
+    quads.insert(std::make_shared<RDFQuad>("http://example.com/s1", "http://example.com/p1",
+                                           "http://example.com/o1", &graph1));
 
     auto ci = quads.begin();
 
@@ -308,13 +307,13 @@ TEST(NodeComparisonsTest, quads_withDifferentSubjects_sortCorrectly) {
     std::string subject1 = "http://example.com/s1";
     std::string subject2 = "http://example.com/s2";
 
-    std::set<std::shared_ptr<Quad>, QuadPtrLess> quads;
+    std::set<std::shared_ptr<RDFQuad>, QuadPtrLess> quads;
 
-    quads.insert(std::make_shared<Quad>(subject2, "http://example.com/p1",
-                                        "http://example.com/o1", nullptr));
+    quads.insert(std::make_shared<RDFQuad>(subject2, "http://example.com/p1",
+                                           "http://example.com/o1", nullptr));
 
-    quads.insert(std::make_shared<Quad>(subject1, "http://example.com/p1",
-                                        "http://example.com/o1", nullptr));
+    quads.insert(std::make_shared<RDFQuad>(subject1, "http://example.com/p1",
+                                           "http://example.com/o1", nullptr));
 
     auto ci = quads.begin();
 
@@ -330,14 +329,14 @@ TEST(NodeComparisonsTest, quads_withDifferentPredicates_sortCorrectly) {
     std::string predicate1 = "http://example.com/p1";
     std::string predicate2 = "http://example.com/p2";
 
-    std::set<std::shared_ptr<Quad>, QuadPtrLess> quads;
+    std::set<std::shared_ptr<RDFQuad>, QuadPtrLess> quads;
 
-    std::shared_ptr<Quad> q1 = std::make_shared<Quad>("http://example.com/s1", predicate2,
-                                        "http://example.com/o1", nullptr);
+    std::shared_ptr<RDFQuad> q1 = std::make_shared<RDFQuad>("http://example.com/s1", predicate2,
+                                                            "http://example.com/o1", nullptr);
     quads.insert(q1);
 
-    std::shared_ptr<Quad> q2 = std::make_shared<Quad>("http://example.com/s1", predicate1,
-                                        "http://example.com/o1", nullptr);
+    std::shared_ptr<RDFQuad> q2 = std::make_shared<RDFQuad>("http://example.com/s1", predicate1,
+                                                            "http://example.com/o1", nullptr);
     quads.insert(q2);
 
     auto ci = quads.begin();
@@ -354,13 +353,13 @@ TEST(NodeComparisonsTest, quads_withDifferentObjects_sortCorrectly) {
     std::string object1 = "http://example.com/o1";
     std::string object2 = "http://example.com/o2";
 
-    std::set<std::shared_ptr<Quad>, QuadPtrLess> quads;
+    std::set<std::shared_ptr<RDFQuad>, QuadPtrLess> quads;
 
-    quads.insert(std::make_shared<Quad>("http://example.com/s1", "http://example.com/p1",
-                                        object2, nullptr));
+    quads.insert(std::make_shared<RDFQuad>("http://example.com/s1", "http://example.com/p1",
+                                           object2, nullptr));
 
-    quads.insert(std::make_shared<Quad>("http://example.com/s1", "http://example.com/p1",
-                                        object1, nullptr));
+    quads.insert(std::make_shared<RDFQuad>("http://example.com/s1", "http://example.com/p1",
+                                           object1, nullptr));
 
     auto ci = quads.begin();
 

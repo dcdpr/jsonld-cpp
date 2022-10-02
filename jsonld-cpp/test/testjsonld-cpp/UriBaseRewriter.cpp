@@ -1,4 +1,5 @@
 #include "UriBaseRewriter.h"
+#include "jsonld-cpp/RemoteDocument.h"
 
 UriBaseRewriter::UriBaseRewriter(
         const std::string &isourceBase,

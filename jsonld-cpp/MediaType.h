@@ -1,7 +1,6 @@
 #ifndef LIBJSONLD_CPP_MEDIATYPE_H
 #define LIBJSONLD_CPP_MEDIATYPE_H
 
-
 #include <string>
 #include <ostream>
 

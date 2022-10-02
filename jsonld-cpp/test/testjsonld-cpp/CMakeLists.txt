@@ -36,17 +36,18 @@ target_link_libraries(
 add_executable(
     UnitTests_jsonld-cpp
     test_FileLoader.cpp
-    test_JsonLdApi.cpp
     test_JsonLdUtils.cpp
     test_NodeComparisons.cpp
     test_ObjectComparisons.cpp
     test_BlankNodeNames.cpp
     test_DoubleFormatter.cpp
     test_Permutator.cpp
-    test_NormalizeUtils.cpp
     test_Regex.cpp
     test_RDFDataset.cpp
+    test_RDFDatasetComparison.cpp
     test_RDFDatasetUtils.cpp
+    test_RDFTriple.cpp
+    test_RDFQuad.cpp
     test_Uri.cpp
     test_UriParser.cpp
     test_Sha256.cpp

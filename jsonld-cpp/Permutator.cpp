@@ -16,7 +16,7 @@ Permutator::Permutator(vector<string> istrings)
     }
 }
 
-bool Permutator::hasNext() {
+bool Permutator::hasNext() const {
     return !done;
 }
 

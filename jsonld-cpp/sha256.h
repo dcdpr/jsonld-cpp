@@ -39,9 +39,9 @@ public:
     std::string digest();
 
 protected:
-    void transform(const unsigned char *message, unsigned int block_nb);
-    unsigned int m_tot_len;
-    unsigned int m_len;
+    void transform(const unsigned char *message, std::size_t block_nb);
+    std::size_t m_tot_len;
+    std::size_t m_len;
     unsigned char m_block[2*SHA224_256_BLOCK_SIZE];
     uint32 m_h[8];
 };

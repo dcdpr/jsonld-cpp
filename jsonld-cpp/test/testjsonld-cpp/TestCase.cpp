@@ -14,7 +14,7 @@ TestCase TestCase::create(
 
     TestCase testCase(manifestBase);
 
-    testCase.id = o[JsonLdConsts::ID];
+    testCase.id = o[JsonLdConsts::ID].get<std::string>();
 
     testCase.uri = baseUri + manifestUri.substr(0, manifestUri.size() - strlen(".jsonld")) + testCase.id;
 
@@ -22,7 +22,7 @@ TestCase TestCase::create(
         testCase.type.insert(element.get<std::string>());
     }
 
-    testCase.name = o["name"];
+    testCase.name = o["name"].get<std::string>();
 
     testCase.input = o.contains("input") ?
                      baseUri + o["input"].get<std::string>() :

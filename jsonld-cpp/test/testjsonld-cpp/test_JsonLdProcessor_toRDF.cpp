@@ -1,9 +1,11 @@
 #pragma ide diagnostic ignored "cert-err58-cpp"
+#include <jsonld-cpp/JsonLdError.h>
 #include <jsonld-cpp/JsonLdProcessor.h>
-#include "ManifestLoader.h"
 #include <jsonld-cpp/FileLoader.h>
+#include <jsonld-cpp/RemoteDocument.h>
+#include <jsonld-cpp/RDFDatasetComparison.h>
 #include <jsonld-cpp/RDFDatasetUtils.h>
-#include <fstream>
+#include "ManifestLoader.h"
 
 #include <gtest/gtest.h>
 #pragma clang diagnostic push

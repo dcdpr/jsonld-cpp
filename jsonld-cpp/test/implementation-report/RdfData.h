@@ -71,8 +71,7 @@ class RdfNamespace
  *          predicate or object.
  *
  * \details  This class implements a representation of RDF Nodes and Arcs as
- *          described in the <a
- *          href="https://www.w3.org/TR/rdf-primer/#rdfmodel" target="_blank">
+ *          described in the <a href="https://www.w3.org/TR/rdf-primer/#rdfmodel" target="_blank">
  *          RDF Primer</a>.  Each is a constituent of a RDF Triple that is
  *          built using RdfData() objects.
  *
@@ -132,16 +131,14 @@ class RdfObject
 /**
  * \brief   Used to build a RDF Triple of RdfObjects() in an RDF graph.
  *
- * \details  This class implements a way to build RDF Tripples as defined in
- *          href="https://www.w3.org/TR/rdf-primer/#rdfmodel" target="_blank">
- *          RDF Primer</a> and <a
- *          href="https://www.w3.org/TR/2004/REC-rdf-concepts-20040210/#section-Graph-syntax"
- *          target="_blank">RDF Concepts</a>.  The purpose is to provide a way
- *          to create a linked tree of RDFData() instances that will create a
- *          RDF Triple. A RdfData() instance is a relationship between a
- *          RdfObject() and other RdfData() in the RDF Triple.
+ * \details  This class implements a way to build RDF Triples as defined in
+ *          <a href="https://www.w3.org/TR/rdf-primer/#rdfmodel" target="_blank"> RDF Primer</a>
+ *          and <a href="https://www.w3.org/TR/2004/REC-rdf-concepts-20040210/#section-Graph-syntax" target="_blank">RDF Concepts</a>.
+ *          The purpose is to provide a way to create a linked tree of RDFData()
+ *          instances that will create a RDF Triple. A RdfData() instance is a
+ *          relationship between a RdfObject() and other RdfData() in the RDF Triple.
  *
- *          A RDF Tripple will consist of at least 2 RdfData() instances:
+ *          A RDF Triple will consist of at least 2 RdfData() instances:
  *          \li Subject ->  Predicate relationship
  *          \li Predicate -> Object relationship
  *

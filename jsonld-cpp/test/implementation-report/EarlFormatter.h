@@ -11,9 +11,7 @@
  * \brief A formatter to convert RDF data to the Earl
  *
  * \details RDF data can be transformed to a number of different formats, one of
- *          them is the <a
- *          href="https://www.w3.org/WAI/standards-guidelines/earl/"
- *          target="_blank">Evaluation and Report Language \e (EaRL)</a>.
+ *          them is the <a href="https://www.w3.org/WAI/standards-guidelines/earl/" target="_blank">Evaluation and Report Language \e (EaRL)</a>.
  *          This class has been created to handle the transformation of
  *          RdfData() to \e EaRL.
  *

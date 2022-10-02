@@ -5,6 +5,8 @@
 #include <map>
 #include <string>
 
+// Thanks to jsonld-java for this class
+
 class Permutator {
 private:
     std::vector<std::string> strings;
@@ -13,7 +15,7 @@ private:
 
 public:
     explicit Permutator(std::vector <std::string> strings);
-    bool hasNext();
+    bool hasNext() const;
     std::vector<std::string> next();
 };
 

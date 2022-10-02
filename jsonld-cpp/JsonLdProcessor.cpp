@@ -1,99 +1,136 @@
 #include "jsonld-cpp/JsonLdProcessor.h"
+#include "jsonld-cpp/JsonLdError.h"
+#include "jsonld-cpp/Context.h"
 #include "jsonld-cpp/RDFDataset.h"
-#include "jsonld-cpp/RDFDatasetUtils.h"
+#include "jsonld-cpp/ExpansionProcessor.h"
+#include "jsonld-cpp/RDFSerializationProcessor.h"
+#include "jsonld-cpp/RDFCanonicalizationProcessor.h"
+#include "jsonld-cpp/RemoteDocument.h"
 
 using RDF::RDFDataset;
 using nlohmann::json;
 
-nlohmann::json JsonLdProcessor::expand(nlohmann::json input, JsonLdOptions opts) {
+nlohmann::json JsonLdProcessor::expand(nlohmann::json input, JsonLdOptions& options) {
 
     // Comments in this function are labelled with numbers that correspond to sections
-    // from the description of the JsonLdProcessor interface.
-    // See: https://w3c.github.io/json-ld-api/#the-jsonldprocessor-interface
+    // from the description of the expand() function in the JsonLdProcessor interface.
+    // See: https://www.w3.org/TR/json-ld11-api/#dom-jsonldprocessor-expand
 
     // 1)
-    // todo: set promise?
+    // Create a new Promise promise and return it. The following steps are then deferred.
+    // todo: promise?
 
     // 2)
-    // todo: remoteDocument?
+    // If the provided input is a RemoteDocument, initialize remote document to input.
+    // todo: other function
 
     // 3)
-    // todo: input is string? already handled in another version of expand
+    // Otherwise, if the provided input is a string representing the IRI of a remote
+    // document, await and dereference it as remote document using LoadDocumentCallback, passing
+    // input for url, the extractAllScripts option from options for extractAllScripts.
+    // todo: other function
 
     // 4)
-    // todo: document from remote is a string ... that's kind of what this version already is
+    // If document from remote document is a string, transform into the internal
+    // representation. If document cannot be transformed to the internal representation, reject
+    // promise passing a loading document failed error.
+    // ... 'input' is already a json object
 
     // 5)
-    Context activeCtx(opts);
-    activeCtx.setBaseIri(opts.getBase()); // todo: use documentUrl from remoteDocument if available
-    activeCtx.setOriginalBaseUrl(opts.getBase()); // todo: use documentUrl from remoteDocument if available
+    // Initialize a new empty active context. The base IRI and original base URL of the active
+    // context is set to the documentUrl from remote document, if available; otherwise to the
+    // base option from options. If set, the base option from options overrides the base IRI.
+    Context activeContext(options);
+    activeContext.setBaseIri(options.getBase());
+    // todo: documentUrl
+    activeContext.setOriginalBaseUrl(options.getBase());
 
     // 6)
-    if (!opts.getExpandContext().empty()) {
-        json expandContext = opts.getExpandContext();
+    // If the expandContext option in options is set, update the active context using the
+    // Context Processing algorithm, passing the expandContext as local context and the original
+    // base URL from active context as base URL. If expandContext is a map having an @context
+    // entry, pass that entry's value instead for local context.
+    if (!options.getExpandContext().empty()) {
+        json expandContext = options.getExpandContext();
         if (expandContext.contains(JsonLdConsts::CONTEXT)) {
             expandContext = expandContext[JsonLdConsts::CONTEXT];
         }
-        activeCtx = activeCtx.parse(expandContext, activeCtx.getOriginalBaseUrl());
+        activeContext = activeContext.process(expandContext, activeContext.getOriginalBaseUrl());
     }
 
     // 7)
-    // todo: if remotedocument has a contextUrl ...
-
+    // If remote document has a contextUrl, update the active context using the Context
+    // Processing algorithm, passing the contextUrl as local context, and contextUrl as base URL.
+    // todo: contextUrl ...
 
     // 8)
-    JsonLdApi api(opts);
-    json expandedOutput = api.expand(
-            activeCtx,
+    // Set expanded output to the result of using the Expansion algorithm, passing the active
+    // context, document from remote document or input if there is no remote document as
+    // element, null as active property, documentUrl as base URL, if available, otherwise to
+    // the base option from options, and the frameExpansion and ordered flags from options.
+    json expandedOutput = ExpansionProcessor::expand(
+            activeContext,
             nullptr,
             input,
-            activeCtx.getOriginalBaseUrl()); // todo: use documentUrl from remoteDocument if available
+            // todo: documentUrl
+            activeContext.getOriginalBaseUrl());
 
     // 8.1)
+    // If expanded output is a map that contains only an @graph entry, set expanded output to
+    // that value.
     if (expandedOutput.is_object() && expandedOutput.contains(JsonLdConsts::GRAPH)
         && expandedOutput.size() == 1) {
         expandedOutput = expandedOutput.at(JsonLdConsts::GRAPH);
     }
+
     // 8.2)
-    else if (expandedOutput.is_null()) {
+    // If expanded output is null, set expanded output to an empty array.
+    if (expandedOutput.is_null()) {
         expandedOutput = json::array();
     }
 
     // 8.3)
+    // If expanded output is not an array, set expanded output to an array containing only
+    // expanded output.
     if (!expandedOutput.is_array()) {
         json tmp = json::array();
         tmp.push_back(expandedOutput);
         expandedOutput = tmp;
     }
 
+    // 9)
+    // Resolve the promise with expanded output transforming expanded output from the internal
+    // representation to a JSON serialization.
     return expandedOutput;
 }
 
-nlohmann::json JsonLdProcessor::expand(const std::string& input, JsonLdOptions opts) {
+nlohmann::json JsonLdProcessor::expand(const std::string& documentLocation, JsonLdOptions& options) {
 
     // Comments in this function are labelled with numbers that correspond to sections
-    // from the description of the JsonLdProcessor interface.
-    // See: https://www.w3.org/TR/2014/REC-json-ld-api-20140116/#the-jsonldprocessor-interface
+    // from the description of the expand() function in the JsonLdProcessor interface.
+    // See: https://www.w3.org/TR/json-ld11-api/#dom-jsonldprocessor-expand
 
-    // todo: This needs to be upgraded to conform with
-    // https://w3c.github.io/json-ld-api/#the-jsonldprocessor-interface
+    // 1)
+    // ...
 
-    // 2) TODO: better verification of DOMString IRI
-    if (input.find(':') != std::string::npos) {
+    // 2)
+    // ...
+
+    // 3)
+    // Otherwise, if the provided input is a string representing the IRI of a remote
+    // document, await and dereference it as remote document using LoadDocumentCallback, passing
+    // input for url, the extractAllScripts option from options for extractAllScripts.
+    if (documentLocation.find(':') != std::string::npos) {
         try {
-            auto tmp = opts.getDocumentLoader()->loadDocument(input);
+            auto tmp = options.getDocumentLoader()->loadDocument(documentLocation);
             const json& json_input = tmp->getJSONContent();
-            // TODO: figure out how to deal with remote context
 
-            // if set the base in options should override the base iri in the
-            // active context
-            // thus only set this as the base iri if it's not already set in
-            // options
-            if (opts.getBase().empty()) {
-                opts.setBase(input);
+            if (options.getBase().empty()) {
+                options.setBase(documentLocation);
             }
 
-            return expand(json_input, opts);
+            // All other steps in JsonLdProcessor.expand interface are continued here
+            return expand(json_input, options);
 
         }
         catch (const JsonLdError &e) {
@@ -102,87 +139,47 @@ nlohmann::json JsonLdProcessor::expand(const std::string& input, JsonLdOptions o
         catch (const std::exception &e) {
             throw JsonLdError(JsonLdError::LoadingDocumentFailed, e.what());
         }
-
     }
     else
         return json::array(); // todo: what else should happen?
 }
 
+RDFDataset JsonLdProcessor::toRDF(const std::string& documentLocation, JsonLdOptions& options) {
 
-RDFDataset JsonLdProcessor::toRDF(const std::string& input, const JsonLdOptions& options) {
+    // Comments in this function are labelled with numbers that correspond to sections
+    // from the description of the toRDF() function in the JsonLdProcessor interface.
+    // See: https://www.w3.org/TR/json-ld11-api/#dom-jsonldprocessor-tordf
 
-    nlohmann::json expandedInput = expand(input, options);
+    // 1)
+    // Create a new Promise promise and return it. The following steps are then deferred.
+    // todo: promise?
 
-    JsonLdApi api(options);
-    RDFDataset dataset = api.toRDF(expandedInput);
+    // 2)
+    // Set expanded input to the result of using the expand() method using input and options
+    // with ordered set to false.
+    nlohmann::json expandedInput = expand(documentLocation, options);
 
-//
-//    // generate namespaces from context
-//    if (options.useNamespaces) {
-//        List<Map<String, Object>> _input;
-//        if (input instanceof List) {
-//            _input = (List<Map<String, Object>>) input;
-//        } else {
-//            _input = new ArrayList<Map<String, Object>>();
-//            _input.add((Map<String, Object>) input);
-//        }
-//        for (final Map<String, Object> e : _input) {
-//            if (e.containsKey(JsonLdConsts.CONTEXT)) {
-//                dataset.parseContext(e.get(JsonLdConsts.CONTEXT));
-//            }
-//        }
-//    }
-//
-//    if (callback != null) {
-//        return callback.call(dataset);
-//    }
-//
+    // 3-7)
+    // Rest of the algorithm in api.toRDF().
+    RDFDataset dataset = RDFSerializationProcessor::toRDF(expandedInput, options);
+
     return dataset;
 }
 
-std::string JsonLdProcessor::toRDFString(const std::string& input, const JsonLdOptions& options) {
+std::string JsonLdProcessor::normalize(const std::string& documentLocation, JsonLdOptions& options) {
 
-    nlohmann::json expandedInput = expand(input, options);
+    // Comments in this function are labelled with numbers that correspond to sections
+    // from the description of ...
 
-    JsonLdApi api(options);
-    RDFDataset dataset = api.toRDF(expandedInput);
-    // todo: while present in the java version, none of the toRdf() tests needed this namespace
-    // stuff, so come back to it
-//    // generate namespaces from context
-//    if (options.useNamespaces) {
-//        List<Map<String, Object>> _input;
-//        if (input instanceof List) {
-//            _input = (List<Map<String, Object>>) input;
-//        } else {
-//            _input = new ArrayList<Map<String, Object>>();
-//            _input.add((Map<String, Object>) input);
-//        }
-//        for (final Map<String, Object> e : _input) {
-//            if (e.containsKey(JsonLdConsts.CONTEXT)) {
-//                dataset.parseContext(e.get(JsonLdConsts.CONTEXT));
-//            }
-//        }
-//    }
-//
-//    if (callback != null) {
-//        return callback.call(dataset);
-//    }
-//
-    return RDFDatasetUtils::toNQuads(dataset);
-}
-
-std::string JsonLdProcessor::normalize(const std::string& input, const JsonLdOptions& options) {
-
-    JsonLdApi api(options);
-    auto tmp = options.getDocumentLoader()->loadDocument(input);
+    auto tmp = options.getDocumentLoader()->loadDocument(documentLocation);
 
     if(tmp->getContentType() == MediaType::json_ld()) {
-        RDFDataset dataset = toRDF(input, options);
-        return api.normalize(dataset);
+        RDFDataset dataset = toRDF(documentLocation, options);
+        return RDFCanonicalizationProcessor::normalize(dataset, options);
     }
     else if(tmp->getContentType() == MediaType::n_quads()) {
         RDFDataset dataset = tmp->getRDFContent();
-        return api.normalize(dataset);
+        return RDFCanonicalizationProcessor::normalize(dataset, options);
     }
     else {
         std::stringstream ss;

@@ -1,9 +1,9 @@
-#include <fstream>
-#include <utility>
-#include <sstream>
 #include "jsonld-cpp/RDFDocument.h"
 #include "jsonld-cpp/RDFDatasetUtils.h"
 #include "jsonld-cpp/JsonLdError.h"
+#include <fstream>
+#include <utility>
+#include <sstream>
 
 RDFDocument::RDFDocument(MediaType icontentType, RDF::RDFDataset idocument)
         : contentType(std::move(icontentType)), document(std::move(idocument))

@@ -1,10 +1,8 @@
-#include <iostream>
-#include <set>
-#include <regex>
 #include "jsonld-cpp/JsonLdUtils.h"
 #include "jsonld-cpp/JsonLdConsts.h"
 #include "jsonld-cpp/Uri.h"
-#include "jsonld-cpp/JsonLdError.h"
+#include <set>
+#include <regex>
 
 bool JsonLdUtils::isKeyword(const std::string& property) {
 
@@ -59,9 +57,6 @@ bool JsonLdUtils::isKeywordForm(const std::string& property) {
 }
 
 bool JsonLdUtils::isAbsoluteIri(const std::string &iri) {
-    //    std::cout << "isAbsoluteIri: " << iri
-    //          << " " << (iri.find(':') != std::string::npos)
-    //          << " " << Uri::isAbsolute(iri) << std::endl;
     return Uri::isAbsolute(iri);
 }
 
@@ -148,6 +143,37 @@ bool JsonLdUtils::isEmptyObject(const json& j) {
     return j.is_object() && j.empty();
 }
 
+/**
+ * Check if a json object is a default object
+ *
+ * See: https://www.w3.org/TR/json-ld11/#dfn-default-j
+ *
+ * @param j the object to test
+ * @return true if j is a default object
+ */
+bool JsonLdUtils::isDefaultObject(const json& j) {
+    return j.is_object() && j.contains(JsonLdConsts::DEFAULT);
+}
+
+
+/**
+ * Check if a json object is a node object
+ *
+ * See: https://www.w3.org/TR/json-ld11/#dfn-node-j
+ *
+ * @param j the object to test
+ * @return true if j is a node object
+ */
+bool JsonLdUtils::isNodeObject(const json& j) {
+    return j.is_object() &&
+           ((!j.contains(JsonLdConsts::VALUE) &&
+             !j.contains(JsonLdConsts::LIST) &&
+             !j.contains(JsonLdConsts::SET)) ||
+            (j.contains(JsonLdConsts::CONTEXT) &&
+             j.contains(JsonLdConsts::GRAPH))
+           );
+}
+
 bool JsonLdUtils::isArray(const json& j) {
     return j.is_array();
 }
@@ -185,9 +211,9 @@ bool JsonLdUtils::deepContains(const json& values, const json& value) {
  * Merges value into the array at obj[key], if array at obj[key] doe not yet contain it. If
  * array at obj[key] does not exist, create it and add value.
  *
- * @param obj
- * @param key
- * @param value
+ * @param obj the JSON "object"
+ * @param key the key
+ * @param value the value to store in array at obj[key]
  */
 void JsonLdUtils::mergeValue(json & obj, const std::string& key, const json& value) {
     if (obj.is_null()) {

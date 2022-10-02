@@ -1,5 +1,5 @@
 #include "jsonld-cpp/UriParser.h"
-
+//
 #include <uriparser/Uri.h>
 
 class UriParserImpl {
@@ -90,7 +90,7 @@ bool UriParser::ToString(std::string* output) const {
                                   &chars_required) != URI_SUCCESS) {
         return false;
     }
-    char* dest_str = (char*)malloc(chars_required+1);
+    char* dest_str = static_cast<char *>(malloc(chars_required + 1));
     if (!dest_str) {
         return false;
     }

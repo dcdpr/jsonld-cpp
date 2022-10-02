@@ -28,6 +28,9 @@ namespace JsonLdUtils {
     bool isObject(const json& j);
     bool isEmptyObject(const json& j);
 
+    bool isDefaultObject(const json& j);
+    bool isNodeObject(const json& j);
+
     bool isArray(const json& j);
     bool isEmptyArray(const json& j);
     bool isArrayOfStrings(const json& j);

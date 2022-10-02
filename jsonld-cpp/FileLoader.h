@@ -1,8 +1,9 @@
 #ifndef LIBJSONLD_CPP_FILELOADER_H
 #define LIBJSONLD_CPP_FILELOADER_H
 
-#include "jsonld-cpp/RemoteDocument.h"
 #include "jsonld-cpp/DocumentLoader.h"
+
+class RemoteDocument;
 
 class FileLoader : public DocumentLoader {
 private:
@@ -10,7 +11,7 @@ private:
 
 public:
 
-    virtual FileLoader* clone() const override;
+    FileLoader* clone() const override;
 
     //void addDocumentToCache(const std::string &url, const std::string &contents);
 

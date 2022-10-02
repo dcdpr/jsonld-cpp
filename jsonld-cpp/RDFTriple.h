@@ -1,0 +1,60 @@
+#ifndef LIBJSONLD_CPP_RDFTRIPLE_H
+#define LIBJSONLD_CPP_RDFTRIPLE_H
+
+#include "jsonld-cpp/RDFNode.h"
+#include <memory>
+#include <string>
+
+
+namespace RDF {
+
+    class RDFTriple {
+    private:
+
+        std::shared_ptr<Node> subject;
+        std::shared_ptr<Node> predicate;
+        std::shared_ptr<Node> object;
+
+        void setSubject(std::shared_ptr<Node> isubject) { subject = std::move(isubject); }
+        void setPredicate(std::shared_ptr<Node> ipredicate) { predicate = std::move(ipredicate); }
+        void setObject(std::shared_ptr<Node> iobject) { object = std::move(iobject); }
+
+    public:
+
+        RDFTriple(std::shared_ptr<Node> isubject, std::shared_ptr<Node> ipredicate, std::shared_ptr<Node> iobject);
+
+        RDFTriple(std::string isubject, std::string ipredicate, std::string iobject);
+
+        RDFTriple(const RDFTriple &rhs);
+        RDFTriple(RDFTriple&& rhs) noexcept;
+
+        RDFTriple& operator= (const RDFTriple &rhs);
+        RDFTriple& operator= (RDFTriple&& rhs) noexcept;
+
+        std::shared_ptr<Node> getPredicate() const;
+        std::shared_ptr<Node> getObject() const;
+        std::shared_ptr<Node> getSubject() const;
+
+        std::string toString() const;
+
+        friend bool operator==(const RDFTriple &lhs, const RDFTriple &rhs);
+
+    };
+
+    bool operator==(const RDF::RDFTriple &lhs, const RDF::RDFTriple &rhs);
+    bool operator!=(const RDF::RDFTriple &lhs, const RDF::RDFTriple &rhs);
+    bool operator<(const RDFTriple &lhs, const RDFTriple &rhs);
+    bool operator>(const RDFTriple &lhs, const RDFTriple &rhs);
+    bool operator<=(const RDFTriple &lhs, const RDFTriple &rhs);
+    bool operator>=(const RDFTriple &lhs, const RDFTriple &rhs);
+
+    struct RDFTriplePtrLess :
+            public std::binary_function<const std::shared_ptr<RDFTriple>, const std::shared_ptr<RDFTriple>, bool> {
+        bool operator()(const std::shared_ptr<RDFTriple> & lhs, const std::shared_ptr<RDFTriple> & rhs) const {
+            return *lhs < *rhs ;
+        }
+    };
+
+}
+
+#endif //LIBJSONLD_CPP_RDFTRIPLE_H

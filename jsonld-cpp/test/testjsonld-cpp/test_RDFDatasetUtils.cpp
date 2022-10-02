@@ -1,5 +1,4 @@
 #include <jsonld-cpp/RDFDatasetUtils.h>
-#include <jsonld-cpp/ObjUtils.h>
 
 #include <gtest/gtest.h>
 #pragma clang diagnostic push

@@ -1,4 +1,8 @@
 #include "jsonld-cpp/RDFDatasetUtils.h"
+#include "jsonld-cpp/RDFQuad.h"
+#include "jsonld-cpp/RDFTriple.h"
+#include "jsonld-cpp/RDFDataset.h"
+#include "jsonld-cpp/BlankNodeNames.h"
 #include "jsonld-cpp/RDFRegex.h"
 #include "jsonld-cpp/JsonLdError.h"
 
@@ -9,29 +13,96 @@
 #include <regex>
 
 std::string RDFDatasetUtils::toNQuads(const RDF::RDFDataset &dataset) {
+
+    std::vector<std::string> nquads;
     std::stringstream ss;
 
-    std::vector<std::string> quads;
-
-    for (auto graphName : dataset.graphNames()) {
-        std::vector<RDF::Quad> triples = dataset.getQuads(graphName);
-        std::string *graphNamePtr = &graphName;
-        if (graphName == "@default") {
-            graphNamePtr = nullptr;
-        }
-        for (const auto& triple : triples) {
-            quads.push_back(toNQuad(triple, graphNamePtr));
-        }
+    for (const auto& quad : dataset.getAllGraphsAsQuads()) {
+        nquads.push_back(toNQuad(quad));
     }
-    std::sort(quads.begin(), quads.end());
-    for (const auto& quad : quads) {
-        ss << quad;
+
+    std::sort(nquads.begin(), nquads.end());
+
+    for (const auto& nq : nquads) {
+        ss << nq;
     }
 
     return ss.str();
 }
 
-std::string RDFDatasetUtils::toNQuad(const RDF::Quad& triple, std::string *graphName) {
+std::string RDFDatasetUtils::toNQuad(const RDF::RDFQuad& quad) {
+    std::stringstream ss;
+
+    std::shared_ptr<RDF::Node> s = quad.getSubject();
+    std::shared_ptr<RDF::Node> p = quad.getPredicate();
+    std::shared_ptr<RDF::Node> o = quad.getObject();
+
+    // subject is an IRI or bnode
+    if (s->isIRI()) {
+        ss << "<";
+        escape(s->getValue(), ss);
+        ss << ">";
+    }
+    else {
+        ss << s->getValue();
+    }
+
+    // predicate is either an IRI or bnode
+    if (p->isIRI()) {
+        ss << " <";
+        escape(p->getValue(), ss);
+        ss << "> ";
+    }
+    else {
+        ss << " ";
+        escape(p->getValue(), ss);
+        ss << " ";
+    }
+
+    // object is IRI, bnode or literal
+    if (o->isIRI()) {
+        ss << "<";
+        escape(o->getValue(), ss);
+        ss << ">";
+    } else if (o->isBlankNode()) {
+        ss << o->getValue();
+    } else {
+        ss << "\"";
+        escape(o->getValue(), ss);
+        ss << "\"";
+        if (o->getDatatype() == JsonLdConsts::RDF_LANGSTRING) {
+            ss << "@";
+            ss << o->getLanguage();
+        } else if (o->getDatatype() != JsonLdConsts::XSD_STRING) {
+            ss << "^^<";
+            escape(o->getDatatype(), ss);
+            ss << ">";
+        }
+    }
+
+    // graph
+    std::shared_ptr<RDF::Node> g = quad.getGraph();
+    if (g != nullptr && g->getValue() != JsonLdConsts::DEFAULT) {
+        std::string gn = g->getValue();
+        if (!BlankNodeNames::isBlankNodeName(gn)) {
+            ss << " <";
+            escape(gn, ss);
+            ss << ">";
+        } else {
+            ss << " ";
+            ss << gn;
+        }
+    }
+
+    ss << " .\n";
+
+    return ss.str();
+}
+
+std::string RDFDatasetUtils::toNQuad(const RDF::RDFTriple& triple) {
+    // converting an RDFTriple to a nquad might not be a real thing, but it is nice to do
+    // so RDFTriple.toString can quickly convert itself to a string for printing/debugging
+
     std::stringstream ss;
 
     std::shared_ptr<RDF::Node> s = triple.getSubject();
@@ -81,30 +152,18 @@ std::string RDFDatasetUtils::toNQuad(const RDF::Quad& triple, std::string *graph
         }
     }
 
-    // graph
-    if (graphName != nullptr) {
-        if (graphName->find_first_of("_:") != 0) {
-            ss << " <";
-            escape(*graphName, ss);
-            ss << ">";
-        } else {
-            ss << " ";
-            ss << *graphName;
-        }
-    }
-
     ss << " .\n";
 
     return ss.str();
 }
 
-std::string RDFDatasetUtils::toNQuadForNormalization(const RDF::Quad& triple, std::string *graphName, std::string *bnode) {
+std::string RDFDatasetUtils::toNQuadForNormalization(const RDF::RDFQuad& quad, std::string *bnode) {
     assert(bnode);
     std::stringstream ss;
 
-    std::shared_ptr<RDF::Node> s = triple.getSubject();
-    std::shared_ptr<RDF::Node> p = triple.getPredicate();
-    std::shared_ptr<RDF::Node> o = triple.getObject();
+    std::shared_ptr<RDF::Node> s = quad.getSubject();
+    std::shared_ptr<RDF::Node> p = quad.getPredicate();
+    std::shared_ptr<RDF::Node> o = quad.getObject();
 
     // subject is either an IRI or bnode
     if (s->isIRI()) {
@@ -150,23 +209,21 @@ std::string RDFDatasetUtils::toNQuadForNormalization(const RDF::Quad& triple, st
     }
 
     // graph
-    if (graphName != nullptr) {
-        if (graphName->find_first_of("_:") != 0) {
+    std::shared_ptr<RDF::Node> g = quad.getGraph();
+    if (g != nullptr && g->getValue() != JsonLdConsts::DEFAULT) {
+        std::string gn = g->getValue();
+        if (!BlankNodeNames::isBlankNodeName(gn)) {
             ss << " <";
-            escape(*graphName, ss);
+            escape(gn, ss);
             ss << ">";
         } else {
-            ss << ((*graphName == *bnode)  ? " _:a" : " _:z");
+            ss << ((gn == *bnode)  ? " _:a" : " _:z");
         }
     }
 
     ss << " .\n";
 
     return ss.str();
-}
-
-bool RDFDatasetUtils::isHighSurrogate(char c) {
-    return false;
 }
 
 /**
@@ -181,19 +238,10 @@ void RDFDatasetUtils::escape(const std::string& str, std::stringstream & ss) {
     for (char hi : str) {
         if (hi <= 0x8 || hi == 0xB || hi == 0xC ||
             (hi >= 0xE && hi <= 0x1F) ||
-            (hi >= 0x7F && hi <= 0xA0) // 0xA0 is end of non-printable latin-1 supplement characters
-//            ||
-//            (hi >= 0x24F // 0x24F is the end of latin extensions
-//            && !isHighSurrogate(hi))
-                ) {
+            (hi >= 0x7F && hi <= 0xA0)) {
             ss << "\\u";
             ss << std::setfill('0') << std::setw(4) << hi; //%04x", (int) hi));
         }
-//        else if (Character.isHighSurrogate(hi)) {
-//            final char lo = str.charAt(++i);
-//            final int c = (hi << 10) + lo + (0x10000 - (0xD800 << 10) - 0xDC00);
-//            rval.append(String.format("\\U%08x", c));
-//        }
         else {
             switch (hi) {
                 case '\b':
@@ -236,15 +284,14 @@ void RDFDatasetUtils::unescape(const std::string& str, std::stringstream & ss) {
         auto chars_begin =
                 std::sregex_iterator(str.begin(), str.end(), charsRgx);
         auto chars_end = std::sregex_iterator();
-        for (std::sregex_iterator i = chars_begin; i != chars_end; ++i) {
-            std::smatch match = *i;
+        for (std::sregex_iterator reg_it = chars_begin; reg_it != chars_end; ++reg_it) {
+            std::smatch match = *reg_it;
             std::string match_str = match.str();
 
             // print all matches for debugging:
             for (size_t i = 0; i < match.size(); ++i) {
                 std::ssub_match sub_match = match[i];
                 std::string piece = sub_match.str();
-                std::cout << "  submatch " << i << ": [" << piece << "]\n";
             }
 
             std::string uni;
@@ -331,20 +378,12 @@ std::string RDFDatasetUtils::escape(const std::string& str) {
  * @return an RDF dataset.
  */
 RDF::RDFDataset RDFDatasetUtils::parseNQuads(std::string input) {
-    BlankNodeNames blankNodeNames;
-    RDF::RDFDataset dataset(JsonLdOptions(), &blankNodeNames);
+    RDF::RDFDataset dataset((JsonLdOptions()));
 
-    // split N-Quad input into lines
-    std::vector<std::string> lines;
-    std::regex rgx(RDFRegex::EOLN);
-    std::sregex_token_iterator i(input.begin(), input.end(), rgx,-1);
-    std::sregex_token_iterator end;
-
-    for ( ; i != end; ++i)
-        lines.push_back(*i);
+    std::vector<std::string> lines = splitLines(input);
 
     int lineNumber = 0;
-    for(auto line : lines) {
+    for(const auto& line : lines) {
         lineNumber++;
 
         // skip empty lines
@@ -364,7 +403,6 @@ RDF::RDFDataset RDFDatasetUtils::parseNQuads(std::string input) {
         for (size_t i = 0; i < match.size(); ++i) {
             std::ssub_match sub_match = match[i];
             std::string piece = sub_match.str();
-            std::cout << "  submatch " << i << ": [" << piece << "]\n";
         }
         // get subject
         std::shared_ptr<RDF::Node> subject;
@@ -398,22 +436,27 @@ RDF::RDFDataset RDFDatasetUtils::parseNQuads(std::string input) {
 
         // get graph name ('@default' is used for the default graph)
         std::string name = "@default";
-        RDF::RDFGraphName gname = RDF::RDFGraphName::createRDFGraphName(name, RDF::RDFGraphName::DEFAULT);
         if (match[9].matched) {
             name = unescape(match[9].str());
-            gname = RDF::RDFGraphName::createRDFGraphName(name, RDF::RDFGraphName::IRI);
         } else if (match[10].matched) {
             name = unescape(match[10].str());
-            gname = RDF::RDFGraphName::createRDFGraphName(name, RDF::RDFGraphName::BLANKNODE);
         }
 
-        RDF::Quad triple(subject, predicate, object, &name);
-
-        dataset.addQuad(name, triple);
-        dataset.addQuad(gname, triple);
-
+        RDF::RDFTriple triple(subject, predicate, object);
+        dataset.addTripleToGraph(name, triple);
     }
 
     return dataset;
+}
+
+std::vector<std::string> RDFDatasetUtils::splitLines(std::string &input) {
+    std::vector<std::string> lines;
+    std::regex rgx(RDFRegex::EOLN);
+    std::sregex_token_iterator i(input.begin(), input.end(), rgx,-1);
+    std::sregex_token_iterator end;
+
+    for ( ; i != end; ++i)
+        lines.push_back(*i);
+    return lines;
 }
 

@@ -4,8 +4,6 @@
 
 #include "RdfDataBuilder.h"
 
-std::regex const RdfDataBuilder::url_regex{ "^\\D+:\\/\\/.*" };
-
 std::string RdfDataBuilder::get_time()
 {
     time_t now;
@@ -102,12 +100,12 @@ void RdfDataBuilder::parse( const nlohmann::json& json )
 {
     RdfData* d = new RdfData();
     // convert the id
-    d->subject = parseSimpleObject( json["id"] );
+    d->subject = parseSimpleObject( json["id"].get<std::string>() );
     // convert the type
-    auto type = parseSimpleObject( json["type"] );
+    auto type = parseSimpleObject( json["type"].get<std::string>() );
     d->addChild( type );
     // convert the value
-    auto value = parseSimpleObject( json["value"] );
+    auto value = parseSimpleObject( json["value"].get<std::string>() );
     d->addChild( value );
     // process properties
     for ( auto p : json["properties"] )
@@ -116,8 +114,8 @@ void RdfDataBuilder::parse( const nlohmann::json& json )
         if(p.contains("id"))
             d->addChild(parseProperty(p));
         else {
-            auto t = parseSimpleObject(p["type"]);
-            auto v = parseSimpleObject(p["value"]);
+            auto t = parseSimpleObject(p["type"].get<std::string>());
+            auto v = parseSimpleObject(p["value"].get<std::string>());
             d->addChild(t, new RdfData(v));
         }
     }
@@ -128,18 +126,18 @@ RdfData* RdfDataBuilder::parseProperty( const nlohmann::json& json )
 {
     RdfData* d = new RdfData();
     // convert the id
-    d->subject = parseSimpleObject( json["id"] );
+    d->subject = parseSimpleObject( json["id"].get<std::string>() );
     // convert the type
-    auto type = parseSimpleObject( json["type"] );
+    auto type = parseSimpleObject( json["type"].get<std::string>() );
     //d->addChild( type );
     // convert the value
-    auto value = parseSimpleObject( json["value"] );
+    auto value = parseSimpleObject( json["value"].get<std::string>() );
     d->addChild( type, new RdfData(value) );
     // process properties
     for ( auto p : json["properties"] )
     {
-        auto t = parseSimpleObject(p["type"]);
-        auto v = parseSimpleObject(p["value"]);
+        auto t = parseSimpleObject(p["type"].get<std::string>());
+        auto v = parseSimpleObject(p["value"].get<std::string>());
         d->addChild(t, new RdfData(v));
     }
     return d ;
@@ -152,7 +150,8 @@ RdfObject RdfDataBuilder::parseObject( const std::string& str )
      * The first thing to do when parsing the string is to identify if this is
      * a URL that can shortened and added t the prefix section
      */
-    if ( std::regex_match( str, RdfDataBuilder::url_regex ) )
+    std::regex const url_regex{ R"(^\D+:\/\/.*)" };
+    if ( std::regex_match( str, url_regex ) )
     {
         std::cout << "Found URL: " << str << std::endl;
     }
@@ -257,7 +256,7 @@ void RdfDataBuilder::parsePrefix( const nlohmann::json& p )
 {
     if(p.is_object() && p.size() == 1) {
         auto entry = p.begin();
-        RdfNamespace ns( entry.value(), entry.key() );
+        RdfNamespace ns( entry.value().get<std::string>(), entry.key() );
         RdfObject o;
         o.ns = ns;
         o.name = "skipprefix"; // set name as special value so we can skip it later when printing in the EarlFormatter

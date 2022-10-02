@@ -12,7 +12,7 @@ std::map<std::string, TestCase> ManifestLoader::load() {
     auto d = documentLoader.loadDocument(manifestPath);
     json manifest = d->getJSONContent();
 
-    std::string baseUri = manifest["baseIri"];
+    std::string baseUri = manifest["baseIri"].get<std::string>();
 
     std::map<std::string, TestCase> result;
 

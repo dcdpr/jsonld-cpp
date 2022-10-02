@@ -3,11 +3,13 @@
 
 #include "jsonld-cpp/jsoninc.h"
 #include "jsonld-cpp/JsonLdConsts.h"
-#include "jsonld-cpp/JsonLdUtils.h"
 #include "jsonld-cpp/JsonLdOptions.h"
-#include "jsonld-cpp/JsonLdError.h"
-#include <utility>
+#include <vector>
+#include <map>
+#include <string>
 #include <memory>
+#include <utility>
+
 
 class Context {
 public:
@@ -16,73 +18,72 @@ public:
 private:
 
     JsonLdOptions options;
-    nlohmann::json termDefinitions;
+
     std::string baseIRI;
     std::string originalBaseURL;
 
     Context *inverseContext{};
     std::string vocabularyMapping;
     std::string defaultLanguage;
+
     std::string defaultBaseDirection; // todo: this should be an enum
     std::shared_ptr<Context> previousContext;
 
-    StringMap contextMap; // todo: should probably replace this with several specific variables
-
-
     std::vector<std::string> remoteContexts;
     bool overrideProtected{};
-    bool propagate{};
     bool validateScopedContext{};
 
+    void setDefaultBaseDirection(const std::string & direction);
 
-    void createTermDefinition(
-            nlohmann::json localContext,
-            const std::string& term,
-            std::map<std::string, bool> & defined,
-            std::string baseURL = "",
-            bool isProtected = false,
-            bool overrideProtected = false,
-            std::vector<std::string> remoteContexts = std::vector<std::string>(),
-            bool validateScopedContext = true
-            );
-
-    std::string & at(const std::string& s);
-    size_t erase( const std::string& key );
-    std::pair<StringMap::iterator,bool> insert( const StringMap::value_type& value );
-    size_t count( const std::string& key ) const;
 
 public:
+    const std::string &getDefaultLanguage() const;
+
+    void setDefaultLanguage(const std::string &defaultLanguage);
+
+    const std::string &getVocabularyMapping() const;
+
+    void setVocabularyMapping(const std::string &vocabularyMapping);
+
+    nlohmann::json termDefinitions;
+    bool propagate{};
 
     Context() = default;
-    explicit Context(const JsonLdOptions& options);
+    explicit Context(const JsonLdOptions& options);// used by context and used by jsonld processor
 
-    Context parse(const nlohmann::json & localContext, const std::string & baseURL);
-    Context parse(const nlohmann::json & localContext, const std::string & baseURL,
+    Context process(const nlohmann::json & localContext, const std::string & baseURL);// used by jsonld processor and expansion processor
+    Context process(const nlohmann::json & localContext, const std::string & baseURL,// used by context and used by expansion processor
                   std::vector<std::string> & remoteContexts,
-                  bool overrideProtected = false,
-                  bool propagate = true,
-                  bool validateScopedContext = true);
+                    bool overrideProtected = false,
+                    bool propagate = true,
+                    bool validateScopedContext = true);
 
-    nlohmann::json getTermDefinition(const std::string & key);
+    nlohmann::json getTermDefinition(const std::string & key);// used by expansion processor
 
-    std::string expandIri(std::string value, bool relative, bool vocab);
-    std::string expandIri(std::string value, bool relative, bool vocab, const nlohmann::json& context, std::map<std::string, bool> & defined);
-    nlohmann::json expandValue(const std::string & activeProperty, const nlohmann::json& value);
-    bool isReverseProperty(const std::string& property);
-    bool isProcessingMode(const std::string& mode);
+    std::string expandIri(std::string value, bool relative, bool vocab); // used by context and used by expansion processor
 
-    void setDefaultBaseDirection(const std::string & direction);
-    std::string getDefaultBaseDirection() const;
 
-    Context *getPreviousContext() const;
+    bool isReverseProperty(const std::string& property); // reach into termdefinitions, used by expansion processor
+    bool isProcessingMode(const std::string& mode); // reach into options, used by context and used by expansion processor
+
+
+    std::string getDefaultBaseDirection() const; // used by expansion processor
+
+    Context *getPreviousContext() const;// used by expansion processor
 
     const std::string &getBaseIri() const;
 
-    void setBaseIri(const std::string &baseIri);
+    void setBaseIri(const std::string &baseIri);// used by jsonld processor
 
-    const std::string &getOriginalBaseUrl() const;
+    const std::string &getOriginalBaseUrl() const;// used by jsonld processor
 
-    void setOriginalBaseUrl(const std::string &originalBaseUrl);
+    void setOriginalBaseUrl(const std::string &originalBaseUrl);// used by jsonld processor
+
+    /**
+     * Returns mutable reference to the JsonLdOptions object used by this context so that
+     * other algorithms that use this context can modify option settings as needed.
+     */
+    JsonLdOptions &getOptions();// used by expansion processor
 
 };
 

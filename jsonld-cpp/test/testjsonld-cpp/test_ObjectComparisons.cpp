@@ -15,14 +15,11 @@ namespace {
 
     class Base {
     protected:
-    public:
-
-        friend bool operator==(const Base &lhs, const Base &rhs);
-        friend bool operator!=(const Base &lhs, const Base &rhs);
-
-    protected:
         std::map<std::string, std::string> map;
+
     public:
+        virtual ~Base() = default;
+
         virtual bool isA() = 0;
         virtual bool isB() = 0;
         virtual bool isC() = 0;
@@ -30,6 +27,9 @@ namespace {
         std::string getValue() const {
             return map.at("value");
         }
+
+        friend bool operator==(const Base &lhs, const Base &rhs);
+        friend bool operator!=(const Base &lhs, const Base &rhs);
     };
 
     bool operator==(const Base &lhs, const Base &rhs) {
@@ -44,10 +44,11 @@ namespace {
 
     class A : public Base {
     public:
-        explicit A(std::string value) {
+        explicit A(const std::string & value) {
             map["type"] = "A";
             map["value"] = value;
         }
+        ~A() override = default;
 
         bool isA() override {
             return true;
@@ -64,10 +65,11 @@ namespace {
 
     class B : public Base {
     public:
-        explicit B(std::string value) {
+        explicit B(const std::string & value) {
             map["type"] = "B";
             map["value"] = value;
         }
+        ~B() override = default;
 
         bool isA() override {
             return false;
@@ -84,10 +86,11 @@ namespace {
 
     class C : public Base {
     public:
-        explicit C(std::string value) {
+        explicit C(const std::string & value) {
             map["type"] = "C";
             map["value"] = value;
         }
+        ~C() override = default;
 
         bool isA() override {
             return false;

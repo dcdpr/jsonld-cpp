@@ -1,9 +1,9 @@
 #pragma ide diagnostic ignored "cert-err58-cpp"
+#include <jsonld-cpp/JsonLdError.h>
 #include <jsonld-cpp/JsonLdProcessor.h>
+#include <jsonld-cpp/JsonLdUtils.h>
+#include <jsonld-cpp/RemoteDocument.h>
 #include "ManifestLoader.h"
-#include <fstream>
-
-using nlohmann::json;
 
 #include <gtest/gtest.h>
 #pragma clang diagnostic push
@@ -15,6 +15,7 @@ using nlohmann::json;
 #pragma clang diagnostic pop
 #pragma GCC diagnostic pop
 
+using nlohmann::json;
 
 // test suite fixture class
 class JsonLdProcessorExpandTest : public ::testing::Test {

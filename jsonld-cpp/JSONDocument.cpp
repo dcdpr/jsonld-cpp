@@ -1,8 +1,8 @@
+#include "jsonld-cpp/JSONDocument.h"
+#include "jsonld-cpp/JsonLdError.h"
 #include <fstream>
 #include <utility>
 #include <sstream>
-#include "jsonld-cpp/JSONDocument.h"
-#include "jsonld-cpp/JsonLdError.h"
 
 JSONDocument::JSONDocument(MediaType icontentType, nlohmann::json idocument)
         : contentType(std::move(icontentType)), document(std::move(idocument))

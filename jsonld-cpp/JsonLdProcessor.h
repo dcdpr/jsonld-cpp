@@ -3,43 +3,45 @@
 
 #include "jsonld-cpp/jsoninc.h"
 #include "jsonld-cpp/JsonLdOptions.h"
-#include "jsonld-cpp/JsonLdError.h"
-#include "jsonld-cpp/Context.h"
-#include "jsonld-cpp/RDFDataset.h"
-#include "jsonld-cpp/JsonLdApi.h"
+
+namespace RDF {
+    class RDFDataset;
+}
 
 /**
- * This class implements the
- * <a href="http://json-ld.org/spec/latest/json-ld-api/#the-jsonldprocessor-interface" >
- * JsonLdProcessor interface</a>.
+ * Functions in this namespace implement the JsonLdProcessor interface.
+ * See: https://www.w3.org/TR/json-ld11-api/#the-jsonldprocessor-interface
  */
 
 namespace JsonLdProcessor {
 
-    /**
-     * Expands the given input according to the steps in the
-     * <a href="http://www.w3.org/TR/json-ld-api/#expansion-algorithm">Expansion
-     * algorithm</a>.
-     *
-     * @param input
-     *            The input JSON-LD object.
-     * @param opts
-     *            The {@link JsonLdOptions} that are to be sent to the expansion
-     *            algorithm.
-     * @return The expanded JSON-LD document
-     * @throws JsonLdError
-     *             If there is an error while expanding.
-     */
-    nlohmann::json expand(nlohmann::json input, JsonLdOptions opts);
-    // todo: need this version where we pass a RemoteDocument to be loaded
+    // Expands JSON-LD input data according to the steps in the Expansion algorithm
+    // See: https://www.w3.org/TR/json-ld11-api/#dom-jsonldprocessor-expand
+    // See: https://www.w3.org/TR/json-ld11-api/#expansion-algorithm
+    nlohmann::json expand(nlohmann::json input, JsonLdOptions& options);
+
+    // Expands JSON-LD RemoteDocument according to the steps in the Expansion algorithm
+    // See: https://www.w3.org/TR/json-ld11-api/#dom-jsonldprocessor-expand
+    // See: https://www.w3.org/TR/json-ld11-api/#expansion-algorithm
+    // todo: need this
     // nlohmann::json expand(RemoteDocument input, JsonLdOptions opts);
-    nlohmann::json expand(const std::string& input, JsonLdOptions opts);
 
+    // Expands JSON-LD document located at filename or IRI according to the steps in the
+    // Expansion algorithm
+    // See: https://www.w3.org/TR/json-ld11-api/#dom-jsonldprocessor-expand
+    // See: https://www.w3.org/TR/json-ld11-api/#expansion-algorithm
+    nlohmann::json expand(const std::string& documentLocation, JsonLdOptions& options);
 
-    RDF::RDFDataset toRDF(const std::string& input, const JsonLdOptions& options);
-    std::string toRDFString(const std::string& input, const JsonLdOptions& options);
+    // Transforms JSON-LD document located at filename or IRI into an RdfDataset
+    // according to the steps in the Deserialize JSON-LD to RDF Algorithm
+    // See: https://www.w3.org/TR/json-ld11-api/#dom-jsonldprocessor-tordf
+    // See: https://www.w3.org/TR/json-ld11-api/#deserialize-json-ld-to-rdf-algorithm
+    RDF::RDFDataset toRDF(const std::string& documentLocation, JsonLdOptions& options);
 
-    std::string normalize(const std::string& input, const JsonLdOptions& options);
+    // Normalizes (canonicalizes) JSON-LD document located at filename or IRI into an RdfDataset
+    // according to the steps in the RDF Canonicalization Algorithm
+    // See: https://w3c-ccg.github.io/rdf-dataset-canonicalization/spec/#canonicalization-algorithm
+    std::string normalize(const std::string& documentLocation, JsonLdOptions& options);
 }
 
 #endif //LIBJSONLD_CPP_JSONLDPROCESSOR_H
