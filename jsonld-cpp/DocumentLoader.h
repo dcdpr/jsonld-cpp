@@ -8,9 +8,9 @@ class RemoteDocument;
 
 class DocumentLoader {
 public:
-    DocumentLoader() = default;                                  // constructor
-    DocumentLoader(const DocumentLoader&) = default;             // copy constructor
-    DocumentLoader& operator=(const DocumentLoader&) = default;  // copy assignment
+    DocumentLoader() = default;
+    DocumentLoader(const DocumentLoader&) = default;
+    DocumentLoader& operator=(const DocumentLoader&) = default;
 
     // virtual destructor needed as this is an abstract base class
     virtual ~DocumentLoader();

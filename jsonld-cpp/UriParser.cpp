@@ -38,7 +38,7 @@ UriParser * UriParser::create(const char *uri) {
     if(uri == nullptr)
         return nullptr;
     auto* uri_parser = new UriParser;
-    if (uri_parser->Parse(uri)) {
+    if (uri_parser && uri_parser->Parse(uri)) {
         return uri_parser;
     }
     delete uri_parser;

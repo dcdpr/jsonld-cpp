@@ -65,7 +65,6 @@ namespace RDF {
     };
 
 
-    // sort order of Nodes should be: Literals < BlankNodes < IRIs
     struct NodeLess {
         bool operator()(const Node & lhs, const Node & rhs) const;
     };

@@ -44,25 +44,25 @@ namespace RDF {
         setObject(std::move(iobject));
 
         if (igraph != nullptr && *igraph != "@default") {
-            BlankNodeNames::isBlankNodeName(*igraph) ?
+            BlankNodeNames::hasFormOfBlankNodeName(*igraph) ?
             setGraph(std::make_shared<BlankNode>(*igraph)) :
             setGraph(std::make_shared<IRI>(*igraph));
         }
     }
 
-    RDFQuad::RDFQuad(std::string isubject, std::string ipredicate, std::string iobject, std::string *igraph) {
-        BlankNodeNames::isBlankNodeName(isubject) ?
+    RDFQuad::RDFQuad(const std::string& isubject, const std::string& ipredicate, const std::string& iobject, std::string *igraph) {
+        BlankNodeNames::hasFormOfBlankNodeName(isubject) ?
             setSubject(std::make_shared<BlankNode>(isubject)) :
             setSubject(std::make_shared<IRI>(isubject));
 
         setPredicate(std::make_shared<IRI>(ipredicate));
 
-        BlankNodeNames::isBlankNodeName(iobject)  ?
+        BlankNodeNames::hasFormOfBlankNodeName(iobject) ?
             setObject(std::make_shared<BlankNode>(iobject)) :
             setObject(std::make_shared<IRI>(iobject)); // todo: literal?
 
         if (igraph != nullptr && *igraph != "@default") {
-            BlankNodeNames::isBlankNodeName(*igraph) ?
+            BlankNodeNames::hasFormOfBlankNodeName(*igraph) ?
                 setGraph(std::make_shared<BlankNode>(*igraph)) :
                 setGraph(std::make_shared<IRI>(*igraph));
         }

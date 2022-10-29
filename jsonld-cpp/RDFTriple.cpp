@@ -41,14 +41,14 @@ namespace RDF {
         setObject(std::move(iobject));
     }
 
-    RDFTriple::RDFTriple(std::string isubject, std::string ipredicate, std::string iobject) {
-        BlankNodeNames::isBlankNodeName(isubject) ?
+    RDFTriple::RDFTriple(const std::string& isubject, const std::string& ipredicate, const std::string& iobject) {
+        BlankNodeNames::hasFormOfBlankNodeName(isubject) ?
             setSubject(std::make_shared<BlankNode>(isubject)) :
             setSubject(std::make_shared<IRI>(isubject));
 
         setPredicate(std::make_shared<IRI>(ipredicate));
 
-        BlankNodeNames::isBlankNodeName(iobject) ?
+        BlankNodeNames::hasFormOfBlankNodeName(iobject) ?
             setObject(std::make_shared<BlankNode>(iobject)) :
             setObject(std::make_shared<IRI>(iobject)); // todo: literal?
     }

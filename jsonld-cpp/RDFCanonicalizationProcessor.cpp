@@ -23,7 +23,7 @@ namespace {
         // keep track of insertion order of keys for bnode_to_quads
         std::vector<std::string> bnode_to_quads_insertion_order_keys;
 
-        void addToQuadsMapIfBlanknode(const std::shared_ptr<RDF::Node>& node, const RDF::RDFQuad& quad) {
+        void addToQuadsMapIfBlankNode(const std::shared_ptr<RDF::Node>& node, const RDF::RDFQuad& quad) {
             if(node != nullptr) {
                 if(node->isBlankNode()) {
                     std::string id = node->getValue();
@@ -37,7 +37,7 @@ namespace {
             }
         }
 
-        void addToBlanknodeMap(const std::string& hash, const std::string& blankNodeId) {
+        void addToBlankNodeMap(const std::string& hash, const std::string& blankNodeId) {
             if(!hash_to_bnodes.count(hash)) {
                 std::vector<std::string> tmp;
                 hash_to_bnodes[hash] = tmp;
@@ -69,7 +69,7 @@ namespace {
 //    if(cachedHashes.count(id))
 //        return cachedHashes[id];
 
-        // Comments in this function are labelled with numbers that correspond to sections
+        // Comments in this function are labeled with numbers that correspond to sections
         // from the description of the Hash First Degree Quads algorithm.
         // https://w3c-ccg.github.io/rdf-dataset-canonicalization/spec/#hash-first-degree-quads
 
@@ -110,10 +110,10 @@ namespace {
     }
 
     std::string
-    hashRelatedBlankNode(CanonicalizationState & state, std::string related, RDF::RDFQuad quad,
-                         BlankNodeNames & issuer, std::string position) {
+    hashRelatedBlankNode(CanonicalizationState & state, const std::string& related, const RDF::RDFQuad& quad,
+                         BlankNodeNames & issuer, const std::string& position) {
 
-        // Comments in this function are labelled with numbers that correspond to sections
+        // Comments in this function are labeled with numbers that correspond to sections
         // from the description of the Hash Related Blank Node algorithm.
         // https://w3c-ccg.github.io/rdf-dataset-canonicalization/spec/#hash-related-blank-node
 
@@ -148,9 +148,9 @@ namespace {
     }
 
     HashNDegreeQuadsResult
-    hashNDegreeQuads(CanonicalizationState & state, std::string identifier, BlankNodeNames & issuer) {
+    hashNDegreeQuads(CanonicalizationState & state, const std::string& identifier, BlankNodeNames & issuer) {
 
-        // Comments in this function are labelled with numbers that correspond to sections
+        // Comments in this function are labeled with numbers that correspond to sections
         // from the description of the Hash N Degree Quads algorithm.
         // https://w3c-ccg.github.io/rdf-dataset-canonicalization/spec/#hash-n-degree-quads
 
@@ -201,7 +201,6 @@ namespace {
         // 5)
         // For each related hash to blank node list mapping in hash to related blank nodes
         // map, sorted lexicographically by related hash:
-        // todo: aren't these already sorted?
         std::vector<std::string> hashes;
         for (auto & hash_to_bnode : hash_to_related_bnodes) {
             hashes.push_back(hash_to_bnode.first);
@@ -242,15 +241,15 @@ namespace {
 
                 // 5.4.4)
                 // For each related in permutation:
-                for(auto related : permutation) {
+                for(const auto& related : permutation) {
 
                     // 5.4.4.1)
                     // If a canonical identifier has been issued for related, append it to path.
                     if(state.canonical_issuer.exists(related))
                         path += state.canonical_issuer.get(related);
 
-                        // 5.4.4.2)
-                        // Otherwise:
+                    // 5.4.4.2)
+                    // Otherwise:
                     else {
                         // 5.4.4.2.1)
                         // If issuer copy has not issued an identifier for related, append related
@@ -280,7 +279,7 @@ namespace {
 
                 // 5.4.5)
                 // For each related in recursion list:
-                for(auto related : recursionList) {
+                for(const auto& related : recursionList) {
                     // 5.4.5.1)
                     // Set result to the result of recursively executing the Hash N-Degree Quads
                     // algorithm, passing related for identifier and issuer copy for path identifier
@@ -299,6 +298,7 @@ namespace {
                     // 5.4.5.4)
                     // Set issuer copy to the identifier issuer in result.
                     // todo: do I need this since I passed a reference?
+                    assert(issuerCopy == result.issuerUsed);
                     issuerCopy = result.issuerUsed;
 
                     // 5.4.5.5)
@@ -346,7 +346,7 @@ namespace {
 
     RDF::RDFDataset normalize(const RDF::RDFDataset &dataset, const JsonLdOptions& options) {
 
-        // Comments in this function are labelled with numbers that correspond to sections
+        // Comments in this function are labeled with numbers that correspond to sections
         // from the description of the RDF dataset canonicalization algorithm.
         // https://w3c-ccg.github.io/rdf-dataset-canonicalization/spec/#canonicalization-algorithm
 
@@ -366,10 +366,9 @@ namespace {
 
             // note: any part of the quad can be a blank node in JSON-LD, but RDF doesn't support
             // a predicate as a blank node, so we ignore those.
-
-            state.addToQuadsMapIfBlanknode(quad.getSubject(), quad);
-            state.addToQuadsMapIfBlanknode(quad.getObject(), quad);
-            state.addToQuadsMapIfBlanknode(quad.getGraph(), quad);
+            state.addToQuadsMapIfBlankNode(quad.getSubject(), quad);
+            state.addToQuadsMapIfBlankNode(quad.getObject(), quad);
+            state.addToQuadsMapIfBlankNode(quad.getGraph(), quad);
         }
 
         // 3)
@@ -383,7 +382,6 @@ namespace {
 
         // 5)
         // While simple is true, issue canonical identifiers for blank nodes:
-
         while(simple) {
 
             // 5.1)
@@ -404,7 +402,7 @@ namespace {
 
                 // 5.3.2)
                 // Add hash and identifier to hash to blank nodes map, creating a new entry if necessary.
-                state.addToBlanknodeMap(hash, identifier);
+                state.addToBlankNodeMap(hash, identifier);
             }
 
             // 5.4)
@@ -485,9 +483,10 @@ namespace {
 
             // 6.3)
             // For each result in the hash path list, lexicographically-sorted by the hash in result:
-            std::sort(hashPathList.begin(), hashPathList.end(), [](const HashNDegreeQuadsResult& a, const HashNDegreeQuadsResult& b) {
-                return a.hash < b.hash;
-            });
+            std::sort(hashPathList.begin(), hashPathList.end(),
+                      [](const HashNDegreeQuadsResult& a, const HashNDegreeQuadsResult& b) {
+                          return a.hash < b.hash;
+                      });
             for(auto result : hashPathList ) {
                 // 6.3.1)
                 // For each blank node identifier, existing identifier, that was issued a

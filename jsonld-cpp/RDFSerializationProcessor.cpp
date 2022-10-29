@@ -4,7 +4,7 @@
 #include "jsonld-cpp/BlankNodeNames.h"
 #include "jsonld-cpp/JsonLdUtils.h"
 #include "jsonld-cpp/JsonLdError.h"
-#include "DoubleFormatter.h"
+#include "jsonld-cpp/DoubleFormatter.h"
 
 using nlohmann::json;
 
@@ -17,7 +17,7 @@ namespace {
     void generateNodeMap(json & element, json &nodeMap, BlankNodeNames &blankNodeNames, std::string *activeGraph, nlohmann::json *activeSubject,
                          std::string *activeProperty, json *list)
     {
-        // Comments in this function are labelled with numbers that correspond to sections
+        // Comments in this function are labeled with numbers that correspond to sections
         // from the description of the node map generation algorithm.
         // See: https://www.w3.org/TR/json-ld11-api/#node-map-generation
 
@@ -140,7 +140,7 @@ namespace {
             if(element.contains(JsonLdConsts::ID)) {
                 id = element[JsonLdConsts::ID].get<std::string>();
                 element.erase(JsonLdConsts::ID);
-                if (BlankNodeNames::isBlankNodeName(id)) {
+                if (BlankNodeNames::hasFormOfBlankNodeName(id)) {
                     id = blankNodeNames.get(id);
                 }
             }
@@ -291,7 +291,7 @@ namespace {
                 // 6.12.1)
                 // If property is a blank node identifier, replace it with a newly generated
                 // blank node identifier passing property for identifier.
-                if (BlankNodeNames::isBlankNodeName(property)) {
+                if (BlankNodeNames::hasFormOfBlankNodeName(property)) {
                     property = blankNodeNames.get(property);
                 }
                 // 6.12.2)
@@ -319,7 +319,7 @@ namespace {
 
     std::shared_ptr<RDF::Node> listToRDF(const nlohmann::json & list, RDFGraph & listTriples, const JsonLdOptions &options, BlankNodeNames &blankNodeNames) {
 
-        // Comments in this function are labelled with numbers that correspond to sections
+        // Comments in this function are labeled with numbers that correspond to sections
         // from the description of the List to RDF conversion algorithm.
         // See: https://www.w3.org/TR/json-ld11-api/#list-to-rdf-conversion
 
@@ -397,7 +397,7 @@ namespace {
 
     std::shared_ptr<RDF::Node> objectToRDF(const nlohmann::json & item, RDFGraph & listTriples, const JsonLdOptions &options, BlankNodeNames &blankNodeNames) {
 
-        // Comments in this function are labelled with numbers that correspond to sections
+        // Comments in this function are labeled with numbers that correspond to sections
         // from the description of the Object to RDF conversion algorithm.
         // See: https://www.w3.org/TR/json-ld11-api/#object-to-rdf-conversion
 
@@ -424,7 +424,7 @@ namespace {
         // todo: better detection of node object
         if (JsonLdUtils::isObject(item) && !JsonLdUtils::isListObject(item) && !JsonLdUtils::isValueObject(item)) {
             std::string id = item[JsonLdConsts::ID].get<std::string>();
-            if (!BlankNodeNames::isBlankNodeName(id) && JsonLdUtils::isRelativeIri(id)) {
+            if (!BlankNodeNames::hasFormOfBlankNodeName(id) && JsonLdUtils::isRelativeIri(id)) {
                 return nullptr;
             }
             // 2)
@@ -587,7 +587,7 @@ namespace {
 
     void graphToRDF(const std::string &graphName, const json & graph, RDF::RDFDataset &dataset, BlankNodeNames & blankNodeNames, const JsonLdOptions &options) {
 
-        // Comments in this function are labelled with numbers that correspond to sections
+        // Comments in this function are labeled with numbers that correspond to sections
         // from the description of the Deserialize JSON-LD to RDF algorithm.
         // See: https://www.w3.org/TR/json-ld11-api/#deserialize-json-ld-to-rdf-algorithm
 
@@ -622,7 +622,7 @@ namespace {
             // 1.3.1)
             // If subject is not well-formed, continue with the next subject-node pair.
             // todo: better well-formed checking
-            if (!BlankNodeNames::isBlankNodeName(subject) && JsonLdUtils::isRelativeIri(subject)) {
+            if (!BlankNodeNames::hasFormOfBlankNodeName(subject) && JsonLdUtils::isRelativeIri(subject)) {
                 continue;
             }
 
@@ -656,7 +656,7 @@ namespace {
                     // 1.3.2.3)
                     // Otherwise, if property is a blank node identifier and the produceGeneralizedRdf
                     // option is not true, continue with the next property-values pair.
-                else if (::BlankNodeNames::isBlankNodeName(property) && !options.getProduceGeneralizedRdf()) {
+                else if (::BlankNodeNames::hasFormOfBlankNodeName(property) && !options.getProduceGeneralizedRdf()) {
                     continue;
                 }
 
@@ -684,13 +684,13 @@ namespace {
                     auto result = objectToRDF(item, listTriples, options, blankNodeNames);
                     if(result) {
                         std::shared_ptr<Node> s;
-                        if (::BlankNodeNames::isBlankNodeName(subject))
+                        if (::BlankNodeNames::hasFormOfBlankNodeName(subject))
                             s = std::make_shared<BlankNode>(subject);
                         else
                             s = std::make_shared<IRI>(subject);
 
                         std::shared_ptr<Node> p;
-                        if (::BlankNodeNames::isBlankNodeName(property))
+                        if (::BlankNodeNames::hasFormOfBlankNodeName(property))
                             p = std::make_shared<BlankNode>(property);
                         else
                             p = std::make_shared<IRI>(property);
@@ -716,7 +716,7 @@ namespace {
     RDF::RDFDataset
     toRDF(nlohmann::json nodeMap, BlankNodeNames & blankNodeNames, const JsonLdOptions &options) {
 
-        // Comments in this function are labelled with numbers that correspond to sections
+        // Comments in this function are labeled with numbers that correspond to sections
         // from the description of the Deserialize JSON-LD to RDF algorithm.
         // See: https://www.w3.org/TR/json-ld11-api/#deserialize-json-ld-to-rdf-algorithm
 
@@ -739,7 +739,7 @@ namespace {
 
 RDF::RDFDataset RDFSerializationProcessor::toRDF(nlohmann::json expandedInput, const JsonLdOptions& options) {
 
-    // Comments in this function are labelled with numbers that correspond to sections
+    // Comments in this function are labeled with numbers that correspond to sections
     // from the description of the deserialize JSON-LD to RDF algorithm.
     // See: https://www.w3.org/TR/json-ld11-api/#dom-jsonldprocessor-tordf
 

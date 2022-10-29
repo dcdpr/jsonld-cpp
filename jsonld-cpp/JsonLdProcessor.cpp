@@ -6,13 +6,14 @@
 #include "jsonld-cpp/RDFSerializationProcessor.h"
 #include "jsonld-cpp/RDFCanonicalizationProcessor.h"
 #include "jsonld-cpp/RemoteDocument.h"
+#include "jsonld-cpp/ContextProcessor.h"
 
 using RDF::RDFDataset;
 using nlohmann::json;
 
-nlohmann::json JsonLdProcessor::expand(nlohmann::json input, JsonLdOptions& options) {
+nlohmann::json JsonLdProcessor::expand(const nlohmann::json & input, JsonLdOptions& options) {
 
-    // Comments in this function are labelled with numbers that correspond to sections
+    // Comments in this function are labeled with numbers that correspond to sections
     // from the description of the expand() function in the JsonLdProcessor interface.
     // See: https://www.w3.org/TR/json-ld11-api/#dom-jsonldprocessor-expand
 
@@ -55,7 +56,7 @@ nlohmann::json JsonLdProcessor::expand(nlohmann::json input, JsonLdOptions& opti
         if (expandContext.contains(JsonLdConsts::CONTEXT)) {
             expandContext = expandContext[JsonLdConsts::CONTEXT];
         }
-        activeContext = activeContext.process(expandContext, activeContext.getOriginalBaseUrl());
+        activeContext = ContextProcessor::process(activeContext, expandContext, activeContext.getOriginalBaseUrl());
     }
 
     // 7)
@@ -72,7 +73,6 @@ nlohmann::json JsonLdProcessor::expand(nlohmann::json input, JsonLdOptions& opti
             activeContext,
             nullptr,
             input,
-            // todo: documentUrl
             activeContext.getOriginalBaseUrl());
 
     // 8.1)
@@ -106,7 +106,7 @@ nlohmann::json JsonLdProcessor::expand(nlohmann::json input, JsonLdOptions& opti
 
 nlohmann::json JsonLdProcessor::expand(const std::string& documentLocation, JsonLdOptions& options) {
 
-    // Comments in this function are labelled with numbers that correspond to sections
+    // Comments in this function are labeled with numbers that correspond to sections
     // from the description of the expand() function in the JsonLdProcessor interface.
     // See: https://www.w3.org/TR/json-ld11-api/#dom-jsonldprocessor-expand
 
@@ -146,7 +146,7 @@ nlohmann::json JsonLdProcessor::expand(const std::string& documentLocation, Json
 
 RDFDataset JsonLdProcessor::toRDF(const std::string& documentLocation, JsonLdOptions& options) {
 
-    // Comments in this function are labelled with numbers that correspond to sections
+    // Comments in this function are labeled with numbers that correspond to sections
     // from the description of the toRDF() function in the JsonLdProcessor interface.
     // See: https://www.w3.org/TR/json-ld11-api/#dom-jsonldprocessor-tordf
 
@@ -160,7 +160,7 @@ RDFDataset JsonLdProcessor::toRDF(const std::string& documentLocation, JsonLdOpt
     nlohmann::json expandedInput = expand(documentLocation, options);
 
     // 3-7)
-    // Rest of the algorithm in api.toRDF().
+    // Rest of the algorithm in toRDF().
     RDFDataset dataset = RDFSerializationProcessor::toRDF(expandedInput, options);
 
     return dataset;
@@ -168,22 +168,19 @@ RDFDataset JsonLdProcessor::toRDF(const std::string& documentLocation, JsonLdOpt
 
 std::string JsonLdProcessor::normalize(const std::string& documentLocation, JsonLdOptions& options) {
 
-    // Comments in this function are labelled with numbers that correspond to sections
-    // from the description of ...
+    auto document = options.getDocumentLoader()->loadDocument(documentLocation);
 
-    auto tmp = options.getDocumentLoader()->loadDocument(documentLocation);
-
-    if(tmp->getContentType() == MediaType::json_ld()) {
+    if(document->getContentType() == MediaType::json_ld()) {
         RDFDataset dataset = toRDF(documentLocation, options);
         return RDFCanonicalizationProcessor::normalize(dataset, options);
     }
-    else if(tmp->getContentType() == MediaType::n_quads()) {
-        RDFDataset dataset = tmp->getRDFContent();
+    else if(document->getContentType() == MediaType::n_quads()) {
+        RDFDataset dataset = document->getRDFContent();
         return RDFCanonicalizationProcessor::normalize(dataset, options);
     }
     else {
         std::stringstream ss;
-        ss << "Unsupported content type: '" << tmp->getContentType()
+        ss << "Unsupported content type: '" << document->getContentType()
            << "'. Supported content types for normalization are: "
            << MediaType::json_ld() << " and " << MediaType::n_quads();
         throw JsonLdError(JsonLdError::LoadingDocumentFailed, ss.str());

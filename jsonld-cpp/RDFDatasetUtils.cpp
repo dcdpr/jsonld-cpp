@@ -84,7 +84,7 @@ std::string RDFDatasetUtils::toNQuad(const RDF::RDFQuad& quad) {
     std::shared_ptr<RDF::Node> g = quad.getGraph();
     if (g != nullptr && g->getValue() != JsonLdConsts::DEFAULT) {
         std::string gn = g->getValue();
-        if (!BlankNodeNames::isBlankNodeName(gn)) {
+        if (!BlankNodeNames::hasFormOfBlankNodeName(gn)) {
             ss << " <";
             escape(gn, ss);
             ss << ">";
@@ -101,7 +101,7 @@ std::string RDFDatasetUtils::toNQuad(const RDF::RDFQuad& quad) {
 
 std::string RDFDatasetUtils::toNQuad(const RDF::RDFTriple& triple) {
     // converting an RDFTriple to a nquad might not be a real thing, but it is nice to do
-    // so RDFTriple.toString can quickly convert itself to a string for printing/debugging
+    // so RDFTriple.toString() can quickly convert itself to a string for printing/debugging
 
     std::stringstream ss;
 
@@ -212,7 +212,7 @@ std::string RDFDatasetUtils::toNQuadForNormalization(const RDF::RDFQuad& quad, s
     std::shared_ptr<RDF::Node> g = quad.getGraph();
     if (g != nullptr && g->getValue() != JsonLdConsts::DEFAULT) {
         std::string gn = g->getValue();
-        if (!BlankNodeNames::isBlankNodeName(gn)) {
+        if (!BlankNodeNames::hasFormOfBlankNodeName(gn)) {
             ss << " <";
             escape(gn, ss);
             ss << ">";
@@ -285,14 +285,15 @@ void RDFDatasetUtils::unescape(const std::string& str, std::stringstream & ss) {
                 std::sregex_iterator(str.begin(), str.end(), charsRgx);
         auto chars_end = std::sregex_iterator();
         for (std::sregex_iterator reg_it = chars_begin; reg_it != chars_end; ++reg_it) {
-            std::smatch match = *reg_it;
+            const std::smatch& match = *reg_it;
             std::string match_str = match.str();
 
             // print all matches for debugging:
-            for (size_t i = 0; i < match.size(); ++i) {
-                std::ssub_match sub_match = match[i];
-                std::string piece = sub_match.str();
-            }
+//            for (size_t i = 0; i < match.size(); ++i) {
+//                std::ssub_match sub_match = match[i];
+//                std::string piece = sub_match.str();
+//                std::cout << "  submatch " << i << ": [" << piece << "]\n";
+//            }
 
             std::string uni;
             if(!match[1].matched) {
@@ -400,10 +401,12 @@ RDF::RDFDataset RDFDatasetUtils::parseNQuads(std::string input) {
                                   "Error while parsing N-Quads; invalid quad. line:" + std::to_string(lineNumber));
 
         // print all matches for debugging:
-        for (size_t i = 0; i < match.size(); ++i) {
-            std::ssub_match sub_match = match[i];
-            std::string piece = sub_match.str();
-        }
+//        for (size_t i = 0; i < match.size(); ++i) {
+//            std::ssub_match sub_match = match[i];
+//            std::string piece = sub_match.str();
+//            std::cout << "  submatch " << i << ": [" << piece << "]\n";
+//        }
+
         // get subject
         std::shared_ptr<RDF::Node> subject;
         if(match[1].matched)

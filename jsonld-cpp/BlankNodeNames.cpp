@@ -1,5 +1,5 @@
 #include "jsonld-cpp/BlankNodeNames.h"
-#include "JsonLdConsts.h"
+#include "jsonld-cpp/JsonLdConsts.h"
 #include <sstream>
 #include <utility>
 #include <vector>
@@ -33,6 +33,17 @@ bool BlankNodeNames::exists(const std::string &key) {
     return keysToNames.count(key) > 0;
 }
 
-bool BlankNodeNames::isBlankNodeName(const std::string &name) {
+bool BlankNodeNames::hasFormOfBlankNodeName(const std::string &name) {
     return name.find(JsonLdConsts::BLANK_NODE_PREFIX) == 0;
+}
+
+bool BlankNodeNames::operator==(const BlankNodeNames &rhs) const {
+    return counter == rhs.counter &&
+           prefix == rhs.prefix &&
+           keysToNames == rhs.keysToNames &&
+           keysInInsertionOrder == rhs.keysInInsertionOrder;
+}
+
+bool BlankNodeNames::operator!=(const BlankNodeNames &rhs) const {
+    return !(rhs == *this);
 }

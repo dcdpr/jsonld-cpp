@@ -2,6 +2,7 @@
 #include "jsonld-cpp/Context.h"
 #include "jsonld-cpp/JsonLdUtils.h"
 #include "jsonld-cpp/JsonLdError.h"
+#include "jsonld-cpp/ContextProcessor.h"
 #include <set>
 #include <string>
 #include <iostream>
@@ -16,7 +17,7 @@ namespace {
 
     std::string findInputType(Context &activeContext, Context &typeScopedContext, json &element) {
 
-        // Comments in this function are labelled with numbers that correspond to sections
+        // Comments in this function are labeled with numbers that correspond to sections
         // from the description of the Expansion algorithm.
         // See: https://www.w3.org/TR/json-ld11-api/#expansion-algorithm
 
@@ -33,7 +34,7 @@ namespace {
         std::sort(element_keys.begin(), element_keys.end());
         for (auto & key : element_keys) {
 
-            std::string expandedKey = activeContext.expandIri(key, false, true);
+            std::string expandedKey = ContextProcessor::expandIri(activeContext, key, false, true);
 
             if (expandedKey != JsonLdConsts::TYPE)
                 continue;
@@ -67,12 +68,12 @@ namespace {
                     auto localContext = typeScopedContext.getTermDefinition(term).at(JsonLdConsts::LOCALCONTEXT);
                     std::vector<std::string> remoteContexts;
                     if(termValue.contains(JsonLdConsts::BASEURL))
-                        activeContext = activeContext.process(localContext,
-                                                              termValue.at(JsonLdConsts::BASEURL).get<std::string>(),
-                                                              remoteContexts, false, false, true);
+                        activeContext = ContextProcessor::process(activeContext, localContext,
+                                                                  termValue.at(JsonLdConsts::BASEURL).get<std::string>(),
+                                                                  false, false);
                     else
-                        activeContext = activeContext.process(localContext, "",
-                                                              remoteContexts, false, false, true);
+                        activeContext = ContextProcessor::process(activeContext, localContext, "",
+                                                                  false, false);
                 }
             }
         }
@@ -101,7 +102,7 @@ namespace {
             }
 
             if(!lastValue.empty()) {
-                inputType = activeContext.expandIri(lastValue,false,true);
+                inputType = ContextProcessor::expandIri(activeContext, lastValue,false,true);
             }
         }
 
@@ -110,7 +111,7 @@ namespace {
 
     json expandValue(Context &activeContext, const std::string & activeProperty, const json& value)  {
 
-        // Comments in this function are labelled with numbers that correspond to sections
+        // Comments in this function are labeled with numbers that correspond to sections
         // from the description of the Value Expansion algorithm.
         // See: https://www.w3.org/TR/json-ld11-api/#value-expansion
 
@@ -127,7 +128,7 @@ namespace {
             // is @id and the value is the result IRI expanding value using true for document
             // relative and false for vocab.
             if (typeMapping == JsonLdConsts::ID && value.is_string()) {
-                result[JsonLdConsts::ID] = activeContext.expandIri(value.get<std::string>(), true, false);
+                result[JsonLdConsts::ID] = ContextProcessor::expandIri(activeContext, value.get<std::string>(), true, false);
                 return result;
             }
 
@@ -136,7 +137,7 @@ namespace {
             // value is a string, return a new map containing a single entry where the key is @id
             // and the value is the result of IRI expanding value using true for document relative.
             if (typeMapping == JsonLdConsts::VOCAB && value.is_string()) {
-                result[JsonLdConsts::ID] = activeContext.expandIri(value.get<std::string>(), true, true);
+                result[JsonLdConsts::ID] = ContextProcessor::expandIri(activeContext, value.get<std::string>(), true, true);
                 return result;
             }
         }
@@ -203,7 +204,7 @@ namespace {
             const std::string & baseUrl,
             bool fromMap) {
 
-        // Comments in this function are labelled with numbers that correspond to sections
+        // Comments in this function are labeled with numbers that correspond to sections
         // from the description of the Expansion algorithm.
         // See: https://www.w3.org/TR/json-ld11-api/#expansion-algorithm
 
@@ -259,7 +260,7 @@ namespace {
             nlohmann::json * propertyScopedContext,
             bool fromMap) {
 
-        // Comments in this function are labelled with numbers that correspond to sections
+        // Comments in this function are labeled with numbers that correspond to sections
         // from the description of the Expansion algorithm.
         // See: https://www.w3.org/TR/json-ld11-api/#expansion-algorithm
 
@@ -279,7 +280,7 @@ namespace {
 
             for (auto & key : element_keys) {
 
-                std::string expandedKey = activeContext.expandIri(key, false, true);
+                std::string expandedKey = ContextProcessor::expandIri(activeContext, key, false, true);
 
                 if(expandedKey == JsonLdConsts::VALUE ||
                    (element.size() == 1 && expandedKey == JsonLdConsts::ID)) {
@@ -302,8 +303,7 @@ namespace {
             std::string termsBaseUrl;
             if(termDef.contains(JsonLdConsts::BASEURL))
                 termsBaseUrl = termDef[JsonLdConsts::BASEURL].get<std::string>();
-            std::vector<std::string> remoteContexts;
-            activeContext = activeContext.process(*propertyScopedContext, termsBaseUrl, remoteContexts, true);
+            activeContext = ContextProcessor::process(activeContext, *propertyScopedContext, termsBaseUrl, true);
         }
 
         // 9)
@@ -311,7 +311,7 @@ namespace {
         // Context Processing algorithm, passing active context, the value of the @context entry
         // as local context and base URL.
         if (element.contains(JsonLdConsts::CONTEXT)) {
-            activeContext = activeContext.process(element[JsonLdConsts::CONTEXT], baseUrl);
+            activeContext = ContextProcessor::process(activeContext, element[JsonLdConsts::CONTEXT], baseUrl);
         }
 
         // 10)
@@ -348,7 +348,7 @@ namespace {
 
             // 13.2)
             // Initialize expanded property to the result of IRI expanding key.
-            std::string expandedProperty = activeContext.expandIri(key, false, true);
+            std::string expandedProperty = ContextProcessor::expandIri(activeContext, key, false, true);
 
             // 13.3)
             // If expanded property is null or it neither contains a colon (:) nor it is a
@@ -395,7 +395,7 @@ namespace {
                     // of one or more of the values, with string values expanded using the IRI
                     // Expansion algorithm as above.
                     if (element_value.is_string()) {
-                        expandedValue = activeContext.expandIri(element_value.get<std::string>(), true, false);
+                        expandedValue = ContextProcessor::expandIri(activeContext, element_value.get<std::string>(), true, false);
                     } else if (activeContext.getOptions().isFrameExpansion()) {
                         if (element_value.is_object()) {
                             if (!element_value.empty()) {
@@ -409,7 +409,7 @@ namespace {
                                     throw JsonLdError(JsonLdError::InvalidIdValue,
                                                       "@id value must be a string, an array of strings or an empty dictionary");
                                 }
-                                expandedValue.push_back(activeContext.expandIri(v.get<std::string>(), true, false));
+                                expandedValue.push_back(ContextProcessor::expandIri(activeContext, v.get<std::string>(), true, false));
                             }
                             // 13.4.3.1)
                             // If value is not a string, an invalid @id value error has been
@@ -464,7 +464,7 @@ namespace {
                     else if(JsonLdUtils::isDefaultObject(element_value)) {
                         expandedValue = json::object();
                         expandedValue[JsonLdConsts::DEFAULT] =
-                                typeScopedContext.expandIri(element_value.at(JsonLdConsts::DEFAULT).get<std::string>(), true, true);
+                                ContextProcessor::expandIri(typeScopedContext, element_value.at(JsonLdConsts::DEFAULT).get<std::string>(), true, true);
                     }
                         // 13.4.4.4)
                         // Otherwise, set expanded value to the result of IRI expanding each of its
@@ -474,12 +474,12 @@ namespace {
 
                         if(element_value.is_string()) {
                             expandedValue =
-                                    typeScopedContext.expandIri(element_value.get<std::string>(), true, true);
+                                    ContextProcessor::expandIri(typeScopedContext, element_value.get<std::string>(), true, true);
                         }
                         else if(element_value.is_array()) {
                             expandedValue = json::array();
                             for(const auto& v : element_value) {
-                                expandedValue.push_back(typeScopedContext.expandIri(v.get<std::string>(), true, true));
+                                expandedValue.push_back(ContextProcessor::expandIri(typeScopedContext, v.get<std::string>(), true, true));
                             }
                         }
 
@@ -891,7 +891,7 @@ namespace {
                         // 13.7.4.2.4)
                         // If language is @none, or expands to @none, remove @language from v.
                         if(language == JsonLdConsts::NONE ||
-                           activeContext.expandIri(language, false, true) == JsonLdConsts::NONE) {
+                                ContextProcessor::expandIri(activeContext, language, false, true) == JsonLdConsts::NONE) {
                             v.erase(JsonLdConsts::LANGUAGE);
                         }
 
@@ -958,7 +958,7 @@ namespace {
                     if(arrayContains(containerMapping, JsonLdConsts::TYPE)) {
                         auto indexTermDefinition = mapContext.getTermDefinition(index);
                         if(indexTermDefinition.contains(JsonLdConsts::LOCALCONTEXT)) {
-                            mapContext = mapContext.process(
+                            mapContext = ContextProcessor::process(mapContext,
                                     indexTermDefinition.at(JsonLdConsts::LOCALCONTEXT),
                                     indexTermDefinition.at(JsonLdConsts::BASEURL).get<std::string>());
                         }
@@ -970,7 +970,7 @@ namespace {
 
                     // 13.8.3.4)
                     // Initialize expanded index to the result of IRI expanding index.
-                    auto expandedIndex = activeContext.expandIri(index, false, true);
+                    auto expandedIndex = ContextProcessor::expandIri(activeContext, index, false, true);
 
                     // 13.8.3.5)
                     // If index value is not an array set index value to an array containing only
@@ -1015,7 +1015,7 @@ namespace {
 
                             // 13.8.3.7.2.2)
                             // Initialize expanded index key to the result of IRI expanding index key.
-                            auto expandedIndexKey = activeContext.expandIri(indexKey, false, true);
+                            auto expandedIndexKey = ContextProcessor::expandIri(activeContext, indexKey, false, true);
 
                             // 13.8.3.7.2.3)
                             // Initialize index property values to an array consisting of re-expanded
@@ -1054,7 +1054,7 @@ namespace {
                         else if(arrayContains(containerMapping, JsonLdConsts::ID) &&
                                 !item.contains(JsonLdConsts::ID) &&
                                 expandedIndex != JsonLdConsts::NONE) {
-                            auto expandedIndex2 = activeContext.expandIri(index, true, false);
+                            auto expandedIndex2 = ContextProcessor::expandIri(activeContext, index, true, false);
                             item[JsonLdConsts::ID] = expandedIndex2;
                         }
 
@@ -1252,7 +1252,7 @@ namespace {
                 // array, return null.
                 if(result[JsonLdConsts::VALUE].is_null() ||
                    (result[JsonLdConsts::VALUE].is_array() && result[JsonLdConsts::VALUE].empty()))
-                    return json();
+                    return {};
 
                     // 15.4)
                     // Otherwise, if the value of result's @value entry is not a string and result
@@ -1298,7 +1298,7 @@ namespace {
         // 18)
         // If result is a map that contains only the entry @language, return null.
         if (result.is_object() && result.contains(JsonLdConsts::LANGUAGE) && result.size() == 1) {
-            return json();
+            return {};
         }
 
         // 19)
@@ -1333,10 +1333,10 @@ nlohmann::json ExpansionProcessor::expand(
         const std::string &baseUrl,
         bool fromMap)
 {
-    // Comments in this function are labelled with numbers that correspond to sections
+    // Comments in this function are labeled with numbers that correspond to sections
     // from the description of the Expansion algorithm.
     // See: https://www.w3.org/TR/json-ld11-api/#expansion-algorithm
-std::cout << "ExpansionProcessor::expand(), activeProperty = [" << (activeProperty == nullptr ? "" : *activeProperty) << "]\n";
+
     // 1)
     // If element is null, return null.
     if (element.is_null()) {
@@ -1346,7 +1346,7 @@ std::cout << "ExpansionProcessor::expand(), activeProperty = [" << (activeProper
     // 2)
     // If active property is @default, initialize the frameExpansion flag to false.
     if (activeProperty != nullptr && *activeProperty == JsonLdConsts::DEFAULT) {
-        activeContext.getOptions().setFrameExpansion(false);
+        //todo: activeContext.getOptions().setFrameExpansion(false);
     }
 
     // 3)
@@ -1387,7 +1387,7 @@ std::cout << "ExpansionProcessor::expand(), activeProperty = [" << (activeProper
             std::string termsBaseUrl;
             if(termDef.contains(JsonLdConsts::BASEURL))
                 termsBaseUrl = termDef[JsonLdConsts::BASEURL].get<std::string>();
-            activeContext = activeContext.process(*propertyScopedContext, termsBaseUrl);
+            activeContext = ContextProcessor::process(activeContext, *propertyScopedContext, termsBaseUrl);
         }
 
         // 4.3)

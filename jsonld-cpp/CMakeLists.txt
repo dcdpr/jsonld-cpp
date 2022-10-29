@@ -9,7 +9,7 @@ project(jsonld-cpp-library VERSION ${JSONLDCPP_VERSION}
         LANGUAGES CXX )
 
 set(CMAKE_CXX_STANDARD 11)
-
+set(CMAKE_CXX_FLAGS_DEBUG_INIT -fno-limit-debug-info)
 include(GNUInstallDirs)
 
 find_package(uriparser 0.9.5 CONFIG REQUIRED char wchar_t)
@@ -19,6 +19,7 @@ find_package(uriparser 0.9.5 CONFIG REQUIRED char wchar_t)
 
 set(LIB_HEADER_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/Context.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/ContextProcessor.h
         ${CMAKE_CURRENT_SOURCE_DIR}/DocumentLoader.h
         ${CMAKE_CURRENT_SOURCE_DIR}/DoubleFormatter.h
         ${CMAKE_CURRENT_SOURCE_DIR}/ExpansionProcessor.h
@@ -53,6 +54,7 @@ set(LIB_HEADER_FILES
 
 set(LIB_SOURCE_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/Context.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/ContextProcessor.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/DocumentLoader.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/DoubleFormatter.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/ExpansionProcessor.cpp
@@ -180,25 +182,3 @@ if(INSTALL_JSONLDCPP)
 
 endif()
 
-#if(INSTALL_JSONLDCPP)
-#  #install (TARGETS jsonld-cpp DESTINATION lib)
-#  install(
-#          TARGETS ${PROJECT_NAME}
-#          EXPORT ${PROJECT_NAME}_Targets
-#          ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#          LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#          RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-#
-#  FILE(GLOB INCLUDES_H
-#          ${CMAKE_CURRENT_SOURCE_DIR}/Json*.h
-#          ${CMAKE_CURRENT_SOURCE_DIR}/Context.h
-#          ${CMAKE_CURRENT_SOURCE_DIR}/DocumentLoader.h
-#          ${CMAKE_CURRENT_SOURCE_DIR}/FileLoader.h
-#          ${CMAKE_CURRENT_SOURCE_DIR}/RDFDataset.h
-#          ${CMAKE_CURRENT_SOURCE_DIR}/RemoteDocument.h
-#          ${CMAKE_CURRENT_SOURCE_DIR}/MediaType.h
-#          ${CMAKE_CURRENT_SOURCE_DIR}/BlankNodeNames.h
-#          ${CMAKE_CURRENT_SOURCE_DIR}/../include/json.hpp
-#          ${CMAKE_CURRENT_SOURCE_DIR}/../include/jsoninc.h )
-#  install (FILES ${INCLUDES_H} DESTINATION include)
-#endif()

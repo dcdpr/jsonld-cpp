@@ -26,7 +26,7 @@ namespace RDF {
         RDFQuad(std::shared_ptr<Node> isubject, std::shared_ptr<Node> ipredicate, std::shared_ptr<Node> iobject,
                 std::string * igraph);
 
-        RDFQuad(std::string isubject, std::string ipredicate, std::string iobject, std::string * igraph);
+        RDFQuad(const std::string& isubject, const std::string& ipredicate, const std::string& iobject, std::string * igraph);
 
         RDFQuad(const RDFQuad &rhs);
         RDFQuad(RDFQuad&& rhs) noexcept;

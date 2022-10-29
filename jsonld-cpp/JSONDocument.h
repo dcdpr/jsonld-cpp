@@ -12,13 +12,13 @@ private:
     MediaType contentType;
     std::string documentUrl;
     nlohmann::json document;
-    std::string contextUrl;
+    std::string contextUrl;// todo: used?
 
-    JSONDocument(MediaType contentType, nlohmann::json document);
+    JSONDocument(MediaType contentType, nlohmann::json document, std::string documentUrl);
 
 public:
 
-    static JSONDocument of(const MediaType& contentType, std::istream &in);
+    static JSONDocument of(const MediaType& contentType, std::istream &in, const std::string & documentUrl);
 
     static bool accepts(const MediaType& contentType);
     static void assertContentType(const MediaType& contentType);

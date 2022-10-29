@@ -7,7 +7,9 @@
 
     Original Code
         -- Copyright (C) 2005, 2007 Olivier Gay <olivier.gay@a3.epfl.ch>
+
     Updated to C++, zedwood.com 2012
+
     Changed some names and added some extra functionality to
     more closely match how Java's MessageDigest works
         -- Dan Pape <dpape@dpape.com>, Nov 2020

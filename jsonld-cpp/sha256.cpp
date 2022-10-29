@@ -149,7 +149,7 @@ std::string SHA256::final()
     // Reset for next run
     init();
 
-    return std::string(buf);
+    return {buf};
 }
 
 std::string SHA256::digest() {

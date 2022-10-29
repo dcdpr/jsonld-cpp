@@ -2,7 +2,6 @@
 #define JSONLD_CPP_LIBRARY_EXPANSIONPROCESSOR_H
 
 #include "jsonld-cpp/jsoninc.h"
-//#include "jsonld-cpp/Context.h"
 
 class Context;
 

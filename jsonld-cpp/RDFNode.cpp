@@ -111,6 +111,7 @@ namespace RDF {
         map["value"] = attribute;
     }
 
+    // sort order of Nodes should be: Literals < BlankNodes < IRIs
     bool NodeLess::operator()(const Node &lhs, const Node &rhs) const {
         if(lhs.isIRI()) {
             if(!rhs.isIRI())

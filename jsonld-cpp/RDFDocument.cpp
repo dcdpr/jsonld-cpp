@@ -49,7 +49,7 @@ RDFDocument RDFDocument::of(const MediaType& contentType, std::istream &in) {
     copy(lines.begin(), lines.end(), std::ostream_iterator<std::string>(result, "\n"));
     // parse tmp string into an RDFDataset
     RDF::RDFDataset dataset = RDFDatasetUtils::parseNQuads(result.str());
-    return RDFDocument(contentType, dataset);
+    return {contentType, dataset};
 }
 
 bool RDFDocument::accepts(const MediaType& contentType) {

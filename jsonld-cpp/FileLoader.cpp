@@ -65,8 +65,11 @@ std::unique_ptr<RemoteDocument> FileLoader::loadDocument(const std::string &url)
     // todo: add to cache
 
     if (JSONDocument::accepts(contentType)) {
+        if(localUrl.find("file://") == std::string::npos)
+            localUrl = "file://" + localUrl;
+
         return std::unique_ptr<RemoteDocument>(
-                new JSONDocument(JSONDocument::of(contentType, inputStream)));
+                new JSONDocument(JSONDocument::of(contentType, inputStream, localUrl)));
     }
 
     if (RDFDocument::accepts(contentType)) {
@@ -81,11 +84,6 @@ std::unique_ptr<RemoteDocument> FileLoader::loadDocument(const std::string &url)
     throw JsonLdError(JsonLdError::LoadingDocumentFailed, ss.str());
 
 }
-
-//void FileLoader::addDocumentToCache(const std::string &url, const std::string &contents) {
-//    json j = json::parse(contents);
-//    cache.insert(std::make_pair(url, j));
-//}
 
 FileLoader *FileLoader::clone() const {
     return new FileLoader(*this);

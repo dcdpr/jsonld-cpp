@@ -4,50 +4,55 @@
 #include <set>
 #include <regex>
 
-bool JsonLdUtils::isKeyword(const std::string& property) {
+using namespace JsonLdConsts;
 
-    // todo: should add these to a container for fast search
-    return
-        // See: https://www.w3.org/TR/json-ld11/#keywords for normative list.
-            property == "@base" ||
-            property == "@container" ||
-            property == "@context" ||
-            property == "@direction" ||
-            property == "@graph" ||
-            property == "@id" ||
-            property == "@import" ||
-            property == "@included" ||
-            property == "@index" ||
-            property == "@json" ||
-            property == "@language" ||
-            property == "@list" ||
-            property == "@nest" ||
-            property == "@none" ||
-            property == "@prefix" ||
-            property == "@propagate" ||
-            property == "@protected" ||
-            property == "@reverse" ||
-            property == "@set" ||
-            property == "@type" ||
-            property == "@value" ||
-            property == "@version" ||
-            property == "@vocab" ||
+namespace {
+
+    std::set<std::string> knownKeywords = {
+            // See: https://www.w3.org/TR/json-ld11/#keywords for normative list.
+      BASE,
+      CONTAINER,
+      CONTEXT,
+      DIRECTION,
+      GRAPH,
+      ID,
+      IMPORT,
+      INCLUDED,
+      INDEX,
+      JSON,
+      LANGUAGE,
+      LIST,
+      NEST,
+      NONE,
+      PREFIX,
+      PROPAGATE,
+      PROTECTED,
+      REVERSE,
+      SET,
+      TYPE,
+      VALUE,
+      VERSION,
+      VOCAB,
             // See: https://w3c.github.io/json-ld-api/#api-keywords
-            property == "@preserve" ||
+      PRESERVE,
             // See: https://www.w3.org/TR/json-ld11-framing/#framing-keywords
-            property == "@default" ||
-            property == "@embed" ||
-            property == "@always" ||
-            property == "@once" ||
-            property == "@never" ||
-            property == "@explicit" ||
-            property == "@null" ||
-            property == "@omitDefault" ||
-            property == "@requireAll" ||
+      DEFAULT,
+      EMBED,
+      "@always",
+      "@once",
+      "@never",
+      EXPLICIT,
+      ATNULL,
+      OMIT_DEFAULT,
+      REQUIRE_ALL,
             // these are other keywords found reading through the spec. Not sure why they aren't
             // included in the above.
-            property == "@any"
-            ;
+      "@any"
+    };
+}
+
+bool JsonLdUtils::isKeyword(const std::string& property) {
+    return knownKeywords.count(property) > 0;
 }
 
 bool JsonLdUtils::isKeywordForm(const std::string& property) {
@@ -112,16 +117,13 @@ bool JsonLdUtils::deepCompare(json v1, json v2) {
 
 bool JsonLdUtils::isListObject(const json& j) {
     return JsonLdUtils::isObject(j) &&
-           j.contains(JsonLdConsts::LIST) &&
-           (j.size() == 1 || (j.size() == 2 && j.contains(JsonLdConsts::INDEX))
-           );
+           j.contains(LIST) &&
+           (j.size() == 1 || (j.size() == 2 && j.contains(INDEX)));
 }
 
 bool JsonLdUtils::isGraphObject(const json& j) {
-    if(JsonLdUtils::isObject(j) && j.contains(JsonLdConsts::GRAPH)) {
-        std::set<std::string> validKeywords {
-                JsonLdConsts::GRAPH,JsonLdConsts::ID,JsonLdConsts::INDEX
-        };
+    if(JsonLdUtils::isObject(j) && j.contains(GRAPH)) {
+        std::set<std::string> validKeywords {GRAPH, ID, INDEX};
         for (auto& el : j.items()) {
             if(validKeywords.find(el.key()) == validKeywords.end())
                 return false;
@@ -132,7 +134,7 @@ bool JsonLdUtils::isGraphObject(const json& j) {
 }
 
 bool JsonLdUtils::isValueObject(const json& j) {
-    return JsonLdUtils::isObject(j) && j.contains(JsonLdConsts::VALUE);
+    return JsonLdUtils::isObject(j) && j.contains(VALUE);
 }
 
 bool JsonLdUtils::isObject(const json& j) {
@@ -152,7 +154,7 @@ bool JsonLdUtils::isEmptyObject(const json& j) {
  * @return true if j is a default object
  */
 bool JsonLdUtils::isDefaultObject(const json& j) {
-    return j.is_object() && j.contains(JsonLdConsts::DEFAULT);
+    return j.is_object() && j.contains(DEFAULT);
 }
 
 
@@ -166,11 +168,11 @@ bool JsonLdUtils::isDefaultObject(const json& j) {
  */
 bool JsonLdUtils::isNodeObject(const json& j) {
     return j.is_object() &&
-           ((!j.contains(JsonLdConsts::VALUE) &&
-             !j.contains(JsonLdConsts::LIST) &&
-             !j.contains(JsonLdConsts::SET)) ||
-            (j.contains(JsonLdConsts::CONTEXT) &&
-             j.contains(JsonLdConsts::GRAPH))
+           ((!j.contains(VALUE) &&
+             !j.contains(LIST) &&
+             !j.contains(SET)) ||
+            (j.contains(CONTEXT) &&
+             j.contains(GRAPH))
            );
 }
 
@@ -199,16 +201,11 @@ bool JsonLdUtils::isArrayOfScalars(const json& j) {
 }
 
 bool JsonLdUtils::deepContains(const json& values, const json& value) {
-    for (const auto& item : values) {
-        if (deepCompare(item, value)) {
-            return true;
-        }
-    }
-    return false;
+    return std::any_of(values.cbegin(), values.cend(), [&value](const json &v){ return deepCompare(v, value); });
 }
 
 /**
- * Merges value into the array at obj[key], if array at obj[key] doe not yet contain it. If
+ * Merges value into the array at obj[key], if array at obj[key] does not yet contain it. If
  * array at obj[key] does not exist, create it and add value.
  *
  * @param obj the JSON "object"
@@ -224,7 +221,7 @@ void JsonLdUtils::mergeValue(json & obj, const std::string& key, const json& val
         values = json::array();
         obj[key] = values;
     }
-    if (key == "@list" || value.contains("@list") || !deepContains(values, value)) {
+    if (key == LIST || value.contains(LIST) || !deepContains(values, value)) {
         values.push_back(value);
     }
 }
@@ -316,7 +313,7 @@ bool JsonLdUtils::containsOrEquals(json & j, const std::string& value) {
         return j == value;
 
     else if(j.is_array()) {
-        return std::find(j.cbegin(), j.cend(), value) != j.cend();
+        return std::any_of(j.cbegin(), j.cend(), [&value](const json &v){ return v == value; });
     }
 
     else if(j.is_object()) {

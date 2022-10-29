@@ -63,10 +63,6 @@ public:
     static const char InvalidIncludedValue[];
     static const char ProtectedTermRedefinition[];
 
-private:
-    nlohmann::json detail;
-
-public:
     JsonLdError(const std::string& itype, const nlohmann::json& idetail);
     explicit JsonLdError(const std::string& itype);
 

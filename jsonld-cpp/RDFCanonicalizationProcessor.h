@@ -2,8 +2,8 @@
 #define JSONLD_CPP_LIBRARY_RDFCANONICALIZATIONPROCESSOR_H
 
 #include <string>
-#include "jsonld-cpp/JsonLdOptions.h"
 
+class JsonLdOptions;
 namespace RDF {
     class RDFDataset;
 }
@@ -11,7 +11,7 @@ namespace RDF {
 struct RDFCanonicalizationProcessor {
 
     /**
-     * Expansion Algorithm
+     * Canonicalization Algorithm
      *
      * This algorithm converts an input RDFDataset into a normalized RDFDataset. This algorithm
      * will assign deterministic identifiers to any blank nodes in the input dataset.

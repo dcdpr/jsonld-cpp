@@ -23,7 +23,7 @@ namespace RDF {
 
         RDFTriple(std::shared_ptr<Node> isubject, std::shared_ptr<Node> ipredicate, std::shared_ptr<Node> iobject);
 
-        RDFTriple(std::string isubject, std::string ipredicate, std::string iobject);
+        RDFTriple(const std::string& isubject, const std::string& ipredicate, const std::string& iobject);
 
         RDFTriple(const RDFTriple &rhs);
         RDFTriple(RDFTriple&& rhs) noexcept;
