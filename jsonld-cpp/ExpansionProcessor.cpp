@@ -377,7 +377,7 @@ namespace {
                 // (unless processing mode is json-ld-1.0), a colliding keywords error has been
                 // detected and processing is aborted.
                 if (result.contains(expandedProperty)) {
-                    if (activeContext.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
+                    if (activeContext.isProcessingMode(JsonLdConsts::JSON_LD_1_0)) {
                         throw JsonLdError(JsonLdError::CollidingKeywords,
                                           expandedProperty + " already exists in result");
                     }
@@ -522,7 +522,7 @@ namespace {
                 else if (expandedProperty == JsonLdConsts::INCLUDED) {
                     // 13.4.6.1)
                     // If processing mode is json-ld-1.0, continue with the next key from element.
-                    if (activeContext.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
+                    if (activeContext.isProcessingMode(JsonLdConsts::JSON_LD_1_0)) {
                         continue;
                     }
                     // 13.4.6.2)
@@ -569,7 +569,7 @@ namespace {
                     // is json-ld-1.0, an invalid value object value error has been detected and
                     // processing is aborted.
                     if(inputType == JsonLdConsts::JSON) {
-                        if (activeContext.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
+                        if (activeContext.isProcessingMode(JsonLdConsts::JSON_LD_1_0)) {
                             throw JsonLdError(JsonLdError::InvalidValueObjectValue);
                         }
                         expandedValue = element_value;
@@ -635,7 +635,7 @@ namespace {
                 else if (expandedProperty == JsonLdConsts::DIRECTION) {
                     // 13.4.9.1)
                     // If processing mode is json-ld-1.0, continue with the next key from element.
-                    if (activeContext.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
+                    if (activeContext.isProcessingMode(JsonLdConsts::JSON_LD_1_0)) {
                         continue;
                     }
                     // 13.4.9.2)

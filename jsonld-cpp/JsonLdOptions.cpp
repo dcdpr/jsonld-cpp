@@ -2,9 +2,9 @@
 
 
 // definitions needed here for static members (though not necessary in c++17)
-constexpr const char JsonLdOptions::JSON_LD_1_0[];
-constexpr const char JsonLdOptions::JSON_LD_1_1[];
-constexpr bool JsonLdOptions::DEFAULT_COMPACT_ARRAYS;
+//constexpr const char JsonLdOptions::JSON_LD_1_0[];
+//constexpr const char JsonLdOptions::JSON_LD_1_1[];
+//constexpr bool JsonLdOptions::DEFAULT_COMPACT_ARRAYS;
 
 bool JsonLdOptions::isFrameExpansion() const {
     return frameExpansion_;

@@ -72,6 +72,10 @@ namespace JsonLdConsts {
     static constexpr const char PREFIX[] = "@prefix";
     static constexpr const char INCLUDED[] = "@included";
 
+    static constexpr const char JSON_LD_1_0[] = "json-ld-1.0";
+    static constexpr const char JSON_LD_1_1[] = "json-ld-1.1";
+    static constexpr bool DEFAULT_COMPACT_ARRAYS = true;
+
     // various flags used for term definitions
     static constexpr const char IS_PREFIX_FLAG[] = "@flag.prefix";
     static constexpr const char IS_PROTECTED_FLAG[] = "@flag.protected";

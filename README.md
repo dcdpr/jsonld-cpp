@@ -26,6 +26,14 @@ cmake ..
 make
 ```
 
+You may run into permission issues during the build when the dependencies are
+being installed during the build step.  To install them in the project directory
+instead run cmake with the following command:
+
+```
+cmake .. "-DCMAKE_INSTALL_PREFIX=$(pwd)/install"
+```
+
 You can also run all the tests:
 
 ```

@@ -70,7 +70,7 @@ namespace {
         // If term is @type, and processing mode is json-ld-1.0, a keyword redefinition error has
         // been detected and processing is aborted.
         if(term == JsonLdConsts::TYPE) {
-            if(activeContext.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
+            if(activeContext.isProcessingMode(JsonLdConsts::JSON_LD_1_0)) {
                 throw JsonLdError(JsonLdError::KeywordRedefinition, term);
             }
             // At this point, value MUST be a map with only either or both of the following entries:
@@ -161,7 +161,7 @@ namespace {
         // error has been detected and processing is aborted. If processing mode is json-ld-1.0, an
         // invalid term definition has been detected and processing is aborted.
         if (value.contains(JsonLdConsts::PROTECTED)) {
-            if (activeContext.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
+            if (activeContext.isProcessingMode(JsonLdConsts::JSON_LD_1_0)) {
                 throw JsonLdError(JsonLdError::InvalidTermDefinition);
             }
 
@@ -192,7 +192,7 @@ namespace {
             // 12.3)
             // If the expanded type is @json or @none, and processing mode is json-ld-1.0, an invalid
             // type mapping error has been detected and processing is aborted.
-            if (activeContext.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
+            if (activeContext.isProcessingMode(JsonLdConsts::JSON_LD_1_0)) {
                 if(typeStr == JsonLdConsts::JSON || typeStr == JsonLdConsts::NONE) {
                     throw JsonLdError(JsonLdError::InvalidTypeMapping, type);
                 }
@@ -451,7 +451,7 @@ namespace {
             // If the container value is @graph, @id, or @type, or is otherwise not a string,
             // generate an invalid container mapping error and abort processing if processing
             // mode is json-ld-1.0.
-            if (activeContext.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
+            if (activeContext.isProcessingMode(JsonLdConsts::JSON_LD_1_0)) {
                 if (!container.is_string())
                     throw JsonLdError(JsonLdError::InvalidContainerMapping,
                                       "@container must be a string");
@@ -554,7 +554,7 @@ namespace {
             // 20.1)
             // If processing mode is json-ld-1.0 or container mapping does not include
             // @index, an invalid term definition has been detected and processing is aborted.
-            if (activeContext.isProcessingMode(JsonLdOptions::JSON_LD_1_0) ||
+            if (activeContext.isProcessingMode(JsonLdConsts::JSON_LD_1_0) ||
                 !JsonLdUtils::containsOrEquals(definition[JsonLdConsts::CONTAINER], JsonLdConsts::INDEX)) {
                 throw JsonLdError(JsonLdError::InvalidTermDefinition,"");
             }
@@ -589,7 +589,7 @@ namespace {
             // 21.1)
             // If processing mode is json-ld-1.0, an invalid term definition has been detected
             // and processing is aborted.
-            if (activeContext.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
+            if (activeContext.isProcessingMode(JsonLdConsts::JSON_LD_1_0)) {
                 throw JsonLdError(JsonLdError::InvalidTermDefinition,"");
             }
 
@@ -673,7 +673,7 @@ namespace {
             // 24.1)
             // If processing mode is json-ld-1.0, an invalid term definition has been detected
             // and processing is aborted.
-            if (activeContext.isProcessingMode(JsonLdOptions::JSON_LD_1_0)) {
+            if (activeContext.isProcessingMode(JsonLdConsts::JSON_LD_1_0)) {
                 throw JsonLdError(JsonLdError::InvalidTermDefinition,"");
             }
 
@@ -704,7 +704,7 @@ namespace {
             // If processing mode is json-ld-1.0, or if term contains a colon (:) or
             // slash (/), an invalid term definition has been detected and processing
             // is aborted.
-            if (activeContext.isProcessingMode(JsonLdOptions::JSON_LD_1_0) ||
+            if (activeContext.isProcessingMode(JsonLdConsts::JSON_LD_1_0) ||
                 term.find(':') != std::string::npos ||
                 term.find('/') != std::string::npos) {
                 throw JsonLdError(JsonLdError::InvalidTermDefinition);
@@ -1166,7 +1166,7 @@ Context Context::process(const json & ilocalContext, const std::string & baseURL
             // 5.5.2)
             // If processing mode is set to json-ld-1.0, a processing mode conflict error
             // has been detected and processing is aborted.
-            if (isProcessingMode(JsonLdOptions::JSON_LD_1_0))
+            if (isProcessingMode(JsonLdConsts::JSON_LD_1_0))
                 throw JsonLdError(JsonLdError::ProcessingModeConflict);
         }
 
@@ -1176,7 +1176,7 @@ Context Context::process(const json & ilocalContext, const std::string & baseURL
             // 5.6.1)
             // If processing mode is json-ld-1.0, an invalid context entry error has
             // been detected and processing is aborted.
-            if (isProcessingMode(JsonLdOptions::JSON_LD_1_0))
+            if (isProcessingMode(JsonLdConsts::JSON_LD_1_0))
                 throw JsonLdError(JsonLdError::InvalidContextEntry);
 
             auto value = context.at(JsonLdConsts::IMPORT);
@@ -1346,7 +1346,7 @@ Context Context::process(const json & ilocalContext, const std::string & baseURL
             // 5.10.1)
             // If processing mode is json-ld-1.0, an invalid context entry error has been
             // detected and processing is aborted.
-            if (isProcessingMode(JsonLdOptions::JSON_LD_1_0))
+            if (isProcessingMode(JsonLdConsts::JSON_LD_1_0))
                 throw JsonLdError(JsonLdError::InvalidContextEntry);
             // 5.10.2)
             // Initialize value to the value associated with the @direction entry.
@@ -1377,7 +1377,7 @@ Context Context::process(const json & ilocalContext, const std::string & baseURL
         // 5.11)
         if (context.contains(JsonLdConsts::PROPAGATE)) {
             // 5.11.1)
-            if (isProcessingMode(JsonLdOptions::JSON_LD_1_0))
+            if (isProcessingMode(JsonLdConsts::JSON_LD_1_0))
                 throw JsonLdError(JsonLdError::InvalidContextEntry);
             // 5.11.2)
             if (!context.at(JsonLdConsts::PROPAGATE).is_boolean()) {
