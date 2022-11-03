@@ -28,7 +28,7 @@ private:
      * if they have just one element.
      * https://www.w3.org/TR/json-ld-api/#dom-jsonldoptions-compactarrays
      */
-    bool compactArrays_ = DEFAULT_COMPACT_ARRAYS;
+    bool compactArrays_ = JsonLdConsts::DEFAULT_COMPACT_ARRAYS;
 
     /**
      * Determines if IRIs are compacted relative to the base option or document location
@@ -87,7 +87,7 @@ private:
      * json-ld as they are reserved for future versions of this specification.
      * https://www.w3.org/TR/json-ld-api/#dom-jsonldoptions-processingmode
      */
-    std::string processingMode_ = JSON_LD_1_1;
+    std::string processingMode_ = JsonLdConsts::JSON_LD_1_1;
 
     /**
      * If set to true, the JSON-LD processor may emit blank nodes for triple
@@ -146,11 +146,6 @@ private:
 
 public:
 
-    static constexpr const char JSON_LD_1_0[] = "json-ld-1.0";
-
-    static constexpr const char JSON_LD_1_1[] = "json-ld-1.1";
-
-    static constexpr bool DEFAULT_COMPACT_ARRAYS = true;
 
     /**
      * Constructs an instance of JsonLdOptions using the given base IRI. Defaults to
@@ -295,7 +290,7 @@ public:
 
     void setProcessingMode(const std::string& processingMode) {
         this->processingMode_ = processingMode;
-        if (processingMode == JSON_LD_1_1) {
+        if (processingMode == JsonLdConsts::JSON_LD_1_1) {
             omitGraph_ = true;
         }
     }

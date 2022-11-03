@@ -101,6 +101,8 @@ ExternalProject_Add(uriparser
 
 ExternalProject_Add(http-link-header-cpp
       SOURCE_DIR  ${CMAKE_CURRENT_LIST_DIR}/external/http-link-header-cpp
+      GIT_REPOSITORY https://github.com/dcdpr/http-link-header-cpp.git
+      GIT_TAG origin/main
       INSTALL_DIR ${installDir}
       CMAKE_ARGS  -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
                   -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
