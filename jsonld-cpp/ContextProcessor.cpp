@@ -125,7 +125,7 @@ namespace {
         // Initialize previous definition to any existing term definition for term in
         // active context, removing that term definition from active context.
         json previousDefinition;
-        if (activeContext.termDefinitions.count(term)) {
+        if (activeContext.termDefinitions.contains(term)) {
             previousDefinition = activeContext.termDefinitions[term];
             activeContext.termDefinitions.erase(term);
         }
@@ -398,7 +398,7 @@ namespace {
             // If term's prefix has a term definition in active context, set the IRI mapping of
             // definition to the result of concatenating the value associated with the prefix's
             // IRI mapping and the term's suffix.
-            if (activeContext.termDefinitions.find(prefix) != activeContext.termDefinitions.end()) {
+            if (activeContext.termDefinitions.contains(prefix)) {
                 auto id = activeContext.termDefinitions.at(prefix).at(JsonLdConsts::ID);
                 id = id.get<std::string>() + suffix;
                 definition[JsonLdConsts::ID] = id;
@@ -838,7 +838,7 @@ namespace {
         // 4)
         // If active context has a term definition for value, and the associated IRI mapping
         // is a keyword, return that keyword.
-        if (activeContext.termDefinitions.find(value) != activeContext.termDefinitions.end()) {
+        if (activeContext.termDefinitions.contains(value)) {
             auto td = activeContext.termDefinitions.at(value);
             if (!td.is_null() &&
                 td.contains(JsonLdConsts::ID) &&
@@ -849,7 +849,7 @@ namespace {
         // 5)
         // If vocab is true and the active context has a term definition for value, return the
         // associated IRI mapping.
-        if (vocab && activeContext.termDefinitions.find(value) != activeContext.termDefinitions.end()) {
+        if (vocab && activeContext.termDefinitions.contains(value)) {
             auto td = activeContext.termDefinitions.at(value);
             if (!td.is_null() &&
                 td.contains(JsonLdConsts::ID))
@@ -889,9 +889,9 @@ namespace {
             // If active context contains a term definition for prefix having a non-null IRI mapping
             // and the prefix flag of the term definition is true, return the result of concatenating
             // the IRI mapping associated with prefix and suffix.
-            if (activeContext.termDefinitions.find(prefix) != activeContext.termDefinitions.end()) {
+            if (activeContext.termDefinitions.contains(prefix)) {
                 auto prefixDef = activeContext.termDefinitions.at(prefix);
-                if (prefixDef.find(JsonLdConsts::ID) != prefixDef.end() &&
+                if (prefixDef.contains(JsonLdConsts::ID) &&
                     prefixDef.contains(JsonLdConsts::IS_PREFIX_FLAG) &&
                     prefixDef.at(JsonLdConsts::IS_PREFIX_FLAG)) {
                     return prefixDef.at(JsonLdConsts::ID).get<std::string>() + suffix;

@@ -8,7 +8,7 @@ using nlohmann::json;
 
 bool Context::isReverseProperty(const std::string &property) const {
     // todo: should move this function and others like it to a new TermDefinition class?
-    if(!termDefinitions.count(property)) {
+    if(!termDefinitions.contains(property)) {
         return false;
     }
     auto td = termDefinitions.at(property);
@@ -19,7 +19,7 @@ bool Context::isReverseProperty(const std::string &property) const {
 }
 
 nlohmann::json Context::getTermDefinition(const std::string & key) {
-    if(termDefinitions.count(key)) {
+    if(termDefinitions.contains(key)) {
         return termDefinitions.at(key);
     }
     else
