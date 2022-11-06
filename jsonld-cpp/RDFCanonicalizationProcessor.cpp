@@ -1,5 +1,5 @@
 #include "jsonld-cpp/RDFCanonicalizationProcessor.h"
-#include "jsonld-cpp/RDFDatasetUtils.h"
+#include "jsonld-cpp/NQuadsSerialization.h"
 #include "jsonld-cpp/RDFQuad.h"
 #include "jsonld-cpp/RDFTriple.h"
 #include "jsonld-cpp/RDFDataset.h"
@@ -95,7 +95,7 @@ namespace {
             // If the blank node's existing blank node identifier matches the reference blank
             // node identifier then use the blank node identifier _:a, otherwise, use the blank
             // node identifier _:z.
-            nquads.push_back(RDFDatasetUtils::toNQuadForNormalization(quad, &referenceBlankNodeId));
+            nquads.push_back(NQuadsSerialization::toNQuadForNormalization(quad, &referenceBlankNodeId));
         }
 
         // 4)
@@ -532,6 +532,6 @@ namespace {
 
 std::string RDFCanonicalizationProcessor::normalize(const RDF::RDFDataset& dataset, const JsonLdOptions& options) {
 
-    return RDFDatasetUtils::toNQuads(::normalize(dataset, options));
+    return NQuadsSerialization::toNQuads(::normalize(dataset, options));
 
 }

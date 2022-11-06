@@ -45,14 +45,14 @@ namespace {
       ATNULL,
       OMIT_DEFAULT,
       REQUIRE_ALL,
-            // these are other keywords found reading through the spec. Not sure why they aren't
+            // this is another keyword found reading through the api spec. Not sure why they aren't
             // included in the above.
-      "@any"
+      ANY
     };
 }
 
-bool JsonLdUtils::isKeyword(const std::string& property) {
-    return knownKeywords.count(property) > 0;
+bool JsonLdUtils::isKeyword(const std::string& str) {
+    return knownKeywords.count(str) > 0;
 }
 
 bool JsonLdUtils::isKeywordForm(const std::string& property) {
@@ -61,44 +61,48 @@ bool JsonLdUtils::isKeywordForm(const std::string& property) {
     return std::regex_match(property, match, keywordForm);
 }
 
-bool JsonLdUtils::isAbsoluteIri(const std::string &iri) {
-    return Uri::isAbsolute(iri);
+bool JsonLdUtils::isAbsoluteIri(const std::string &str) {
+    return Uri::isAbsolute(str);
 }
 
-bool JsonLdUtils::isRelativeIri(const std::string &iri) {
-    return !(isKeyword(iri) || isAbsoluteIri(iri)); // todo is this a good test?
+bool JsonLdUtils::isRelativeIri(const std::string &str) {
+    return !(isKeyword(str) || isAbsoluteIri(str));
 }
 
-bool JsonLdUtils::isIri(const std::string &iri) {
-    return !isKeyword(iri) && Uri::isUri(iri); // todo is this a good test?
+bool JsonLdUtils::isIri(const std::string &str) {
+    return !isKeyword(str) && Uri::isUri(str);
 }
 
-bool JsonLdUtils::deepCompare(json v1, json v2) {
-    if (v1.is_null()) {
-        return v2.is_null();
-    } else if (v2.is_null()) {
-        return v1.is_null();
-    } else if (v1.is_object() && v2.is_object()) {
-        if (v1.size() != v2.size()) {
+bool JsonLdUtils::deepCompare(json j1, json j2) {
+    if (j1.is_null())
+        return j2.is_null();
+
+    else if (j2.is_null())
+        return j1.is_null();
+
+    else if (j1.is_object() && j2.is_object()) {
+        if (j1.size() != j2.size()) {
             return false;
         }
-        for (auto& el : v1.items()) {
-            if(!v2.contains(el.key()) || !deepCompare(el.value(), v2.at(el.key())))
+        for (auto &el: j1.items()) {
+            if (!j2.contains(el.key()) || !deepCompare(el.value(), j2.at(el.key())))
                 return false;
         }
         return true;
-    } else if (v1.is_array() && v2.is_array()) {
-        if (v1.size() != v2.size()) {
+    }
+
+    else if (j1.is_array() && j2.is_array()) {
+        if (j1.size() != j2.size()) {
             return false;
         }
-        // used to mark members of v2 that we have already matched to avoid
+        // used to mark members of j2 that we have already matched to avoid
         // matching the same item twice for lists that have duplicates
-        std::vector<bool> alreadyMatched(v2.size());
-        for (const auto& o1 : v1) {
+        std::vector<bool> alreadyMatched(j2.size());
+        for (const auto &o1: j1) {
             bool gotmatch = false;
 
-            for (size_t j = 0; j < v2.size(); j++) {
-                if (!alreadyMatched[j] && deepCompare(o1, v2.at(j))) {
+            for (size_t j = 0; j < j2.size(); j++) {
+                if (!alreadyMatched[j] && deepCompare(o1, j2.at(j))) {
                     alreadyMatched[j] = true;
                     gotmatch = true;
                     break;
@@ -110,18 +114,25 @@ bool JsonLdUtils::deepCompare(json v1, json v2) {
             }
         }
         return true;
-    } else {
-        return v1 == v2;
     }
+
+    else
+        return j1 == j2;
+
 }
 
 bool JsonLdUtils::isListObject(const json& j) {
+    // A list object is a map that has a @list key. It may also have an @index
+    // key, but no other entries.
     return JsonLdUtils::isObject(j) &&
            j.contains(LIST) &&
            (j.size() == 1 || (j.size() == 2 && j.contains(INDEX)));
 }
 
 bool JsonLdUtils::isGraphObject(const json& j) {
+    // A graph object represents a named graph as the value of a map entry within a
+    // node object. When expanded, a graph object must have an @graph entry, and
+    // may also have @id, and @index entries.
     if(JsonLdUtils::isObject(j) && j.contains(GRAPH)) {
         std::set<std::string> validKeywords {GRAPH, ID, INDEX};
         for (auto& el : j.items()) {
@@ -134,6 +145,7 @@ bool JsonLdUtils::isGraphObject(const json& j) {
 }
 
 bool JsonLdUtils::isValueObject(const json& j) {
+    // A value object is a map that has an @value entry.
     return JsonLdUtils::isObject(j) && j.contains(VALUE);
 }
 
@@ -145,34 +157,21 @@ bool JsonLdUtils::isEmptyObject(const json& j) {
     return j.is_object() && j.empty();
 }
 
-/**
- * Check if a json object is a default object
- *
- * See: https://www.w3.org/TR/json-ld11/#dfn-default-j
- *
- * @param j the object to test
- * @return true if j is a default object
- */
 bool JsonLdUtils::isDefaultObject(const json& j) {
     return j.is_object() && j.contains(DEFAULT);
 }
 
-
-/**
- * Check if a json object is a node object
- *
- * See: https://www.w3.org/TR/json-ld11/#dfn-node-j
- *
- * @param j the object to test
- * @return true if j is a node object
- */
 bool JsonLdUtils::isNodeObject(const json& j) {
+    // A map is a node object if it exists outside of the JSON-LD context and:
+    //    * it does not contain the @value, @list, or @set keywords, or
+    //    * it is not the top-most map in the JSON-LD document consisting of no other
+    //    entries than @graph and @context.
     return j.is_object() &&
            ((!j.contains(VALUE) &&
              !j.contains(LIST) &&
              !j.contains(SET)) ||
-            (j.contains(CONTEXT) &&
-             j.contains(GRAPH))
+            (j.contains(GRAPH) &&
+             j.contains(CONTEXT))
            );
 }
 
@@ -204,14 +203,6 @@ bool JsonLdUtils::deepContains(const json& values, const json& value) {
     return std::any_of(values.cbegin(), values.cend(), [&value](const json &v){ return deepCompare(v, value); });
 }
 
-/**
- * Merges value into the array at obj[key], if array at obj[key] does not yet contain it. If
- * array at obj[key] does not exist, create it and add value.
- *
- * @param obj the JSON "object"
- * @param key the key
- * @param value the value to store in array at obj[key]
- */
 void JsonLdUtils::mergeValue(json & obj, const std::string& key, const json& value) {
     if (obj.is_null()) {
         return;
@@ -226,14 +217,6 @@ void JsonLdUtils::mergeValue(json & obj, const std::string& key, const json& val
     }
 }
 
-/**
- * Check if the given IRI ends with a URI general delimiter character.
- *
- * See https://tools.ietf.org/html/rfc3986#section-2.2
- *
- * @param iri the IRI to check
- * @return true if the IRI ends with a URI general delimiter character
- */
 bool JsonLdUtils::iriEndsWithGeneralDelimiterCharacter(const std::string &iri) {
     if(iri.empty())
         return false;
@@ -241,16 +224,6 @@ bool JsonLdUtils::iriEndsWithGeneralDelimiterCharacter(const std::string &iri) {
     return c == ':' || c == '/' || c == '?' || c == '#' || c == '[' || c == ']' || c == '@';
 }
 
-/**
- * Add a value to an entry in a JSON object using a specified key.
- *
- * See: https://w3c.github.io/json-ld-api/#dfn-add-value
- *
- * @param object the object to add the value to
- * @param key the key
- * @param value the value
- * @param asArray if true, and value of key in the object doesn't exist or is not an array, set key to a new array containing the value
- */
 void JsonLdUtils::addValue(json &object, const std::string & key, const json & value, bool asArray) {
 
     // 1)
@@ -298,15 +271,6 @@ void JsonLdUtils::addValue(json &object, const std::string & key, const json & v
     }
 }
 
-/**
- * Returns whether a json object contains or equals a given string. We need this
- * function because the json library requires slightly different syntax if the json
- * object is an "object", "array" or "string".
- *
- * @param j the json object
- * @param value the value to compare with
- * @return true if the object contains or equals the given value
- */
 bool JsonLdUtils::containsOrEquals(json & j, const std::string& value) {
 
     if(j.is_string())

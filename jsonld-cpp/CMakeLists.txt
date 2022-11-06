@@ -32,10 +32,10 @@ set(LIB_HEADER_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/JsonLdUrl.h
         ${CMAKE_CURRENT_SOURCE_DIR}/JsonLdUtils.h
         ${CMAKE_CURRENT_SOURCE_DIR}/MediaType.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/NQuadsSerialization.h
         ${CMAKE_CURRENT_SOURCE_DIR}/Permutator.h
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFCanonicalizationProcessor.h
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFDataset.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/RDFDatasetUtils.h
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFDatasetComparison.h
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFDocument.h
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFNode.h
@@ -66,10 +66,10 @@ set(LIB_SOURCE_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/JsonLdUrl.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/JsonLdUtils.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/MediaType.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/NQuadsSerialization.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/Permutator.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFCanonicalizationProcessor.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFDataset.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/RDFDatasetUtils.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFDatasetComparison.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFDocument.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFNode.cpp

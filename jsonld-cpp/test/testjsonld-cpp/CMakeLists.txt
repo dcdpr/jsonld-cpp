@@ -41,11 +41,11 @@ add_executable(
     test_ObjectComparisons.cpp
     test_BlankNodeNames.cpp
     test_DoubleFormatter.cpp
+    test_NQuadsParser.cpp
     test_Permutator.cpp
     test_Regex.cpp
     test_RDFDataset.cpp
     test_RDFDatasetComparison.cpp
-    test_RDFDatasetUtils.cpp
     test_RDFTriple.cpp
     test_RDFQuad.cpp
     test_Uri.cpp

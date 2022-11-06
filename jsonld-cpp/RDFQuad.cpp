@@ -1,8 +1,7 @@
 #include "jsonld-cpp/RDFQuad.h"
-#include "jsonld-cpp/JsonLdUtils.h"
 #include "jsonld-cpp/DoubleFormatter.h"
 #include "jsonld-cpp/BlankNodeNames.h"
-#include "jsonld-cpp/RDFDatasetUtils.h"
+#include "jsonld-cpp/NQuadsSerialization.h"
 
 using nlohmann::json;
 
@@ -85,7 +84,7 @@ namespace RDF {
     }
 
     std::string RDFQuad::toString() const {
-        return RDFDatasetUtils::toNQuad(*this);
+        return NQuadsSerialization::toNQuad(*this);
     }
 
     RDFQuad::RDFQuad(const RDFQuad &rhs) {

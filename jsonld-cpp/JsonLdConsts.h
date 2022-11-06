@@ -55,6 +55,7 @@ namespace JsonLdConsts {
     static constexpr const char VALUE[] = "@value";
     static constexpr const char ATNULL[] = "@null";
     static constexpr const char NONE[] = "@none";
+    static constexpr const char ANY[] = "@any";
     static constexpr const char CONTAINER[] = "@container";
     static constexpr const char BLANK_NODE_PREFIX[] = "_:";
     static constexpr const char VOCAB[] = "@vocab";

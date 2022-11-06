@@ -3,7 +3,7 @@
 #include <jsonld-cpp/JsonLdProcessor.h>
 #include <jsonld-cpp/FileLoader.h>
 #include <jsonld-cpp/RemoteDocument.h>
-#include <jsonld-cpp/RDFDatasetUtils.h>
+#include <jsonld-cpp/NQuadsSerialization.h>
 #include "UrdnaManifestLoader.h"
 
 #include <gtest/gtest.h>
@@ -64,7 +64,7 @@ public:
                 options.getDocumentLoader()->loadDocument(testCase.expect);
 
         const std::string & expected =
-                RDFDatasetUtils::toNQuads(expectedDocument->getRDFContent());
+                NQuadsSerialization::toNQuads(expectedDocument->getRDFContent());
 
         EXPECT_EQ(normalized, expected);
 

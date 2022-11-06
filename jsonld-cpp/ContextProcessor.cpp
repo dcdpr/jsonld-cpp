@@ -1040,7 +1040,7 @@ namespace {
                 // If validate scoped context is false, and remote contexts already includes
                 // context do not process context further and continue to any next context in local context.
                 if (!validateScopedContext &&
-                    std::find(remoteContexts.begin(), remoteContexts.end(), contextUri) != remoteContexts.end()) {
+                    std::find(remoteContexts.cbegin(), remoteContexts.cend(), contextUri) != remoteContexts.cend()) {
                     continue;
                 }
 
@@ -1068,6 +1068,7 @@ namespace {
                 // context using the LoadDocumentCallback, passing context for url, and
                 // http://www.w3.org/ns/json-ld#context for profile and for requestProfile.
 
+                // todo, fix indentation here...
                 // 5.2.5.1)
                 // If context cannot be dereferenced, or the document from context document cannot
                 // be transformed into the internal representation , a loading remote context

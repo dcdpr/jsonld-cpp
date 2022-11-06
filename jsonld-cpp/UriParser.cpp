@@ -1,5 +1,4 @@
 #include "jsonld-cpp/UriParser.h"
-//
 #include <uriparser/Uri.h>
 
 class UriParserImpl {
@@ -19,7 +18,7 @@ public:
     }
 
     static bool GetUriComponent(const UriTextRangeA& text_range,
-                         std::string* output) {
+                                std::string* output) {
         if (!text_range.first || !text_range.afterLast) {
             return false;
         }

@@ -1,5 +1,5 @@
 #include "jsonld-cpp/RDFDocument.h"
-#include "jsonld-cpp/RDFDatasetUtils.h"
+#include "jsonld-cpp/NQuadsSerialization.h"
 #include "jsonld-cpp/JsonLdError.h"
 #include <fstream>
 #include <utility>
@@ -48,7 +48,7 @@ RDFDocument RDFDocument::of(const MediaType& contentType, std::istream &in) {
     std::stringstream result;
     copy(lines.begin(), lines.end(), std::ostream_iterator<std::string>(result, "\n"));
     // parse tmp string into an RDFDataset
-    RDF::RDFDataset dataset = RDFDatasetUtils::parseNQuads(result.str());
+    RDF::RDFDataset dataset = NQuadsSerialization::parse(result.str());
     return {contentType, dataset};
 }
 

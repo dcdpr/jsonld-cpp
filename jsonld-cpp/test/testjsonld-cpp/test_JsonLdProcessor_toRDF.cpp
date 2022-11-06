@@ -4,7 +4,7 @@
 #include <jsonld-cpp/FileLoader.h>
 #include <jsonld-cpp/RemoteDocument.h>
 #include <jsonld-cpp/RDFDatasetComparison.h>
-#include <jsonld-cpp/RDFDatasetUtils.h>
+#include <jsonld-cpp/NQuadsSerialization.h>
 #include "ManifestLoader.h"
 
 #include <gtest/gtest.h>
@@ -56,8 +56,8 @@ public:
 
             EXPECT_TRUE(areIsomorphic(actual, expected));
 
-            std::cout << "  Actual RDF: " << RDFDatasetUtils::toNQuads(actual) << std::endl;
-            std::cout << "Expected RDF: " << RDFDatasetUtils::toNQuads(expected) << std::endl;
+            std::cout << "  Actual RDF: " << NQuadsSerialization::toNQuads(actual) << std::endl;
+            std::cout << "Expected RDF: " << NQuadsSerialization::toNQuads(expected) << std::endl;
 
         }
         catch (JsonLdError &e) {

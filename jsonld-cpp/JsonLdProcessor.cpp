@@ -35,7 +35,7 @@ nlohmann::json JsonLdProcessor::expand(const nlohmann::json & input, JsonLdOptio
     // If document from remote document is a string, transform into the internal
     // representation. If document cannot be transformed to the internal representation, reject
     // promise passing a loading document failed error.
-    // ... 'input' is already a json object
+    // todo: ... clean this up. ... 'input' is already a json object
 
     // 5)
     // Initialize a new empty active context. The base IRI and original base URL of the active
