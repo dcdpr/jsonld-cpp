@@ -10,11 +10,11 @@ namespace RDF {
 
     class RDFTriple {
     private:
-
         std::shared_ptr<Node> subject;
         std::shared_ptr<Node> predicate;
         std::shared_ptr<Node> object;
 
+    protected:
         void setSubject(std::shared_ptr<Node> isubject) { subject = std::move(isubject); }
         void setPredicate(std::shared_ptr<Node> ipredicate) { predicate = std::move(ipredicate); }
         void setObject(std::shared_ptr<Node> iobject) { object = std::move(iobject); }
@@ -31,9 +31,9 @@ namespace RDF {
         RDFTriple& operator= (const RDFTriple &rhs);
         RDFTriple& operator= (RDFTriple&& rhs) noexcept;
 
-        std::shared_ptr<Node> getPredicate() const;
-        std::shared_ptr<Node> getObject() const;
-        std::shared_ptr<Node> getSubject() const;
+        virtual std::shared_ptr<Node> getPredicate() const;
+        virtual std::shared_ptr<Node> getObject() const;
+        virtual std::shared_ptr<Node> getSubject() const;
 
         std::string toString() const;
 
@@ -41,8 +41,8 @@ namespace RDF {
 
     };
 
-    bool operator==(const RDF::RDFTriple &lhs, const RDF::RDFTriple &rhs);
-    bool operator!=(const RDF::RDFTriple &lhs, const RDF::RDFTriple &rhs);
+    bool operator==(const RDFTriple &lhs, const RDFTriple &rhs);
+    bool operator!=(const RDFTriple &lhs, const RDFTriple &rhs);
     bool operator<(const RDFTriple &lhs, const RDFTriple &rhs);
     bool operator>(const RDFTriple &lhs, const RDFTriple &rhs);
     bool operator<=(const RDFTriple &lhs, const RDFTriple &rhs);

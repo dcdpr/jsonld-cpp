@@ -7,33 +7,6 @@ using nlohmann::json;
 
 namespace RDF {
 
-    bool operator!=(const RDF::RDFTriple &lhs, const RDF::RDFTriple &rhs) {
-        return !(rhs == lhs);
-    }
-
-    bool operator<(const RDFTriple &lhs, const RDFTriple &rhs) {
-        NodePtrLess less;
-        NodePtrEquals equals;
-        if(!equals(lhs.getSubject(), rhs.getSubject()))
-            return less(lhs.getSubject(), rhs.getSubject());
-        if(!equals(lhs.getPredicate(), rhs.getPredicate()))
-            return less(lhs.getPredicate(), rhs.getPredicate());
-
-        return less(lhs.getObject(), rhs.getObject());
-    }
-
-    bool operator>(const RDFTriple &lhs, const RDFTriple &rhs) {
-        return rhs < lhs;
-    }
-
-    bool operator<=(const RDFTriple &lhs, const RDFTriple &rhs) {
-        return !(rhs < lhs);
-    }
-
-    bool operator>=(const RDFTriple &lhs, const RDFTriple &rhs) {
-        return !(lhs < rhs);
-    }
-
     RDFTriple::RDFTriple(std::shared_ptr<Node> isubject, std::shared_ptr<Node> ipredicate, std::shared_ptr<Node> iobject) {
         setSubject(std::move(isubject));
         setPredicate(std::move(ipredicate));
@@ -114,12 +87,39 @@ namespace RDF {
         return *this;
     }
 
-    bool operator==(const RDF::RDFTriple &lhs, const RDF::RDFTriple &rhs) {
+    bool operator==(const RDFTriple &lhs, const RDFTriple &rhs) {
         NodePtrEquals equals;
         return
                 equals(lhs.getSubject(), rhs.getSubject()) &&
                 equals(lhs.getPredicate(), rhs.getPredicate()) &&
                 equals(lhs.getObject(), rhs.getObject());
+    }
+
+    bool operator!=(const RDFTriple &lhs, const RDFTriple &rhs) {
+        return !(rhs == lhs);
+    }
+
+    bool operator<(const RDFTriple &lhs, const RDFTriple &rhs) {
+        NodePtrLess less;
+        NodePtrEquals equals;
+        if(!equals(lhs.getSubject(), rhs.getSubject()))
+            return less(lhs.getSubject(), rhs.getSubject());
+        if(!equals(lhs.getPredicate(), rhs.getPredicate()))
+            return less(lhs.getPredicate(), rhs.getPredicate());
+
+        return less(lhs.getObject(), rhs.getObject());
+    }
+
+    bool operator>(const RDFTriple &lhs, const RDFTriple &rhs) {
+        return rhs < lhs;
+    }
+
+    bool operator<=(const RDFTriple &lhs, const RDFTriple &rhs) {
+        return !(rhs < lhs);
+    }
+
+    bool operator>=(const RDFTriple &lhs, const RDFTriple &rhs) {
+        return !(lhs < rhs);
     }
 
 }
