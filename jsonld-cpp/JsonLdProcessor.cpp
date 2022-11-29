@@ -11,7 +11,8 @@
 using RDF::RDFDataset;
 using nlohmann::json;
 
-nlohmann::json JsonLdProcessor::expand(const nlohmann::json & input, JsonLdOptions& options) {
+
+nlohmann::json JsonLdProcessor::expand(const std::string& documentLocation, JsonLdOptions& options) {
 
     // Comments in this function are labeled with numbers that correspond to sections
     // from the description of the expand() function in the JsonLdProcessor interface.
@@ -23,19 +24,34 @@ nlohmann::json JsonLdProcessor::expand(const nlohmann::json & input, JsonLdOptio
 
     // 2)
     // If the provided input is a RemoteDocument, initialize remote document to input.
-    // todo: other function
+    // todo
 
     // 3)
     // Otherwise, if the provided input is a string representing the IRI of a remote
     // document, await and dereference it as remote document using LoadDocumentCallback, passing
     // input for url, the extractAllScripts option from options for extractAllScripts.
-    // todo: other function
-
     // 4)
     // If document from remote document is a string, transform into the internal
     // representation. If document cannot be transformed to the internal representation, reject
     // promise passing a loading document failed error.
-    // todo: ... clean this up. ... 'input' is already a json object
+    std::unique_ptr<RemoteDocument> remoteDocument;
+    if (documentLocation.find(':') != std::string::npos) {
+        try {
+            remoteDocument = options.getDocumentLoader()->loadDocument(documentLocation);
+
+            if (options.getBase().empty()) {
+                options.setBase(documentLocation);
+            }
+        }
+        catch (const JsonLdError &e) {
+            throw e;
+        }
+        catch (const std::exception &e) {
+            throw JsonLdError(JsonLdError::LoadingDocumentFailed, e.what());
+        }
+    }
+    else
+        return json::array(); // todo: what else should happen?
 
     // 5)
     // Initialize a new empty active context. The base IRI and original base URL of the active
@@ -72,7 +88,7 @@ nlohmann::json JsonLdProcessor::expand(const nlohmann::json & input, JsonLdOptio
     json expandedOutput = ExpansionProcessor::expand(
             activeContext,
             nullptr,
-            input,
+            remoteDocument->getJSONContent(),
             activeContext.getOriginalBaseUrl());
 
     // 8.1)
@@ -102,46 +118,7 @@ nlohmann::json JsonLdProcessor::expand(const nlohmann::json & input, JsonLdOptio
     // Resolve the promise with expanded output transforming expanded output from the internal
     // representation to a JSON serialization.
     return expandedOutput;
-}
 
-nlohmann::json JsonLdProcessor::expand(const std::string& documentLocation, JsonLdOptions& options) {
-
-    // Comments in this function are labeled with numbers that correspond to sections
-    // from the description of the expand() function in the JsonLdProcessor interface.
-    // See: https://www.w3.org/TR/json-ld11-api/#dom-jsonldprocessor-expand
-
-    // 1)
-    // ...
-
-    // 2)
-    // ...
-
-    // 3)
-    // Otherwise, if the provided input is a string representing the IRI of a remote
-    // document, await and dereference it as remote document using LoadDocumentCallback, passing
-    // input for url, the extractAllScripts option from options for extractAllScripts.
-    if (documentLocation.find(':') != std::string::npos) {
-        try {
-            auto tmp = options.getDocumentLoader()->loadDocument(documentLocation);
-            const json& json_input = tmp->getJSONContent();
-
-            if (options.getBase().empty()) {
-                options.setBase(documentLocation);
-            }
-
-            // All other steps in JsonLdProcessor.expand interface are continued here
-            return expand(json_input, options);
-
-        }
-        catch (const JsonLdError &e) {
-            throw e;
-        }
-        catch (const std::exception &e) {
-            throw JsonLdError(JsonLdError::LoadingDocumentFailed, e.what());
-        }
-    }
-    else
-        return json::array(); // todo: what else should happen?
 }
 
 RDFDataset JsonLdProcessor::toRDF(const std::string& documentLocation, JsonLdOptions& options) {

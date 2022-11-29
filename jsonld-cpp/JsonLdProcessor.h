@@ -15,17 +15,6 @@ namespace RDF {
 
 namespace JsonLdProcessor {
 
-    // Expands JSON-LD input data according to the steps in the Expansion algorithm
-    // See: https://www.w3.org/TR/json-ld11-api/#dom-jsonldprocessor-expand
-    // See: https://www.w3.org/TR/json-ld11-api/#expansion-algorithm
-    nlohmann::json expand(const nlohmann::json & input, JsonLdOptions& options);
-
-    // Expands JSON-LD RemoteDocument according to the steps in the Expansion algorithm
-    // See: https://www.w3.org/TR/json-ld11-api/#dom-jsonldprocessor-expand
-    // See: https://www.w3.org/TR/json-ld11-api/#expansion-algorithm
-    // todo: need this
-    // nlohmann::json expand(RemoteDocument input, JsonLdOptions opts);
-
     // Expands JSON-LD document located at filename or IRI according to the steps in the
     // Expansion algorithm
     // See: https://www.w3.org/TR/json-ld11-api/#dom-jsonldprocessor-expand
