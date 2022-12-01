@@ -1090,13 +1090,14 @@ namespace {
                 }
 
                 const json &document = rd->getJSONContent();
-                if (!document.is_object()) {
-                    throw JsonLdError(JsonLdError::LoadingRemoteContextFailed, "document is not a json document");
-                }
 
                 // 5.2.5.2)
                 // If the document has no top-level map with an @context entry, an invalid remote
                 // context has been detected and processing is aborted.
+                if (!document.is_object()) {
+                    throw JsonLdError(JsonLdError::InvalidRemoteContext, "document is not a json document");
+                }
+
                 if (!document.contains(JsonLdConsts::CONTEXT)) {
                     throw JsonLdError(JsonLdError::InvalidRemoteContext, "document is missing @context entry");
                 }
