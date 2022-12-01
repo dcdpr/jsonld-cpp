@@ -1137,10 +1137,11 @@ namespace {
                 std::string str;
                 if (value.is_string())
                     str = value.get<std::string>();
-                else
-                    // todo: need a better conversion operation
-                    // str = std::to_string(value.get<float>());
-                    str = "1.1";
+                else {
+                    std::ostringstream temp;
+                    temp << std::setprecision(3) << value.get<float>();
+                    str = temp.str();
+                }
 
                 // 5.5.1)
                 // If the associated value is not 1.1, an invalid @version value has been

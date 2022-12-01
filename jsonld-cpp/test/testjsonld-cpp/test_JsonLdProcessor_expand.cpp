@@ -68,6 +68,10 @@ public:
             FAIL() << e.what();
         }
 
+        if(testCase.type.count("jld:NegativeEvaluationTest")) {
+            FAIL() << "We should have failed with the following error: " + testCase.expectErrorCode;
+        }
+
         std::unique_ptr<RemoteDocument> expectedDocument =
                 options.getDocumentLoader()->loadDocument(testCase.expect);
 
