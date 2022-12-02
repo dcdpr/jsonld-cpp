@@ -26,7 +26,7 @@ struct ExpansionProcessor {
      */
     static nlohmann::json expand(
             Context activeContext,
-            std::string *activeProperty,
+            const std::string *activeProperty,
             nlohmann::json element,
             const std::string & baseUrl,
             bool fromMap=false);

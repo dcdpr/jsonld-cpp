@@ -199,7 +199,7 @@ namespace {
 
     json expandArrayElement(
             Context activeContext,
-            std::string * activeProperty,
+            const std::string * activeProperty,
             const json& element,
             const std::string & baseUrl,
             bool fromMap) {
@@ -252,9 +252,46 @@ namespace {
         return result;
     }
 
+    std::unique_ptr<json>
+    initializePropertyScopedContext(Context &activeContext, const std::string *activeProperty) {
+        // 3)
+        // If active property has a term definition in active context with a local
+        // context, initialize property-scoped context to that local context.
+        std::unique_ptr<json> propertyScopedContext;
+        if(activeProperty != nullptr &&
+           !activeContext.getTermDefinition(*activeProperty).is_null() &&
+           activeContext.getTermDefinition(*activeProperty).contains(JsonLdConsts::LOCALCONTEXT) ) {
+            propertyScopedContext.reset(new json(activeContext.getTermDefinition(*activeProperty)[JsonLdConsts::LOCALCONTEXT]));
+        }
+        return propertyScopedContext;
+    }
+
+    Context &
+    updateActiveContext(Context &activeContext, const std::string *activeProperty, const json *propertyScopedContext) {
+        // 8)
+        // If property-scoped context is defined, set active context to the result of the
+        // Context Processing algorithm, passing active context, property-scoped context as
+        // local context, base URL from the term definition for active property in active
+        // context and true for override protected.
+        auto termDef = activeContext.getTermDefinition(*activeProperty);
+        std::string termsBaseUrl;
+        if(termDef.contains(JsonLdConsts::BASEURL))
+            termsBaseUrl = termDef[JsonLdConsts::BASEURL].get<std::string>();
+        activeContext = ContextProcessor::process(activeContext, *propertyScopedContext, termsBaseUrl, true);
+        return activeContext;
+    }
+
+    void expandObjectElement_step13(const std::string *activeProperty, const json &element, const std::string &baseUrl, bool fromMap,
+             Context &typeScopedContext, const std::string &inputType, Context &activeContext, json &result,
+             json &nests);
+
+    void expandObjectElement_step14(Context &activeContext, const std::string *activeProperty, const json &element,
+                                    const std::string &baseUrl, bool fromMap, Context &typeScopedContext, json &result,
+                                    json &nests, const std::string &inputType);
+
     json expandObjectElement(
             Context activeContext,
-            std::string * activeProperty,
+            const std::string * activeProperty,
             json element,
             const std::string & baseUrl,
             nlohmann::json * propertyScopedContext,
@@ -299,11 +336,7 @@ namespace {
         // local context, base URL from the term definition for active property in active
         // context and true for override protected.
         if(propertyScopedContext != nullptr) {
-            auto termDef = activeContext.getTermDefinition(*activeProperty);
-            std::string termsBaseUrl;
-            if(termDef.contains(JsonLdConsts::BASEURL))
-                termsBaseUrl = termDef[JsonLdConsts::BASEURL].get<std::string>();
-            activeContext = ContextProcessor::process(activeContext, *propertyScopedContext, termsBaseUrl, true);
+            activeContext = updateActiveContext(activeContext, activeProperty, propertyScopedContext);
         }
 
         // 9)
@@ -328,8 +361,126 @@ namespace {
 
         // 13)
         // For each key and value in element, ordered lexicographically by key if ordered is true:
+        expandObjectElement_step13(activeProperty, element, baseUrl, fromMap, typeScopedContext, inputType, activeContext, result, nests);
+
+        // 14)
+        // For each key nesting-key in nests, ordered lexicographically if ordered is true:
+        expandObjectElement_step14(activeContext, activeProperty, element, baseUrl, fromMap, typeScopedContext, result,
+                                   nests, inputType);
+
+        // 15)
+        // If result contains the entry @value:
+        if (result.contains(JsonLdConsts::VALUE)) {
+
+            // 15.1)
+            // The result must not contain any entries other than @direction, @index, @language,
+            // @type, and @value. It must not contain an @type entry if it contains either
+            // @language or @direction entries. Otherwise, an invalid value object error has
+            // been detected and processing is aborted.
+            std::set<std::string> validKeywords {
+                    JsonLdConsts::DIRECTION,JsonLdConsts::INDEX,JsonLdConsts::LANGUAGE,
+                    JsonLdConsts::TYPE,JsonLdConsts::VALUE
+            };
+            for (auto& el : result.items()) {
+                if(validKeywords.find(el.key()) == validKeywords.end())
+                    throw JsonLdError(JsonLdError::InvalidValueObject,el.key() + " not in list of valid keywords");
+            }
+            if(result.contains(JsonLdConsts::TYPE) &&
+               (result.contains(JsonLdConsts::LANGUAGE) || result.contains(JsonLdConsts::DIRECTION))) {
+                throw JsonLdError(JsonLdError::InvalidValueObject);
+            }
+
+            // 15.2)
+            // If the result's @type entry is @json, then the @value entry may contain any
+            // value, and is treated as a JSON literal.
+            if(!result.contains(JsonLdConsts::TYPE) ||
+               (!JsonLdUtils::containsOrEquals(result[JsonLdConsts::TYPE], JsonLdConsts::JSON))) {
+                // 15.3)
+                // Otherwise, if the value of result's @value entry is null, or an empty
+                // array, return null.
+                if(result[JsonLdConsts::VALUE].is_null() ||
+                   (result[JsonLdConsts::VALUE].is_array() && result[JsonLdConsts::VALUE].empty()))
+                    return {};
+
+                    // 15.4)
+                    // Otherwise, if the value of result's @value entry is not a string and result
+                    // contains the entry @language, an invalid language-tagged value error has been
+                    // detected (only strings can be language-tagged) and processing is aborted.
+                else if(!result[JsonLdConsts::VALUE].is_string() && result.contains(JsonLdConsts::LANGUAGE))
+                    throw JsonLdError(JsonLdError::InvalidLanguageTaggedValue);
+
+                    // 15.5)
+                    // Otherwise, if the result has an @type entry and its value is not an IRI, an
+                    // invalid typed value error has been detected and processing is aborted.
+                else if (result.contains(JsonLdConsts::TYPE) &&
+                         (!result[JsonLdConsts::TYPE].is_string() || !JsonLdUtils::isAbsoluteIri(result[JsonLdConsts::TYPE].get<std::string>())))
+                    throw JsonLdError(JsonLdError::InvalidTypedValue);
+            }
+        }
+
+            // 16)
+            // Otherwise, if result contains the entry @type and its associated value is not an
+            // array, set it to an array containing only the associated value.
+        else if (result.contains(JsonLdConsts::TYPE)) {
+            if (!result[JsonLdConsts::TYPE].is_array()) {
+                result[JsonLdConsts::TYPE] = json::array({result[JsonLdConsts::TYPE]});
+            }
+        }
+
+            // 17)
+            // Otherwise, if result contains the entry @set or @list:
+        else if (result.contains(JsonLdConsts::SET) || result.contains(JsonLdConsts::LIST)) {
+            // 17.1)
+            // The result must contain at most one other entry which must be @index. Otherwise, an
+            // invalid set or list object error has been detected and processing is aborted.
+            if (result.size() > (result.contains(JsonLdConsts::INDEX) ? 2 : 1))
+                throw JsonLdError(JsonLdError::InvalidSetOrListObject);
+
+            // 17.2)
+            // If result contains the entry @set, then set result to the entry's associated value.
+            if (result.contains(JsonLdConsts::SET)) {
+                result = result[JsonLdConsts::SET];
+            }
+        }
+
+        // 18)
+        // If result is a map that contains only the entry @language, return null.
+        if (result.is_object() && result.contains(JsonLdConsts::LANGUAGE) && result.size() == 1) {
+            return {};
+        }
+
+        // 19)
+        // If active property is null or @graph, drop free-floating values as follows:
+        if (activeProperty == nullptr || *activeProperty == JsonLdConsts::GRAPH) {
+            // 19.1)
+            // If result is a map which is empty, or contains only the entries @value or
+            // @list, set result to null.
+            if (!result.is_null() && result.is_object() &&
+                (result.empty() || result.contains(JsonLdConsts::VALUE) || result.contains(JsonLdConsts::LIST))) {
+                result = json();
+            }
+                // 19.2)
+                // Otherwise, if result is a map whose only entry is @id, set result to null. When the
+                // frameExpansion flag is set, a map containing only the @id entry is retained.
+            else if (!result.is_null() && !activeContext.getOptions().isFrameExpansion() && result.contains(JsonLdConsts::ID)
+                     && result.size() == 1) {
+                result = json();
+            }
+        }
+
+        // 20)
+        return result;
+    }
+
+    void expandObjectElement_step13(const std::string *activeProperty, const json &element, const std::string &baseUrl, bool fromMap,
+             Context &typeScopedContext, const std::string &inputType, Context &activeContext, json &result,
+             json &nests) {
+
+        // 13)
+        // For each key and value in element, ordered lexicographically by key if ordered is true:
+
         std::vector<std::string> element_keys;
-        for (json::iterator it = element.begin(); it != element.end(); ++it) {
+        for (json::const_iterator it = element.begin(); it != element.end(); ++it) {
             element_keys.push_back(it.key());
         }
 
@@ -624,7 +775,7 @@ namespace {
                         std::string v = element_value.get<std::string>();
                         // todo: add warning about non-well-formed language strings
                         // todo: When the frameExpansion flag is set...
-                        std::transform(v.begin(), v.end(), v.begin(), &::tolower);
+                        std::transform(v.begin(), v.end(), v.begin(), &tolower);
                         expandedValue = v;
                     } else {
                         throw JsonLdError(JsonLdError::InvalidLanguageTaggedString);
@@ -883,7 +1034,7 @@ namespace {
                         // according to section 2.2.9 of [BCP47], processors SHOULD issue a
                         // warning. Note: Processors MAY normalize language tags to lower case.
                         json v = json::object();
-                        std::transform(language.begin(), language.end(), language.begin(), &::tolower);
+                        std::transform(language.begin(), language.end(), language.begin(), &tolower);
                         v[JsonLdConsts::VALUE] = item;
                         v[JsonLdConsts::LANGUAGE] = language;
                         // todo: issue warnings
@@ -1180,7 +1331,11 @@ namespace {
                 JsonLdUtils::addValue(result, expandedProperty, expandedValue, true);
             }
         }
+    }
 
+    void expandObjectElement_step14(Context &activeContext, const std::string *activeProperty, const json &element,
+                                    const std::string &baseUrl, bool fromMap, Context &typeScopedContext, json &result,
+                                    json &nests, const std::string &inputType) {
         // 14)
         // For each key nesting-key in nests, ordered lexicographically if ordered is true:
         std::vector<std::string> nestKeys;
@@ -1195,6 +1350,8 @@ namespace {
             // 14.1)
             // Initialize nested values to the value of nesting-key in element, ensuring
             // that it is an array.
+            if(!element.contains(nestingKey))
+                throw JsonLdError(JsonLdError::InvalidNestValue);
             auto nestedValues = element[nestingKey];
             if(!nestedValues.is_array())
                 nestedValues = json::array({nestedValues});
@@ -1210,125 +1367,56 @@ namespace {
                     throw JsonLdError(JsonLdError::InvalidNestValue);
                 }
 
+                for(const auto& el : nestedValue.items()) {
+                    if(ContextProcessor::expandIri(typeScopedContext, el.key(), false, true) == JsonLdConsts::VALUE)
+                        throw JsonLdError(JsonLdError::InvalidNestValue);
+                }
+
                 // 14.2.2)
                 // Recursively repeat steps 3, 8, 13, and 14 using nesting-key for active
                 // property, and nested value for element.
 
-                // todo: ...
-                throw JsonLdError(JsonLdError::NotImplemented, "need to implement @nest handling");
+                // Note: Note
+                // Steps 3 and 8 may update the active context based on a property-scoped context
+                // associated with nesting-key. Updates to active context are restricted to the
+                // recursive operation, and do not propogate to subsequent iterations on nested
+                // values and nesting-key.
+
+                // 3)
+                // If active property has a term definition in active context with a local
+                // context, initialize property-scoped context to that local context.
+                Context copyActiveContext = activeContext;
+                std::unique_ptr<json> localPropertyScopedContext = initializePropertyScopedContext(copyActiveContext, activeProperty);
+
+                // 8)
+                // If property-scoped context is defined, set active context to the result of the
+                // Context Processing algorithm, passing active context, property-scoped context as
+                // local context, base URL from the term definition for active property in active
+                // context and true for override protected.
+                if(localPropertyScopedContext != nullptr) {
+                    copyActiveContext = updateActiveContext(copyActiveContext, activeProperty, localPropertyScopedContext.get());
+                }
+
+                json localNests = json::object();
+
+                // 13)
+                // For each key and value in element, ordered lexicographically by key if ordered is true:
+                expandObjectElement_step13(&nestingKey, nestedValue, baseUrl, fromMap, typeScopedContext, inputType, copyActiveContext, result, localNests);
+
+                // 14)
+                // For each key nesting-key in nests, ordered lexicographically if ordered is true:
+                expandObjectElement_step14(copyActiveContext, &nestingKey, nestedValue, baseUrl, fromMap, typeScopedContext, result,
+                                           localNests, inputType);
 
             }
         }
-
-        // 15)
-        // If result contains the entry @value:
-        if (result.contains(JsonLdConsts::VALUE)) {
-
-            // 15.1)
-            // The result must not contain any entries other than @direction, @index, @language,
-            // @type, and @value. It must not contain an @type entry if it contains either
-            // @language or @direction entries. Otherwise, an invalid value object error has
-            // been detected and processing is aborted.
-            std::set<std::string> validKeywords {
-                    JsonLdConsts::DIRECTION,JsonLdConsts::INDEX,JsonLdConsts::LANGUAGE,
-                    JsonLdConsts::TYPE,JsonLdConsts::VALUE
-            };
-            for (auto& el : result.items()) {
-                if(validKeywords.find(el.key()) == validKeywords.end())
-                    throw JsonLdError(JsonLdError::InvalidValueObject,el.key() + " not in list of valid keywords");
-            }
-            if(result.contains(JsonLdConsts::TYPE) &&
-               (result.contains(JsonLdConsts::LANGUAGE) || result.contains(JsonLdConsts::DIRECTION))) {
-                throw JsonLdError(JsonLdError::InvalidValueObject);
-            }
-
-            // 15.2)
-            // If the result's @type entry is @json, then the @value entry may contain any
-            // value, and is treated as a JSON literal.
-            if(!result.contains(JsonLdConsts::TYPE) ||
-               (!JsonLdUtils::containsOrEquals(result[JsonLdConsts::TYPE], JsonLdConsts::JSON))) {
-                // 15.3)
-                // Otherwise, if the value of result's @value entry is null, or an empty
-                // array, return null.
-                if(result[JsonLdConsts::VALUE].is_null() ||
-                   (result[JsonLdConsts::VALUE].is_array() && result[JsonLdConsts::VALUE].empty()))
-                    return {};
-
-                    // 15.4)
-                    // Otherwise, if the value of result's @value entry is not a string and result
-                    // contains the entry @language, an invalid language-tagged value error has been
-                    // detected (only strings can be language-tagged) and processing is aborted.
-                else if(!result[JsonLdConsts::VALUE].is_string() && result.contains(JsonLdConsts::LANGUAGE))
-                    throw JsonLdError(JsonLdError::InvalidLanguageTaggedValue);
-
-                    // 15.5)
-                    // Otherwise, if the result has an @type entry and its value is not an IRI, an
-                    // invalid typed value error has been detected and processing is aborted.
-                else if (result.contains(JsonLdConsts::TYPE) &&
-                         (!result[JsonLdConsts::TYPE].is_string() || !JsonLdUtils::isAbsoluteIri(result[JsonLdConsts::TYPE].get<std::string>())))
-                    throw JsonLdError(JsonLdError::InvalidTypedValue);
-            }
-        }
-
-            // 16)
-            // Otherwise, if result contains the entry @type and its associated value is not an
-            // array, set it to an array containing only the associated value.
-        else if (result.contains(JsonLdConsts::TYPE)) {
-            if (!result[JsonLdConsts::TYPE].is_array()) {
-                result[JsonLdConsts::TYPE] = json::array({result[JsonLdConsts::TYPE]});
-            }
-        }
-
-            // 17)
-            // Otherwise, if result contains the entry @set or @list:
-        else if (result.contains(JsonLdConsts::SET) || result.contains(JsonLdConsts::LIST)) {
-            // 17.1)
-            // The result must contain at most one other entry which must be @index. Otherwise, an
-            // invalid set or list object error has been detected and processing is aborted.
-            if (result.size() > (result.contains(JsonLdConsts::INDEX) ? 2 : 1))
-                throw JsonLdError(JsonLdError::InvalidSetOrListObject);
-
-            // 17.2)
-            // If result contains the entry @set, then set result to the entry's associated value.
-            if (result.contains(JsonLdConsts::SET)) {
-                result = result[JsonLdConsts::SET];
-            }
-        }
-
-        // 18)
-        // If result is a map that contains only the entry @language, return null.
-        if (result.is_object() && result.contains(JsonLdConsts::LANGUAGE) && result.size() == 1) {
-            return {};
-        }
-
-        // 19)
-        // If active property is null or @graph, drop free-floating values as follows:
-        if (activeProperty == nullptr || *activeProperty == JsonLdConsts::GRAPH) {
-            // 19.1)
-            // If result is a map which is empty, or contains only the entries @value or
-            // @list, set result to null.
-            if (!result.is_null() && result.is_object() &&
-                (result.empty() || result.contains(JsonLdConsts::VALUE) || result.contains(JsonLdConsts::LIST))) {
-                result = json();
-            }
-                // 19.2)
-                // Otherwise, if result is a map whose only entry is @id, set result to null. When the
-                // frameExpansion flag is set, a map containing only the @id entry is retained.
-            else if (!result.is_null() && !activeContext.getOptions().isFrameExpansion() && result.contains(JsonLdConsts::ID)
-                     && result.size() == 1) {
-                result = json();
-            }
-        }
-
-        // 20)
-        return result;
     }
 
 }
 
 nlohmann::json ExpansionProcessor::expand(
         Context activeContext,
-        std::string *activeProperty,
+        const std::string *activeProperty,
         nlohmann::json element,
         const std::string &baseUrl,
         bool fromMap)
@@ -1352,12 +1440,7 @@ nlohmann::json ExpansionProcessor::expand(
     // 3)
     // If active property has a term definition in active context with a local
     // context, initialize property-scoped context to that local context.
-    std::unique_ptr<json> propertyScopedContext;
-    if(activeProperty != nullptr &&
-       !activeContext.getTermDefinition(*activeProperty).is_null() &&
-       activeContext.getTermDefinition(*activeProperty).contains(JsonLdConsts::LOCALCONTEXT) ) {
-        propertyScopedContext.reset(new json(activeContext.getTermDefinition(*activeProperty)[JsonLdConsts::LOCALCONTEXT]));
-    }
+    std::unique_ptr<json> propertyScopedContext = initializePropertyScopedContext(activeContext, activeProperty);
 
     // 5)
     // If element is an array
