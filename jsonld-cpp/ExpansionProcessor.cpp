@@ -1368,7 +1368,7 @@ namespace {
                 }
 
                 for(const auto& el : nestedValue.items()) {
-                    if(ContextProcessor::expandIri(typeScopedContext, el.key(), false, true) == JsonLdConsts::VALUE)
+                    if(ContextProcessor::expandIri(activeContext, el.key(), false, true) == JsonLdConsts::VALUE)
                         throw JsonLdError(JsonLdError::InvalidNestValue);
                 }
 
@@ -1376,10 +1376,10 @@ namespace {
                 // Recursively repeat steps 3, 8, 13, and 14 using nesting-key for active
                 // property, and nested value for element.
 
-                // Note: Note
+                // Note:
                 // Steps 3 and 8 may update the active context based on a property-scoped context
                 // associated with nesting-key. Updates to active context are restricted to the
-                // recursive operation, and do not propogate to subsequent iterations on nested
+                // recursive operation, and do not propagate to subsequent iterations on nested
                 // values and nesting-key.
 
                 // 3)
