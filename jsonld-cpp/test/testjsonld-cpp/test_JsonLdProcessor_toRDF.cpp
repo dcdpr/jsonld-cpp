@@ -40,8 +40,16 @@ public:
         std::cout << "Id: " << testCase.id << std::endl;
         std::cout << "Name: " << testCase.name << std::endl;
         if(!testCase.options.specVersion.empty())
-            std::cout << "SpecVersion: " << testCase.options.specVersion << std::endl;
-
+            std::cout << "SpecVersion: " << testCase.options.specVersion;
+        if(testCase.options.specVersion == "json-ld-1.1") {
+            std::cout << std::endl;
+        }
+        else if(testCase.options.specVersion == "json-ld-1.0") {
+            std::cout << " ...skipping for now.\n";
+            GTEST_SKIP();
+        }
+        else
+            std::cout << std::endl;
 
         try {
             RDF::RDFDataset actual = JsonLdProcessor::toRDF(testCase.input, options);
