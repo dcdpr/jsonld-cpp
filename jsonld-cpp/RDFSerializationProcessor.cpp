@@ -5,6 +5,7 @@
 #include "jsonld-cpp/JsonLdUtils.h"
 #include "jsonld-cpp/JsonLdError.h"
 #include "jsonld-cpp/DoubleFormatter.h"
+#include <cmath>
 
 using nlohmann::json;
 
@@ -503,7 +504,7 @@ namespace {
             // number and datatype equals xsd:double, convert value to a string in canonical
             // lexical form of an xsd:double as defined in [XMLSCHEMA11-2] and described in
             // § 8.6 Data Round Tripping. If datatype is null, set datatype to xsd:double.
-            if (value.is_number_float() || datatype == JsonLdConsts::XSD_DOUBLE) {
+            if ((value.is_number_float() && std::fmod(value.get<double>(), 1) != 0) || datatype == JsonLdConsts::XSD_DOUBLE) {
                 if (datatype.is_null())
                     datatypeStr = JsonLdConsts::XSD_DOUBLE;
                 double d = value.get<double>();
