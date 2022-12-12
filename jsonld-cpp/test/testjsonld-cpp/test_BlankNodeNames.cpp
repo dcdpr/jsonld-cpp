@@ -1,4 +1,5 @@
 #include <jsonld-cpp/BlankNodeNames.h>
+#include <algorithm>
 
 #include <gtest/gtest.h>
 #pragma clang diagnostic push

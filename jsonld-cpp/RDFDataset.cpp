@@ -5,8 +5,8 @@
 #include "jsonld-cpp/JsonLdUtils.h"
 #include "jsonld-cpp/DoubleFormatter.h"
 #include "jsonld-cpp/BlankNodeNames.h"
-#include "jsonld-cpp/JsonLdError.h"
-#include "RDFRegex.h"
+#include "jsonld-cpp/NQuadsSerialization.h"
+#include "jsonld-cpp/RDFRegex.h"
 #include <regex>
 
 using nlohmann::json;
@@ -43,9 +43,7 @@ namespace RDF {
     }
 
     void RDFDataset::addTripleToGraph(const std::string & graphName, const RDFTriple& triple) {
-        if(!storedGraphs.count(graphName) ||
-           std::find(storedGraphs[graphName].cbegin(), storedGraphs[graphName].cend(), triple) == storedGraphs[graphName].cend())
-            storedGraphs[graphName].push_back(triple);
+            storedGraphs[graphName].add(triple);
     }
 
     std::vector<RDFQuad> RDFDataset::getAllGraphsAsQuads() const {
@@ -71,6 +69,49 @@ namespace RDF {
         for (const auto& g : storedGraphs)
             count += g.second.size();
         return count;
+    }
+
+    bool RDFGraph::empty() const noexcept {
+        return triples.empty();
+    }
+
+    RDFGraph::size_type RDFGraph::size() const noexcept {
+        return triples.size();
+    }
+
+    void RDFGraph::add(const RDFTriple& triple) {
+        iterator it = std::find(triples.begin(), triples.end(), triple);
+        iterator end = triples.end();
+        if(std::find(triples.begin(), triples.end(), triple) == triples.end()) {
+            triples.push_back(triple);
+        }
+    }
+
+    RDFGraph::iterator RDFGraph::begin() noexcept {
+        return triples.begin();
+    }
+
+    RDFGraph::const_iterator RDFGraph::begin() const noexcept {
+        return triples.begin();
+    }
+
+    RDFGraph::iterator RDFGraph::end() noexcept {
+        return triples.end();
+    }
+
+    RDFGraph::const_iterator RDFGraph::end() const noexcept {
+        return triples.end();
+    }
+
+    std::string RDFGraph::toString() const {
+        std::string ret;
+        for(const auto& i : triples)
+            ret += NQuadsSerialization::toNQuad(i);
+        return ret;
+    }
+
+    RDFTriple &RDFGraph::operator[](RDFGraph::size_type pos) {
+        return triples[pos];
     }
 
 }

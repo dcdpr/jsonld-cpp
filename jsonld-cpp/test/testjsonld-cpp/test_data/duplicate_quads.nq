@@ -1,0 +1,4 @@
+<http://example.org/indexTest> <http://example.org/nodeWithoutIndexA> <http://example.org/nodeWithoutIndexA> .
+<http://example.org/test#chapter1> <http://purl.org/dc/elements/1.1/title> "Chapter One" _:b0 .
+<http://example.org/indexTest> <http://example.org/nodeWithoutIndexA> <http://example.org/nodeWithoutIndexA> .
+<http://example.org/test#chapter1> <http://purl.org/dc/elements/1.1/title> "Chapter One" _:b0 .

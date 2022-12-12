@@ -1,7 +1,6 @@
 #pragma ide diagnostic ignored "cert-err58-cpp"
 #include <jsonld-cpp/JsonLdError.h>
 #include <jsonld-cpp/JsonLdProcessor.h>
-#include <jsonld-cpp/FileLoader.h>
 #include <jsonld-cpp/RemoteDocument.h>
 #include <jsonld-cpp/RDFDatasetComparison.h>
 #include <jsonld-cpp/NQuadsSerialization.h>
@@ -134,7 +133,6 @@ TEST_F(JsonLdProcessorToRDFTest, toRdf_t0004) {
     performToRDFTestFromManifest("#t0004");
 }
 
-// todo: disable until I have better utf8 char handling?
 TEST_F(JsonLdProcessorToRDFTest, toRdf_t0005) {
     performToRDFTestFromManifest("#t0005");
 }
@@ -279,8 +277,6 @@ TEST_F(JsonLdProcessorToRDFTest, toRdf_t0117) {
     performToRDFTestFromManifest("#t0117");
 }
 
-// Test output file has blank nodes as predicates, and they are not supported. We
-// may want to disable, but should keep failing test for test implementation report.
 TEST_F(JsonLdProcessorToRDFTest, toRdf_t0118) {
     performToRDFTestFromManifest("#t0118");
 }
@@ -649,7 +645,6 @@ TEST_F(JsonLdProcessorToRDFTest, toRdf_te029) {
     performToRDFTestFromManifest("#te029");
 }
 
-// todo: disable until I have better utf8 char handling?
 TEST_F(JsonLdProcessorToRDFTest, toRdf_te030) {
     performToRDFTestFromManifest("#te030");
 }
@@ -670,7 +665,6 @@ TEST_F(JsonLdProcessorToRDFTest, toRdf_te034) {
     performToRDFTestFromManifest("#te034");
 }
 
-// todo: disable until I have better utf8 char handling?
 TEST_F(JsonLdProcessorToRDFTest, toRdf_te035) {
     performToRDFTestFromManifest("#te035");
 }

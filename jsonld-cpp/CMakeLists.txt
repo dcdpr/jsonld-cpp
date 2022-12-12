@@ -9,7 +9,6 @@ project(jsonld-cpp-library VERSION ${JSONLDCPP_VERSION}
         LANGUAGES CXX )
 
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS_DEBUG_INIT -fno-limit-debug-info)
 include(GNUInstallDirs)
 
 find_package(uriparser 0.9.5 CONFIG REQUIRED char wchar_t)

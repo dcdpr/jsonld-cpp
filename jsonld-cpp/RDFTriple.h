@@ -28,6 +28,8 @@ namespace RDF {
         RDFTriple(const RDFTriple &rhs);
         RDFTriple(RDFTriple&& rhs) noexcept;
 
+        virtual ~RDFTriple();
+
         RDFTriple& operator= (const RDFTriple &rhs);
         RDFTriple& operator= (RDFTriple&& rhs) noexcept;
 

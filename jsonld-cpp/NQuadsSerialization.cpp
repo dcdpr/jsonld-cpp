@@ -276,7 +276,7 @@ std::string NQuadsSerialization::toNQuad(const RDF::RDFTriple& triple) {
     // converting an RDFTriple to a nquad might not be a real thing, but it is nice to do
     // so RDFTriple.toString() can quickly convert itself to a string for printing/debugging
 
-    return toNQuad({triple.getSubject(), triple.getObject(), triple.getObject(), nullptr});
+    return toNQuad({triple.getSubject(), triple.getPredicate(), triple.getObject(), nullptr});
 
 }
 
@@ -411,6 +411,7 @@ RDF::RDFDataset NQuadsSerialization::parse(std::string input) {
 
         // add RDFTriple to graph in dataset
         RDF::RDFTriple triple(subject, predicate, object);
+        // note: RDFTriple will not be added again to graph in dataset if it already exists
         dataset.addTripleToGraph(name, triple);
     }
 

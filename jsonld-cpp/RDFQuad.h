@@ -40,8 +40,6 @@ namespace RDF {
 
         std::string toString() const;
 
-        friend bool operator==(const RDFQuad &lhs, const RDFQuad &rhs);
-
     };
 
     bool operator==(const RDFQuad &lhs, const RDFQuad &rhs);

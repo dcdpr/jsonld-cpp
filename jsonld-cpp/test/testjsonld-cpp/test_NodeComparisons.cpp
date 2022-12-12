@@ -1,3 +1,4 @@
+#pragma ide diagnostic ignored "cert-err58-cpp"
 #include <jsonld-cpp/RDFDataset.h>
 
 #include <gtest/gtest.h>
@@ -8,7 +9,6 @@
 #pragma GCC diagnostic ignored "-Wextra"
 #include <rapidcheck/gtest.h>
 #include <fstream>
-
 #pragma clang diagnostic pop
 #pragma GCC diagnostic pop
 
@@ -225,11 +225,11 @@ TEST(NodeComparisonsTest, sortingLiterals_sameValues_differentLanguages) {
 
 TEST(NodeComparisonsTest, quads_withNullGraphs_areEqual) {
 
-    RDFQuad q1("http://example.com/s1", "http://example.com/p1",
-               "http://example.com/o1", nullptr);
+    RDFQuad q1("https://example.com/s1", "https://example.com/p1",
+               "https://example.com/o1", nullptr);
 
-    RDFQuad q2("http://example.com/s1", "http://example.com/p1",
-               "http://example.com/o1", nullptr);
+    RDFQuad q2("https://example.com/s1", "https://example.com/p1",
+               "https://example.com/o1", nullptr);
 
     EXPECT_EQ(q1, q2);
 }
@@ -238,44 +238,44 @@ TEST(NodeComparisonsTest, quads_withSameGraphs_areEqual) {
 
     std::string graph = "foo";
 
-    RDFQuad q1("http://example.com/s1", "http://example.com/p1",
-               "http://example.com/o1", &graph);
+    RDFQuad q1("https://example.com/s1", "https://example.com/p1",
+               "https://example.com/o1", &graph);
 
-    RDFQuad q2("http://example.com/s1", "http://example.com/p1",
-               "http://example.com/o1", &graph);
+    RDFQuad q2("https://example.com/s1", "https://example.com/p1",
+               "https://example.com/o1", &graph);
 
     EXPECT_EQ(q1, q2);
 }
 
 TEST(NodeComparisonsTest, quads_withDifferentSubjects_areNotEqual) {
 
-    RDFQuad q1("http://example.com/s1", "http://example.com/p1",
-               "http://example.com/o1", nullptr);
+    RDFQuad q1("https://example.com/s1", "https://example.com/p1",
+               "https://example.com/o1", nullptr);
 
-    RDFQuad q2_diffSubject("http://example.com/s2", "http://example.com/p1",
-                           "http://example.com/o1", nullptr);
+    RDFQuad q2_diffSubject("https://example.com/s2", "https://example.com/p1",
+                           "https://example.com/o1", nullptr);
 
     EXPECT_NE(q1, q2_diffSubject);
 }
 
 TEST(NodeComparisonsTest, quads_withDifferentPredicates_areNotEqual) {
 
-    RDFQuad q1("http://example.com/s1", "http://example.com/p1",
-               "http://example.com/o1", nullptr);
+    RDFQuad q1("https://example.com/s1", "https://example.com/p1",
+               "https://example.com/o1", nullptr);
 
-    RDFQuad q2_diffPredicate("http://example.com/s1", "http://example.com/p2",
-                             "http://example.com/o1", nullptr);
+    RDFQuad q2_diffPredicate("https://example.com/s1", "https://example.com/p2",
+                             "https://example.com/o1", nullptr);
 
     EXPECT_NE(q1, q2_diffPredicate);
 }
 
 TEST(NodeComparisonsTest, quads_withDifferentObjects_areNotEqual) {
 
-    RDFQuad q1("http://example.com/s1", "http://example.com/p1",
-               "http://example.com/o1", nullptr);
+    RDFQuad q1("https://example.com/s1", "https://example.com/p1",
+               "https://example.com/o1", nullptr);
 
-    RDFQuad q2_diffObject("http://example.com/s1", "http://example.com/p1",
-                          "http://example.com/o2", nullptr);
+    RDFQuad q2_diffObject("https://example.com/s1", "https://example.com/p1",
+                          "https://example.com/o2", nullptr);
 
     EXPECT_NE(q1, q2_diffObject);
 }
@@ -287,11 +287,11 @@ TEST(NodeComparisonsTest, quads_withDifferentGraphs_sortCorrectly) {
 
     std::set<std::shared_ptr<RDFQuad>, QuadPtrLess> quads;
 
-    quads.insert(std::make_shared<RDFQuad>("http://example.com/s1", "http://example.com/p1",
-                                           "http://example.com/o1", &graph2));
+    quads.insert(std::make_shared<RDFQuad>("https://example.com/s1", "https://example.com/p1",
+                                           "https://example.com/o1", &graph2));
 
-    quads.insert(std::make_shared<RDFQuad>("http://example.com/s1", "http://example.com/p1",
-                                           "http://example.com/o1", &graph1));
+    quads.insert(std::make_shared<RDFQuad>("https://example.com/s1", "https://example.com/p1",
+                                           "https://example.com/o1", &graph1));
 
     auto ci = quads.begin();
 
@@ -304,16 +304,16 @@ TEST(NodeComparisonsTest, quads_withDifferentGraphs_sortCorrectly) {
 
 TEST(NodeComparisonsTest, quads_withDifferentSubjects_sortCorrectly) {
 
-    std::string subject1 = "http://example.com/s1";
-    std::string subject2 = "http://example.com/s2";
+    std::string subject1 = "https://example.com/s1";
+    std::string subject2 = "https://example.com/s2";
 
     std::set<std::shared_ptr<RDFQuad>, QuadPtrLess> quads;
 
-    quads.insert(std::make_shared<RDFQuad>(subject2, "http://example.com/p1",
-                                           "http://example.com/o1", nullptr));
+    quads.insert(std::make_shared<RDFQuad>(subject2, "https://example.com/p1",
+                                           "https://example.com/o1", nullptr));
 
-    quads.insert(std::make_shared<RDFQuad>(subject1, "http://example.com/p1",
-                                           "http://example.com/o1", nullptr));
+    quads.insert(std::make_shared<RDFQuad>(subject1, "https://example.com/p1",
+                                           "https://example.com/o1", nullptr));
 
     auto ci = quads.begin();
 
@@ -326,17 +326,17 @@ TEST(NodeComparisonsTest, quads_withDifferentSubjects_sortCorrectly) {
 
 TEST(NodeComparisonsTest, quads_withDifferentPredicates_sortCorrectly) {
 
-    std::string predicate1 = "http://example.com/p1";
-    std::string predicate2 = "http://example.com/p2";
+    std::string predicate1 = "https://example.com/p1";
+    std::string predicate2 = "https://example.com/p2";
 
     std::set<std::shared_ptr<RDFQuad>, QuadPtrLess> quads;
 
-    std::shared_ptr<RDFQuad> q1 = std::make_shared<RDFQuad>("http://example.com/s1", predicate2,
-                                                            "http://example.com/o1", nullptr);
+    std::shared_ptr<RDFQuad> q1 = std::make_shared<RDFQuad>("https://example.com/s1", predicate2,
+                                                            "https://example.com/o1", nullptr);
     quads.insert(q1);
 
-    std::shared_ptr<RDFQuad> q2 = std::make_shared<RDFQuad>("http://example.com/s1", predicate1,
-                                                            "http://example.com/o1", nullptr);
+    std::shared_ptr<RDFQuad> q2 = std::make_shared<RDFQuad>("https://example.com/s1", predicate1,
+                                                            "https://example.com/o1", nullptr);
     quads.insert(q2);
 
     auto ci = quads.begin();
@@ -350,15 +350,15 @@ TEST(NodeComparisonsTest, quads_withDifferentPredicates_sortCorrectly) {
 
 TEST(NodeComparisonsTest, quads_withDifferentObjects_sortCorrectly) {
 
-    std::string object1 = "http://example.com/o1";
-    std::string object2 = "http://example.com/o2";
+    std::string object1 = "https://example.com/o1";
+    std::string object2 = "https://example.com/o2";
 
     std::set<std::shared_ptr<RDFQuad>, QuadPtrLess> quads;
 
-    quads.insert(std::make_shared<RDFQuad>("http://example.com/s1", "http://example.com/p1",
+    quads.insert(std::make_shared<RDFQuad>("https://example.com/s1", "https://example.com/p1",
                                            object2, nullptr));
 
-    quads.insert(std::make_shared<RDFQuad>("http://example.com/s1", "http://example.com/p1",
+    quads.insert(std::make_shared<RDFQuad>("https://example.com/s1", "https://example.com/p1",
                                            object1, nullptr));
 
     auto ci = quads.begin();
@@ -368,5 +368,87 @@ TEST(NodeComparisonsTest, quads_withDifferentObjects_sortCorrectly) {
     EXPECT_EQ((*ci)->getObject()->getValue(), object2);
     ci++;
 
+}
+
+TEST(NodeComparisonsTest, triples_areEqual) {
+
+    RDFTriple t1("https://example.com/s1", "https://example.com/p1",
+               "https://example.com/o1");
+
+    RDFTriple t2("https://example.com/s1", "https://example.com/p1",
+               "https://example.com/o1");
+
+    EXPECT_EQ(t1, t2);
+}
+
+TEST(NodeComparisonsTest, triples_withDifferentSubjects_areNotEqual) {
+
+    RDFTriple t1("https://example.com/s1", "https://example.com/p1",
+                 "https://example.com/o1");
+
+    RDFTriple t2_diffSubject("https://example.com/s2", "https://example.com/p1",
+                 "https://example.com/o1");
+
+    EXPECT_NE(t1, t2_diffSubject);
+}
+
+TEST(NodeComparisonsTest, triples_withDifferentPredicates_areNotEqual) {
+
+    RDFTriple t1("https://example.com/s1", "https://example.com/p1",
+                 "https://example.com/o1");
+
+    RDFTriple t2_diffPredicate("https://example.com/s1", "https://example.com/p2",
+                             "https://example.com/o1");
+
+    EXPECT_NE(t1, t2_diffPredicate);
+}
+
+TEST(NodeComparisonsTest, triples_withDifferentObjects_areNotEqual) {
+
+    RDFTriple t1("https://example.com/s1", "https://example.com/p1",
+                 "https://example.com/o1");
+
+    RDFTriple t2_diffObject("https://example.com/s1", "https://example.com/p1",
+                             "https://example.com/o2");
+
+    EXPECT_NE(t1, t2_diffObject);
+}
+
+TEST(NodeComparisonsTest, triples_withLiteralsAndDataTypes_madeFromSamePointers_areEqual) {
+
+    std::shared_ptr<RDF::Node> subject, predicate, object;
+
+    subject = std::make_shared<IRI>("https://example.com/s1");
+    predicate = std::make_shared<IRI>("https://example.com/p1");
+    std::string dataType = "https://www.w3.org/2001/XMLSchema#boolean";
+    object = std::make_shared<Literal>("true", &dataType);
+
+    RDFTriple t1(subject, predicate,object);
+
+    RDFTriple t2(subject, predicate,object);
+
+    EXPECT_EQ(t1, t2);
+}
+
+TEST(NodeComparisonsTest, triples_withLiteralsAndDataTypes_madeFromDifferentPointers_areEqual) {
+
+    std::shared_ptr<RDF::Node> subject1, predicate1, object1;
+
+    subject1 = std::make_shared<IRI>("https://example.com/s1");
+    predicate1 = std::make_shared<IRI>("https://example.com/p1");
+    std::string dataType = "https://www.w3.org/2001/XMLSchema#boolean";
+    object1 = std::make_shared<Literal>("true", &dataType);
+
+    std::shared_ptr<RDF::Node> subject2, predicate2, object2;
+
+    subject2 = std::make_shared<IRI>("https://example.com/s1");
+    predicate2 = std::make_shared<IRI>("https://example.com/p1");
+    object2 = std::make_shared<Literal>("true", &dataType);
+
+    RDFTriple t1(subject1, predicate1,object1);
+
+    RDFTriple t2(subject2, predicate2,object2);
+
+    EXPECT_EQ(t1, t2);
 }
 

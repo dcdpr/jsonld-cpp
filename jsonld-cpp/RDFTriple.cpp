@@ -66,6 +66,8 @@ namespace RDF {
         object = std::move(rhs.object);
     }
 
+    RDFTriple::~RDFTriple() = default;
+
     RDFTriple &RDFTriple::operator=(const RDFTriple &rhs) {
         if (&rhs != this) {
             subject = std::shared_ptr<Node>{rhs.subject};

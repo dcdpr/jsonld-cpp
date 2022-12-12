@@ -20,19 +20,25 @@ namespace RDF {
 
         explicit RDFQuadImpl(RDFTriple &&rhs) : RDFTriple(rhs) {}
 
-        std::shared_ptr<Node> getSubject() const override {
-            return RDFTriple::getSubject();
-        }
+        std::shared_ptr<Node> getSubject() const override;
 
-        std::shared_ptr<Node> getPredicate() const override {
-            return RDFTriple::getPredicate();
-        }
+        std::shared_ptr<Node> getPredicate() const override;
 
-        std::shared_ptr<Node> getObject() const override {
-            return RDFTriple::getObject();
-        }
+        std::shared_ptr<Node> getObject() const override;
 
     };
+
+    std::shared_ptr<Node> RDFQuadImpl::getSubject() const {
+        return RDFTriple::getSubject();
+    }
+
+    std::shared_ptr<Node> RDFQuadImpl::getPredicate() const {
+        return RDFTriple::getPredicate();
+    }
+
+    std::shared_ptr<Node> RDFQuadImpl::getObject() const {
+        return RDFTriple::getObject();
+    }
 
     RDFQuad::RDFQuad(std::shared_ptr<Node> isubject, std::shared_ptr<Node> ipredicate, std::shared_ptr<Node> iobject,
                      std::string *igraph)
@@ -56,15 +62,24 @@ namespace RDF {
     }
 
     std::shared_ptr<Node> RDFQuad::getSubject() const {
-        return pimpl_->getSubject();
+        if(pimpl_)
+            return pimpl_->getSubject();
+        else
+            return nullptr;
     }
 
     std::shared_ptr<Node> RDFQuad::getPredicate() const {
-        return pimpl_->getPredicate();
+        if(pimpl_)
+            return pimpl_->getPredicate();
+        else
+            return nullptr;
     }
 
     std::shared_ptr<Node> RDFQuad::getObject() const {
-        return pimpl_->getObject();
+        if(pimpl_)
+            return pimpl_->getObject();
+        else
+            return nullptr;
     }
 
     std::shared_ptr<Node> RDFQuad::getGraph() const {
@@ -89,9 +104,7 @@ namespace RDF {
         graph = std::move(rhs.graph);
     }
 
-    RDFQuad::~RDFQuad() {
-
-    }
+    RDFQuad::~RDFQuad() = default;
 
     RDFQuad & RDFQuad::operator=(const RDFQuad &rhs) {
         if (&rhs != this) {
@@ -104,8 +117,7 @@ namespace RDF {
     RDFQuad& RDFQuad::operator= (RDFQuad&& rhs) noexcept {
         if (&rhs != this) {
             pimpl_ = std::move(rhs.pimpl_);
-            graph = std::shared_ptr<Node>{rhs.graph};
-            rhs.graph = nullptr;
+            graph = std::move(rhs.graph);
         }
         return *this;
     }

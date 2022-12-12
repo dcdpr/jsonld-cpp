@@ -72,9 +72,7 @@ namespace RDF {
         map["type"] = "literal";
         map["value"] = value;
         map["datatype"] = datatype != nullptr ? *datatype : JsonLdConsts::XSD_STRING;
-        if (language != nullptr) {
-            map["language"] = *language;
-        }
+        map["language"] = language != nullptr ? *language : "";
     }
 
     bool IRI::isLiteral() const {

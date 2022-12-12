@@ -315,9 +315,9 @@ namespace {
         generateNodeMap(element, nodeMap, blankNodeNames, &defaultGraph, nullptr, nullptr, nullptr);
     }
 
-    std::shared_ptr<RDF::Node> objectToRDF(const nlohmann::json & item, RDFGraph & listTriples, const JsonLdOptions &options, BlankNodeNames &blankNodeNames);
+    std::shared_ptr<RDF::Node> objectToRDF(const nlohmann::json & item, std::vector<RDFTriple> & listTriples, const JsonLdOptions &options, BlankNodeNames &blankNodeNames);
 
-    std::shared_ptr<RDF::Node> listToRDF(const nlohmann::json & list, RDFGraph & listTriples, const JsonLdOptions &options, BlankNodeNames &blankNodeNames) {
+    std::shared_ptr<RDF::Node> listToRDF(const nlohmann::json & list, std::vector<RDFTriple> & listTriples, const JsonLdOptions &options, BlankNodeNames &blankNodeNames) {
 
         // Comments in this function are labeled with numbers that correspond to sections
         // from the description of the List to RDF conversion algorithm.
@@ -349,7 +349,7 @@ namespace {
 
             // 3.1)
             // Initialize embedded triples to a new empty array.
-            RDFGraph embeddedTriples;
+            std::vector<RDFTriple> embeddedTriples;
 
             // 3.2) Initialize object to the result of using the Object to RDF Conversion
             // algorithm passing item and embedded triples for list triples.
@@ -395,7 +395,7 @@ namespace {
             return std::make_shared<IRI>(JsonLdConsts::RDF_NIL);
     }
 
-    std::shared_ptr<RDF::Node> objectToRDF(const nlohmann::json & item, RDFGraph & listTriples, const JsonLdOptions &options, BlankNodeNames &blankNodeNames) {
+    std::shared_ptr<RDF::Node> objectToRDF(const nlohmann::json & item, std::vector<RDFTriple> & listTriples, const JsonLdOptions &options, BlankNodeNames &blankNodeNames) {
 
         // Comments in this function are labeled with numbers that correspond to sections
         // from the description of the Object to RDF conversion algorithm.
@@ -606,7 +606,7 @@ namespace {
         // If graph name is @default, initialize triples to the value of the defaultGraph
         // attribute of dataset. Otherwise, initialize triples as an empty RdfGraph and add
         // to dataset using its add method along with graph name for graphName.
-        RDFGraph triples = dataset.getGraph(graphName); // will add later using setGraph()
+        RDFGraph triples = dataset.getGraph(graphName); // will add to dataset using setGraph() at end of function
 
         // 1.3)
         // For each subject and node in graph ordered by subject:
@@ -675,7 +675,7 @@ namespace {
 
                     // 1.3.2.5.1)
                     // Initialize list triples as an empty array.
-                    RDFGraph listTriples;
+                    std::vector<RDFTriple> listTriples;
 
                     // 1.3.2.5.2)
                     // Add a triple composed of subject, property, and the result of using the
@@ -696,13 +696,13 @@ namespace {
                         else
                             p = std::make_shared<IRI>(property);
 
-                        triples.emplace_back(s, p, result);
+                        triples.add(RDFTriple(s, p, result));
                     }
 
                     // 1.3.2.5.3)
                     // Add all RdfTriple instances from list triples to triples using its add method.
                     for(const auto& t : listTriples)
-                        triples.push_back(t);
+                        triples.add(t);
 
                 }
             }

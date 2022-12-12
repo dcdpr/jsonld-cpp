@@ -13,7 +13,28 @@ class JsonLdOptions;
 
 namespace RDF {
 
-    typedef std::vector<RDFTriple> RDFGraph;
+    class RDFGraph {
+    private:
+        std::vector<RDFTriple> triples;
+    public:
+        typedef std::vector<RDFTriple>::size_type size_type;
+        typedef std::vector<RDFTriple>::iterator iterator;
+        typedef std::vector<RDFTriple>::const_iterator const_iterator;
+        typedef std::vector<RDFTriple>::reference reference;
+
+        void add(const RDFTriple& triple);
+
+        std::string toString() const;
+
+        iterator begin() noexcept;
+        const_iterator begin() const noexcept;
+        iterator end() noexcept;
+        const_iterator end() const noexcept;
+        reference operator[]( size_type pos );
+
+        bool empty() const noexcept;
+        size_type size() const noexcept;
+    };
 
     /**
      * An RDFDataset is a collection of RDFGraphs, and comprises:
