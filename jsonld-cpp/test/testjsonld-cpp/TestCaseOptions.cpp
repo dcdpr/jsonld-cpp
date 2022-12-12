@@ -63,9 +63,9 @@ void TestCaseOptions::copyTo(JsonLdOptions & jsonLdOptions) {
 //        jsonLdOptions.setCompactToRelative(compactToRelative);
 //    }
 
-//    if (rdfDirection) {
-//        jsonLdOptions.setRdfDirection(RdfDirection.valueOf(rdfDirection.toUpperCase().replace("-", "_")));
-//    }
+    if (!rdfDirection.empty()) {
+        jsonLdOptions.setRdfDirection(rdfDirection);
+    }
 
     if (produceGeneralizedRdf) {
         jsonLdOptions.setProduceGeneralizedRdf(produceGeneralizedRdf);

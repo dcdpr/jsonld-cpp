@@ -526,8 +526,8 @@ namespace {
             }
         }
 
-            // 12)
-            // Otherwise, if datatype is null, set datatype to xsd:string or rdf:langString, depending on if item has an @language entry.
+        // 12)
+        // Otherwise, if datatype is null, set datatype to xsd:string or rdf:langString, depending on if item has an @language entry.
         else if (datatype.is_null()) {
             if(item.contains(JsonLdConsts::LANGUAGE))
                 datatypeStr = JsonLdConsts::RDF_LANGSTRING;
@@ -535,32 +535,68 @@ namespace {
                 datatypeStr = JsonLdConsts::XSD_STRING;
         }
         // 13)
-        // If item contains an @direction entry and rdfDirection is not null, item is a value object which is serialized using special rules.
+        // If item contains an @direction entry and rdfDirection is not null, item is a value
+        // object which is serialized using special rules.
         if(item.contains(JsonLdConsts::DIRECTION) && !options.getRdfDirection().empty()) {
 
-            throw JsonLdError(JsonLdError::NotImplemented, "need to implement @direction handling");
-
             // 13.1)
-            //  Initialize language to the value of @language in item normalized to lower case, or the empty string ("") if there is no such entry.
+            //  Initialize language to the value of @language in item normalized to lower
+            //  case, or the empty string ("") if there is no such entry.
+            std::string language;
+            if(item.contains(JsonLdConsts::LANGUAGE) && !item[JsonLdConsts::LANGUAGE].empty()) {
+                language = item[JsonLdConsts::LANGUAGE].get<std::string>();
+                std::transform(language.begin(), language.end(), language.begin(), &::tolower);
+            }
 
             // 13.2)
-            // If rdfDirection is i18n-datatype, set datatype to the result of appending language and the value of @direction in item separated by an underscore ("_") to https://www.w3.org/ns/i18n#. Initialize literal as an RDF literal using value and datatype.
+            // If rdfDirection is i18n-datatype, set datatype to the result of appending language
+            // and the value of @direction in item separated by an underscore ("_") to
+            // https://www.w3.org/ns/i18n#. Initialize literal as an RDF literal using value
+            // and datatype.
+            if(options.getRdfDirection() == "i18n-datatype") {
+                datatypeStr = "https://www.w3.org/ns/i18n#" + language + "_" + item[JsonLdConsts::DIRECTION].get<std::string>();
+                return std::make_shared<Literal>(
+                        value.get<std::string>(),
+                        &datatypeStr);
+            }
 
             // 13.3)
             // Otherwise, if rdfDirection is compound-literal:
+            if(options.getRdfDirection() == "compound-literal") {
 
-            // 13.3.1)
-            // Initialize literal as a new blank node.
+                // 13.3.1)
+                // Initialize literal as a new blank node.
+                std::string subject = blankNodeNames.get();
+                std::shared_ptr<Node> literal = std::make_shared<BlankNode>(subject);
 
-            // 13.3.2)
-            // Create a new triple using literal as the subject, rdf:value as the predicate, and the value of @value in item as the object, and add it to list triples.
+                // 13.3.2)
+                // Create a new triple using literal as the subject, rdf:value as the
+                // predicate, and the value of @value in item as the object, and add it
+                // to list triples.
+                std::shared_ptr<Node> p = std::make_shared<IRI>(JsonLdConsts::RDF_VALUE);
+                std::shared_ptr<Node> o = std::make_shared<Literal>(value.get<std::string>());
+                listTriples.emplace_back(literal, p, o);
 
-            // 13.3.3)
-            // If the item has an entry for @language, create a new triple using literal as the subject, rdf:language as the predicate, and language as the object, and add it to list triples.
+                // 13.3.3)
+                // If the item has an entry for @language, create a new triple using literal
+                // as the subject, rdf:language as the predicate, and language as the object,
+                // and add it to list triples.
+                if(item.contains(JsonLdConsts::LANGUAGE) && !item[JsonLdConsts::LANGUAGE].empty()) {
+                    p = std::make_shared<IRI>(JsonLdConsts::RDF_LANGUAGE);
+                    o = std::make_shared<Literal>(language);
+                    listTriples.emplace_back(literal, p, o);
+                }
 
-            // 13.3.4)
-            // Create a new triple using literal as the subject, rdf:direction as the predicate, and the value of @direction in item as the object, and add it to list triples.
+                // 13.3.4)
+                // Create a new triple using literal as the subject, rdf:direction as the
+                // predicate, and the value of @direction in item as the object, and add
+                // it to list triples.
+                p = std::make_shared<IRI>(JsonLdConsts::RDF_DIRECTION);
+                o = std::make_shared<Literal>(item[JsonLdConsts::DIRECTION].get<std::string>());
+                listTriples.emplace_back(literal, p, o);
 
+                return literal;
+            }
         }
 
         // 14)
