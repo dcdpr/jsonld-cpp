@@ -408,19 +408,8 @@ namespace {
 
         // pre) The algorithm takes as two arguments item which MUST be either a value
         // object, list object, or node object and list triples, which is an empty array.
-        // Note: It also seems to be valid for item to be a string, which the spec does not mention?
-        assert(JsonLdUtils::isObject(item) || JsonLdUtils::isListObject(item) || JsonLdUtils::isValueObject(item) || item.is_string());
+        assert(JsonLdUtils::isObject(item) || JsonLdUtils::isListObject(item) || JsonLdUtils::isValueObject(item));
         assert(listTriples.empty());
-
-        // Note: It also seems to be valid for item to be a string, which the spec does not mention?
-        if(item.is_string()) {
-            std::string i = item.get<std::string>();
-            if (i.find_first_of("_:") == 0) {
-                return std::make_shared<BlankNode>(i);
-            } else {
-                return std::make_shared<IRI>(i);
-            }
-        }
 
         // 1)
         // If item is a node object and the value of its @id entry is not well-formed, return null.
@@ -432,14 +421,12 @@ namespace {
             }
             // 2)
             // If item is a node object, return the IRI or blank node identifier associated with its @id entry.
-            //id = item; // todo: should be item[JsonLdConsts::ID] ?
             if (id.find_first_of("_:") == 0) {
                 return std::make_shared<BlankNode>(id);
             } else {
                 return std::make_shared<IRI>(id);
             }
         }
-
 
         // 3)
         // If item is a list object return the result of the List Conversion algorithm, passing
@@ -684,65 +671,90 @@ namespace {
                 // triples using its add method, unless type is not well-formed.
                 if (property == JsonLdConsts::TYPE) {
                     values = &node[JsonLdConsts::TYPE];
-                    property = JsonLdConsts::RDF_TYPE;
+
+                    for(const auto& type : *values) {
+                        if(!type.is_string())
+                            continue;
+
+                        std::shared_ptr<Node> s;
+                        if (::BlankNodeNames::hasFormOfBlankNodeName(subject))
+                            s = std::make_shared<BlankNode>(subject);
+                        else if(JsonLdUtils::isAbsoluteIri(subject))
+                            s = std::make_shared<IRI>(subject);
+                        else
+                            continue;
+
+                        std::shared_ptr<Node> p;
+                        p = std::make_shared<IRI>(JsonLdConsts::RDF_TYPE);
+
+                        std::shared_ptr<Node> o;
+                        std::string typeStr = type.get<std::string>();
+                        if (::BlankNodeNames::hasFormOfBlankNodeName(typeStr))
+                            o = std::make_shared<BlankNode>(typeStr);
+                        else if(JsonLdUtils::isAbsoluteIri(typeStr))
+                            o = std::make_shared<IRI>(typeStr);
+                        else
+                            continue;
+
+                        triples.add(RDFTriple(s, p, o));
+                    }
                 }
 
-                    // 1.3.2.2)
-                    // Otherwise, if property is a keyword continue with the next property-values pair.
+                // 1.3.2.2)
+                // Otherwise, if property is a keyword continue with the next property-values pair.
                 else if (JsonLdUtils::isKeyword(property)) {
                     continue;
                 }
 
-                    // 1.3.2.3)
-                    // Otherwise, if property is a blank node identifier and the produceGeneralizedRdf
-                    // option is not true, continue with the next property-values pair.
+                // 1.3.2.3)
+                // Otherwise, if property is a blank node identifier and the produceGeneralizedRdf
+                // option is not true, continue with the next property-values pair.
                 else if (::BlankNodeNames::hasFormOfBlankNodeName(property) && !options.getProduceGeneralizedRdf()) {
                     continue;
                 }
 
-                    // 1.3.2.4)
-                    // Otherwise, if property is not well-formed, continue with the next property-values pair.
+                // 1.3.2.4)
+                // Otherwise, if property is not well-formed, continue with the next property-values pair.
                 else if (JsonLdUtils::isRelativeIri(property)) {
                     continue;
                 } else {
+
+                    // 1.3.2.5)
+                    // Otherwise, property is an IRI or blank node identifier. For each item in values:
                     values = &node[property];
-                }
+                    for (const auto& item : *values) {
 
-                // 1.3.2.5)
-                // Otherwise, property is an IRI or blank node identifier. For each item in values:
-                for (const auto& item : *values) {
+                        // 1.3.2.5.1)
+                        // Initialize list triples as an empty array.
+                        std::vector<RDFTriple> listTriples;
 
-                    // 1.3.2.5.1)
-                    // Initialize list triples as an empty array.
-                    std::vector<RDFTriple> listTriples;
+                        // 1.3.2.5.2)
+                        // Add a triple composed of subject, property, and the result of using the
+                        // Object to RDF Conversion algorithm passing item and list triples to triples
+                        // using its add method, unless the result is null, indicating a non-well-formed
+                        // resource that has to be ignored.
+                        auto result = objectToRDF(item, listTriples, options, blankNodeNames);
+                        if (result) {
+                            std::shared_ptr<Node> s;
+                            if (::BlankNodeNames::hasFormOfBlankNodeName(subject))
+                                s = std::make_shared<BlankNode>(subject);
+                            else
+                                s = std::make_shared<IRI>(subject);
 
-                    // 1.3.2.5.2)
-                    // Add a triple composed of subject, property, and the result of using the
-                    // Object to RDF Conversion algorithm passing item and list triples to triples
-                    // using its add method, unless the result is null, indicating a non-well-formed
-                    // resource that has to be ignored.
-                    auto result = objectToRDF(item, listTriples, options, blankNodeNames);
-                    if(result) {
-                        std::shared_ptr<Node> s;
-                        if (::BlankNodeNames::hasFormOfBlankNodeName(subject))
-                            s = std::make_shared<BlankNode>(subject);
-                        else
-                            s = std::make_shared<IRI>(subject);
+                            std::shared_ptr<Node> p;
+                            if (::BlankNodeNames::hasFormOfBlankNodeName(property))
+                                p = std::make_shared<BlankNode>(property);
+                            else
+                                p = std::make_shared<IRI>(property);
 
-                        std::shared_ptr<Node> p;
-                        if (::BlankNodeNames::hasFormOfBlankNodeName(property))
-                            p = std::make_shared<BlankNode>(property);
-                        else
-                            p = std::make_shared<IRI>(property);
+                            triples.add(RDFTriple(s, p, result));
+                        }
 
-                        triples.add(RDFTriple(s, p, result));
+                        // 1.3.2.5.3)
+                        // Add all RdfTriple instances from list triples to triples using its add method.
+                        for (const auto &t : listTriples)
+                            triples.add(t);
                     }
-
-                    // 1.3.2.5.3)
-                    // Add all RdfTriple instances from list triples to triples using its add method.
-                    for(const auto& t : listTriples)
-                        triples.add(t);
-
                 }
             }
         }
