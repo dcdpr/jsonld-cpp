@@ -105,8 +105,8 @@ namespace {
             }
         }
 
-            // 5)
-            // Otherwise, if element has an @list entry, perform the following steps:
+        // 5)
+        // Otherwise, if element has an @list entry, perform the following steps:
         else if (element.contains(JsonLdConsts::LIST)) {
             // 5.1)
             // Initialize a new map result consisting of a single entry @list whose value
@@ -130,8 +130,8 @@ namespace {
             }
         }
 
-            // 6)
-            // Otherwise element is a node object, perform the following steps:
+        // 6)
+        // Otherwise element is a node object, perform the following steps:
         else {
             // 6.1)
             // If element has an @id entry, set id to its value and remove the entry from
@@ -139,15 +139,17 @@ namespace {
             // blank node identifier passing id for identifier.
             std::string id;
             if(element.contains(JsonLdConsts::ID)) {
+                if(element[JsonLdConsts::ID].is_null()) // note: this can happen in some cases, see toRDF test e122
+                    return;
                 id = element[JsonLdConsts::ID].get<std::string>();
                 element.erase(JsonLdConsts::ID);
                 if (BlankNodeNames::hasFormOfBlankNodeName(id)) {
                     id = blankNodeNames.get(id);
                 }
             }
-                // 6.2)
-                // Otherwise, set id to the result of the Generate Blank Node Identifier algorithm
-                // passing null for identifier.
+            // 6.2)
+            // Otherwise, set id to the result of the Generate Blank Node Identifier algorithm
+            // passing null for identifier.
             else {
                 id = blankNodeNames.get();
             }
