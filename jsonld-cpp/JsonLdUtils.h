@@ -21,8 +21,25 @@ namespace JsonLdUtils {
      *
      * See: https://www.w3.org/TR/json-ld11/#keywords
      */
-    bool isKeywordForm(const std::string& property);
+    bool isKeywordForm(const std::string& str);
 
+    /**
+     * Is str in the form of a language token?
+     *
+     * Ex: is str "en-us"?
+     *
+     * See: https://www.w3.org/TR/n-quads/#sec-grammar
+     */
+    bool isLanguageForm(const std::string& str);
+
+    /**
+     * Is str in the form of a language tag?
+     *
+     * Ex: is str "@en-us"?
+     *
+     * See: https://www.w3.org/TR/n-quads/#sec-grammar
+     */
+    bool isLanguageTagForm(const std::string& str);
 
     /**
      * Is str possibly an IRI?

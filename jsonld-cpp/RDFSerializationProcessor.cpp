@@ -459,8 +459,8 @@ namespace {
 
         // 7)
         // If item has an @language entry which is not well-formed, return null.
-        // todo: need well-formed language test
-        if(item.contains(JsonLdConsts::LANGUAGE) && item[JsonLdConsts::LANGUAGE].empty())
+        if(item.contains(JsonLdConsts::LANGUAGE) &&
+                (item[JsonLdConsts::LANGUAGE].empty() || !JsonLdUtils::isLanguageForm(item[JsonLdConsts::LANGUAGE].get<std::string>())))
             return nullptr;
 
         // 8)

@@ -1,5 +1,6 @@
 #include "jsonld-cpp/JsonLdUtils.h"
 #include "jsonld-cpp/JsonLdConsts.h"
+#include "jsonld-cpp/RDFRegex.h"
 #include "jsonld-cpp/Uri.h"
 #include <set>
 #include <regex>
@@ -55,10 +56,23 @@ bool JsonLdUtils::isKeyword(const std::string& str) {
     return knownKeywords.count(str) > 0;
 }
 
-bool JsonLdUtils::isKeywordForm(const std::string& property) {
-    std::regex keywordForm(R"(@[A-Za-z]+)");
+bool JsonLdUtils::isKeywordForm(const std::string& str) {
+    std::regex re(R"(@[A-Za-z]+)");
     std::smatch match;
-    return std::regex_match(property, match, keywordForm);
+    return std::regex_match(str, match, re);
+}
+
+bool JsonLdUtils::isLanguageForm(const std::string& str) {
+    // this is different than isLanguageTagForm because we aren't matching the '@'
+    std::regex re("([a-z]+(?:-[a-zA-Z0-9]+)*)");
+    std::smatch match;
+    return std::regex_match(str, match, re);
+}
+
+bool JsonLdUtils::isLanguageTagForm(const std::string& str) {
+    std::regex re(RDFRegex::LANGUAGE);
+    std::smatch match;
+    return std::regex_match(str, match, re);
 }
 
 bool JsonLdUtils::isAbsoluteIri(const std::string &str) {
