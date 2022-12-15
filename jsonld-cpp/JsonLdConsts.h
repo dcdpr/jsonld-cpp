@@ -32,6 +32,7 @@ namespace JsonLdConsts {
     static constexpr const char RDF_VALUE[] = "http://www.w3.org/1999/02/22-rdf-syntax-ns#value";
     static constexpr const char RDF_LANGUAGE[] = "http://www.w3.org/1999/02/22-rdf-syntax-ns#language";
     static constexpr const char RDF_DIRECTION[] = "http://www.w3.org/1999/02/22-rdf-syntax-ns#direction";
+    static constexpr const char RDF_JSON[] = "http://www.w3.org/1999/02/22-rdf-syntax-ns#JSON";
 
     static constexpr const char TEXT_TURTLE[] = "text/turtle";
     static constexpr const char APPLICATION_NQUADS[] = "application/n-quads";
