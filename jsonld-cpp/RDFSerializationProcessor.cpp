@@ -467,6 +467,7 @@ namespace {
         // If datatype is @json, convert value to the canonical lexical form using the result
         // of transforming the internal representation of value to JSON and set datatype to rdf:JSON.
         if(datatypeStr == JsonLdConsts::JSON) {
+            value = value.dump();
             datatypeStr = JsonLdConsts::RDF_JSON;
         }
 
