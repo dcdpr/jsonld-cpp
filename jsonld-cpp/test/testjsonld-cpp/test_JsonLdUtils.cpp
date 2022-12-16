@@ -491,6 +491,10 @@ TEST(JsonLdUtilsTest, isIri) {
     EXPECT_FALSE(JsonLdUtils::isIri(""));
     EXPECT_TRUE(JsonLdUtils::isIri("relative"));
     EXPECT_TRUE(JsonLdUtils::isIri("/relative"));
+    EXPECT_FALSE(JsonLdUtils::isIri("foo bar"));
+    EXPECT_TRUE(JsonLdUtils::isIri("www.example.com"));
+    EXPECT_TRUE(JsonLdUtils::isIri("http://www.example.com/foo"));
+    EXPECT_FALSE(JsonLdUtils::isIri("http://www.example.com/foo bar"));
 }
 
 TEST(JsonLdUtilsTest, isKeywordForm) {

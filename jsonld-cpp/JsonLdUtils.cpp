@@ -2,6 +2,7 @@
 #include "jsonld-cpp/JsonLdConsts.h"
 #include "jsonld-cpp/RDFRegex.h"
 #include "jsonld-cpp/Uri.h"
+#include "jsonld-cpp/BlankNodeNames.h"
 #include <set>
 #include <regex>
 
@@ -156,6 +157,10 @@ bool JsonLdUtils::isGraphObject(const json& j) {
         return true;
     }
     return false;
+}
+
+bool JsonLdUtils::isGraphNameForm(const std::string& name) {
+    return BlankNodeNames::hasFormOfBlankNodeName(name) || isIri(name);
 }
 
 bool JsonLdUtils::isValueObject(const json& j) {

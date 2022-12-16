@@ -626,7 +626,7 @@ namespace {
         // 1.1)
         // If graph name is not well-formed, continue with the next graph name-graph pair.
         // todo: better well-formed checking
-        if(graphName.empty())
+        if(graphName != "@default" && !JsonLdUtils::isGraphNameForm(graphName))
             return;
 
         // 1.2)

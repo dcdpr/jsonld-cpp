@@ -88,6 +88,15 @@ namespace JsonLdUtils {
     bool isGraphObject(const json& j);
 
     /**
+     * Is name in the form of a graph name?
+     *
+     * A graph name must either be an IRI or a blank node name.
+     *
+     * See: https://www.w3.org/TR/rdf11-concepts/#dfn-graph-name
+     */
+    bool isGraphNameForm(const std::string& name);
+
+    /**
      * Is j a value object?
      *
      * A value object is a map that has an @value key.
