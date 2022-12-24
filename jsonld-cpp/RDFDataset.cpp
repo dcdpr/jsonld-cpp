@@ -11,19 +11,6 @@
 
 using nlohmann::json;
 
-namespace {
-    std::vector<std::string> splitLines(std::string &input) {
-        std::vector<std::string> lines;
-        std::regex rgx(RDFRegex::EOLN);
-        std::sregex_token_iterator i(input.begin(), input.end(), rgx,-1);
-        std::sregex_token_iterator end;
-
-        for ( ; i != end; ++i)
-            lines.push_back(*i);
-        return lines;
-    }
-}
-
 namespace RDF {
 
     RDFDataset::RDFDataset(const JsonLdOptions & ioptions)
@@ -80,8 +67,6 @@ namespace RDF {
     }
 
     void RDFGraph::add(const RDFTriple& triple) {
-        iterator it = std::find(triples.begin(), triples.end(), triple);
-        iterator end = triples.end();
         if(std::find(triples.begin(), triples.end(), triple) == triples.end()) {
             triples.push_back(triple);
         }

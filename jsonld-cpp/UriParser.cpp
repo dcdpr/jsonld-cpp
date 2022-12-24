@@ -23,7 +23,10 @@ public:
             return false;
         }
         if (output) {
-            output->assign(text_range.first, text_range.afterLast - text_range.first);
+            if(text_range.afterLast - text_range.first >= 0)
+                output->assign(text_range.first, static_cast<size_t>(text_range.afterLast - text_range.first));
+            else
+                return false;
         }
         return true;
     }
@@ -89,7 +92,11 @@ bool UriParser::ToString(std::string* output) const {
                                   &chars_required) != URI_SUCCESS) {
         return false;
     }
-    char* dest_str = static_cast<char *>(malloc(chars_required + 1));
+    char* dest_str;
+    if(chars_required + 1 > 0)
+        dest_str = static_cast<char *>(malloc(static_cast<size_t>(chars_required + 1)));
+    else
+        return false;
     if (!dest_str) {
         return false;
     }
@@ -137,8 +144,11 @@ bool UriParser::GetPath(std::string *output) const {
             if (!text_range || !text_range->first || !text_range->afterLast) {
                 return false;
             }
-            output->append(text_range->first,
-                         text_range->afterLast - text_range->first);
+            if(text_range->afterLast - text_range->first >= 0)
+                output->append(text_range->first,
+                               static_cast<size_t>(text_range->afterLast - text_range->first));
+            else
+                return false;
             segment = segment->next;
             if (segment) {
                 output->append("/");

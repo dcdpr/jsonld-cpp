@@ -347,8 +347,8 @@ RDF::RDFDataset NQuadsSerialization::parse(std::string input) {
     RDF::RDFDataset dataset((JsonLdOptions()));
 
     std::vector<std::string> lines = ::splitLines(input);
-    static std::regex emptyRgx(RDFRegex::EMPTY);
-    static std::regex quadRgx(RDFRegex::QUAD);
+    std::regex emptyRgx(RDFRegex::EMPTY);
+    std::regex quadRgx(RDFRegex::QUAD);
     std::smatch match;
 
     int lineNumber = 0;

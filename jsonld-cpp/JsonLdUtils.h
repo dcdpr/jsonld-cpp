@@ -35,7 +35,7 @@ namespace JsonLdUtils {
     /**
      * Is str in the form of a language tag?
      *
-     * Ex: is str "@en-us"?
+     * Ex: is str "\@en-us"?
      *
      * See: https://www.w3.org/TR/n-quads/#sec-grammar
      */
@@ -72,7 +72,7 @@ namespace JsonLdUtils {
     /**
      * Is j a list object?
      *
-     * A list object is a map that has a @list key. It may also have an @index key, but no other entries.
+     * A list object is a map that has a \@list key. It may also have an \@index key, but no other entries.
      *
      * See: https://www.w3.org/TR/json-ld11/#dfn-list-object
      */
@@ -81,7 +81,7 @@ namespace JsonLdUtils {
     /**
      * Is j a graph object?
      *
-     * A graph object must have an @graph entry, and may also have @id and @index entries.
+     * A graph object must have an \@graph entry, and may also have \@id and \@index entries.
      *
      * See: https://www.w3.org/TR/json-ld11/#dfn-graph-object
      */
@@ -99,7 +99,7 @@ namespace JsonLdUtils {
     /**
      * Is j a value object?
      *
-     * A value object is a map that has an @value key.
+     * A value object is a map that has an \@value key.
      *
      * See: https://www.w3.org/TR/json-ld11/#dfn-value-object
      */
@@ -122,7 +122,7 @@ namespace JsonLdUtils {
     /**
      * Is j a default object?
      *
-     * A default object is a map that has an @default key.
+     * A default object is a map that has an \@default key.
      *
      * https://www.w3.org/TR/json-ld11/#dfn-default-object
      */

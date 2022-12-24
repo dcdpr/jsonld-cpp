@@ -113,16 +113,6 @@ namespace {
         void addGraph();
 
         bool operator<(const NodeCategory &rhs) const;
-
-        bool operator>(const NodeCategory &rhs) const;
-
-        bool operator<=(const NodeCategory &rhs) const;
-
-        bool operator>=(const NodeCategory &rhs) const;
-
-        bool operator==(const NodeCategory &rhs) const;
-
-        bool operator!=(const NodeCategory &rhs) const;
     };
 
     class NodeCluster {
@@ -234,27 +224,6 @@ namespace {
     bool NodeCategory::operator<(const NodeCategory &rhs) const {
         return std::tie(objectCount, subjectCount, graphCount, objects, subjects) <
                std::tie(rhs.objectCount, rhs.subjectCount, rhs.graphCount, rhs.objects, rhs.subjects);
-    }
-
-    bool NodeCategory::operator>(const NodeCategory &rhs) const {
-        return rhs < *this;
-    }
-
-    bool NodeCategory::operator<=(const NodeCategory &rhs) const {
-        return !(rhs < *this);
-    }
-
-    bool NodeCategory::operator>=(const NodeCategory &rhs) const {
-        return !(*this < rhs);
-    }
-
-    bool NodeCategory::operator==(const NodeCategory &rhs) const {
-        return std::tie(objectCount, subjectCount, graphCount, objects, subjects) ==
-               std::tie(rhs.objectCount, rhs.subjectCount, rhs.graphCount, rhs.objects, rhs.subjects);
-    }
-
-    bool NodeCategory::operator!=(const NodeCategory &rhs) const {
-        return !(rhs == *this);
     }
 
     NodeCluster::NodeCluster(std::map<std::string, std::size_t> source, std::vector<std::string> target,

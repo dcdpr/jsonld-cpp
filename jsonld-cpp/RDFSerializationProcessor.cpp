@@ -338,12 +338,9 @@ namespace {
         // 2) Otherwise, create an array bnodes composed of a newly generated blank node
         // identifier for each entry in list.
         std::vector<std::string> bnodes;
-        //BlankNodeNames dummy;
-        for(const auto& e : list)
-            //bnodes.push_back(blankNodeNames->get(e)); -> 84 test failures
-            //bnodes.push_back(dummy.get());            -> 77 test failures
-            bnodes.push_back(blankNodeNames.get()); // -> 61 test failures
-
+        //for(const auto& e : list)
+        for(size_t i=list.size(); i--;)
+            bnodes.push_back(blankNodeNames.get());
 
         // 3) For each pair of subject from bnodes and item from list:
         for (json::size_type index=0; index < list.size(); index++) {
@@ -494,7 +491,7 @@ namespace {
             // number and datatype equals xsd:double, convert value to a string in canonical
             // lexical form of an xsd:double as defined in [XMLSCHEMA11-2] and described in
             // § 8.6 Data Round Tripping. If datatype is null, set datatype to xsd:double.
-            if ((value.is_number_float() && std::fmod(value.get<double>(), 1) != 0) || datatype == JsonLdConsts::XSD_DOUBLE) {
+            if ((value.is_number_float() && std::fmod(value.get<double>(), 1) != 0.0) || datatype == JsonLdConsts::XSD_DOUBLE) {
                 if (datatype.is_null())
                     datatypeStr = JsonLdConsts::XSD_DOUBLE;
                 double d = value.get<double>();
