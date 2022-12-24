@@ -72,6 +72,7 @@ set(LIB_SOURCE_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFDatasetComparison.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFDocument.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFNode.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/RDFRegex.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFSerializationProcessor.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFTriple.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFQuad.cpp

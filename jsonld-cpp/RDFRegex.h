@@ -7,27 +7,27 @@ namespace RDFRegex {
     // Note: The following regexes for matching RDF data is not quite complete. Please see
     // https://www.w3.org/TR/n-quads/#sec-grammar for other items needed when unicode support
     // is completed.
-    const std::string EOLN(R"((?:\r\n)|(?:\n)|(?:\r))");
-    const std::string WS(R"([ \t]+)");
-    const std::string WSO(R"([ \t]*)");
-    const std::string EMPTY("^" + WSO + "$");
+    extern const std::string EOLN;
+    extern const std::string WS;
+    extern const std::string WSO;
+    extern const std::string EMPTY;
 
-    const std::string IRI(R"((?:<([^>]*)>))");
-    const std::string BNODE(R"((_:(?:[A-Za-z_:0-9])(?:(?:[A-Za-z_:0-9\.-])*[A-Za-z_:0-9-])?))");
-    const std::string PLAIN(R"lit("([^"\\]*(?:\\.[^"\\]*)*)")lit");
-    const std::string DATATYPE("(?:\\^\\^" + IRI + ")");
-    const std::string LANGUAGE("(?:@([a-z]+(?:-[a-zA-Z0-9]+)*))");
-    const std::string LITERAL("(?:" + PLAIN + "(?:" + DATATYPE + "|" + LANGUAGE + ")?)");
+    extern const std::string IRI;
+    extern const std::string BNODE;
+    extern const std::string PLAIN;
+    extern const std::string DATATYPE;
+    extern const std::string LANGUAGE;
+    extern const std::string LITERAL;
 
-    const std::string SUBJECT("(?:" + IRI + "|" + BNODE + ")" + WS);
-    const std::string PROPERTY(IRI + WS);
-    const std::string OBJECT("(?:" + IRI + "|" + BNODE + "|" + LITERAL + ")" + WSO);
-    const std::string GRAPH("(?:\\.|(?:(?:" + IRI + "|" + BNODE + ")" + WSO + "\\.))");
+    extern const std::string SUBJECT;
+    extern const std::string PROPERTY;
+    extern const std::string OBJECT;
+    extern const std::string GRAPH;
 
-    const std::string QUAD("^" + WSO + SUBJECT + PROPERTY + OBJECT + GRAPH + WSO + "$");
+    extern const std::string QUAD;
 
-    const std::string HEX("[0-9A-Fa-f]");
-    const std::string UCHAR_MATCHED(R"(\u005C(?:([tbnrf\\\"'])|(?:u()" + HEX + "{4}))|(?:U(" + HEX + "{8})))");
+    extern const std::string HEX;
+    extern const std::string UCHAR_MATCHED;
 
 
 }
