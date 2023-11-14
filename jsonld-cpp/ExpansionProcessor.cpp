@@ -456,7 +456,7 @@ namespace {
             // If result is a map which is empty, or contains only the entries @value or
             // @list, set result to null.
             if (!result.is_null() && result.is_object() &&
-                (result.empty() || result.contains(JsonLdConsts::VALUE) || result.contains(JsonLdConsts::LIST))) {
+                (result.empty() || result.contains(JsonLdConsts::VALUE) || result.contains(JsonLdConsts::LIST))) { // todo: need to check for size() ==1 for "only"
                 result = json();
             }
                 // 19.2)

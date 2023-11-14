@@ -66,7 +66,7 @@ namespace {
     compareNQuads(
             const std::vector<RDFQuad>& nquads1,
             const std::vector<RDFQuad>& nquads2,
-            std::map<std::string, std::string> *mapping) {
+            std::map<std::string, std::string> *mapping) { // todo, can we make this a smart pointer to get rid of null checking all over the place?
 
         std::vector<RDFQuad> remaining(nquads2);
 
@@ -77,7 +77,7 @@ namespace {
             for (auto nquad2_it = remaining.begin(); nquad2_it != remaining.end(); ) {
                 found = compareNQuad(*nquad2_it, nquad1, mapping);
 
-                if (found) {
+                if (found) { // todo (rewrite): found == if the 2nd collection has a matching node
                     remaining.erase(nquad2_it);
                     break;
                 } else {
@@ -588,6 +588,9 @@ namespace RDF {
             iteration++;
 
             if (iteration >=  5000000) {
+                // todo: should experiment to see if this number is too insane
+                // todo: also, how likely is this to happen? how many iterations are needed for the most
+                // complicated spec test?
                 std::cerr << "Too many permutations [" << mapper.permutations() << "]" << std::endl;
                 return false;
             }

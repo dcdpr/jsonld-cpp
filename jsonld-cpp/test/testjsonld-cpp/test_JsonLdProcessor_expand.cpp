@@ -95,7 +95,7 @@ public:
         performExpandTest(testCase);
     }
 
-    void performExpandTestFromManifest(const std::string& testName, const std::string& manifestName="") {
+    static void performExpandTestFromManifest(const std::string& testName, const std::string& manifestName="") {
 
         if(!manifestName.empty())
             return performExpandTestFromAlternateManifest(testName, manifestName);

@@ -49,6 +49,8 @@ namespace {
       REQUIRE_ALL,
             // this is another keyword found reading through the api spec. Not sure why they aren't
             // included in the above.
+            // todo: is this still a valid comment? I should write it better.
+            // ... I think it was present in a test case but I didn't find it in the spec. (maybe not)
       ANY
     };
 }
@@ -88,7 +90,7 @@ bool JsonLdUtils::isIri(const std::string &str) {
     return !isKeyword(str) && Uri::isUri(str);
 }
 
-bool JsonLdUtils::deepCompare(json j1, json j2) {
+bool JsonLdUtils::deepCompare(json j1, json j2) { // todo: need better comments here
     if (j1.is_null())
         return j2.is_null();
 
@@ -223,9 +225,8 @@ bool JsonLdUtils::deepContains(const json& values, const json& value) {
 }
 
 void JsonLdUtils::mergeValue(json & obj, const std::string& key, const json& value) {
-    if (obj.is_null()) {
-        return;
-    }
+    assert(!obj.is_null());
+
     json & values = obj[key];
     if (values.is_null()) {
         values = json::array();

@@ -273,7 +273,7 @@ std::string NQuadsSerialization::toNQuad(const RDF::RDFQuad& quad) {
 }
 
 std::string NQuadsSerialization::toNQuad(const RDF::RDFTriple& triple) {
-    // converting an RDFTriple to a nquad might not be a real thing, but it is nice to do
+    // converting an RDFTriple to a nquad might not be a real thing (todo: refer to something in the spec), but it is nice to do
     // so RDFTriple.toString() can quickly convert itself to a string for printing/debugging
 
     return toNQuad({triple.getSubject(), triple.getPredicate(), triple.getObject(), nullptr});
@@ -300,7 +300,7 @@ std::string NQuadsSerialization::toNQuadForNormalization(const RDF::RDFQuad& qua
     if (p->isIRI())
         outputIRI(p->getValue(), ss);
     else
-        assert(false);
+        assert(false); // todo: need better error handling, just bare assert is unfriendly
 
     ss << " ";
 

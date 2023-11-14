@@ -5,6 +5,8 @@
 #include <memory>
 #include <string>
 
+// todo: probably need more comments in here
+
 namespace RDF {
 
     class Node {

@@ -1,3 +1,4 @@
+#include <iostream>
 #include "jsonld-cpp/RDFCanonicalizationProcessor.h"
 #include "jsonld-cpp/NQuadsSerialization.h"
 #include "jsonld-cpp/RDFQuad.h"
@@ -64,10 +65,8 @@ namespace {
 
     std::string
     hashFirstDegreeQuads(CanonicalizationState & state, std::string referenceBlankNodeId) {
-
-//    // return cached hash
-//    if(cachedHashes.count(id))
-//        return cachedHashes[id];
+// debug
+        std::cout << "enter hashFirstDegreeQuads: \n";
 
         // Comments in this function are labeled with numbers that correspond to sections
         // from the description of the Hash First Degree Quads algorithm.
@@ -105,13 +104,21 @@ namespace {
         // 5)
         // Return the hash that results from passing the sorted, joined nquads through the hash algorithm.
         std::string hash = sha256(nquads);
-//    cachedHashes[id] = hash;
+
+        // debug
+        std::cout << "hashFirstDegreeQuads: \n";
+        std::copy(nquads.begin(), nquads.end(), std::ostream_iterator<std::string>(std::cout, " "));
+        std::cout << "returns: " << hash << "\n";
+        std::cout << std::flush;
+
         return hash;
     }
 
     std::string
     hashRelatedBlankNode(CanonicalizationState & state, const std::string& related, const RDF::RDFQuad& quad,
                          BlankNodeNames & issuer, const std::string& position) {
+// debug
+        std::cout << "enter hashRelatedBlankNode: \n";
 
         // Comments in this function are labeled with numbers that correspond to sections
         // from the description of the Hash Related Blank Node algorithm.
@@ -142,6 +149,12 @@ namespace {
         // Append identifier to input.
         input += identifier;
 
+        // debug
+        std::cout << "hashRelatedBlankNode: \n";
+        std::cout << "input: [" << input << "]\n";
+        std::cout << "returns: " << sha256(input) << "\n";
+        std::cout << std::flush;
+
         // 5)
         // Return the hash that results from passing input through the hash algorithm.
         return sha256(input);
@@ -149,6 +162,9 @@ namespace {
 
     HashNDegreeQuadsResult
     hashNDegreeQuads(CanonicalizationState & state, const std::string& identifier, BlankNodeNames & issuer) {
+
+        // debug
+        std::cout << "enter hashNDegreeQuads: \n";
 
         // Comments in this function are labeled with numbers that correspond to sections
         // from the description of the Hash N Degree Quads algorithm.
@@ -340,6 +356,14 @@ namespace {
         HashNDegreeQuadsResult result;
         result.hash = sha256(dataToHash);
         result.issuerUsed = issuer;
+        // todo: do I really need this since I've passed in a reference? ...
+
+        // debug
+        std::cout << "hashNDegreeQuads: \n";
+        std::cout << "dataToHash: [" << dataToHash << "]\n";
+        std::cout << "returns: " << result.hash << "\n";
+        std::cout << std::flush;
+
         return result;
     }
 
@@ -357,6 +381,11 @@ namespace {
 
         // 2)
         // For every quad in input dataset:
+        // todo: make a better worded note that the reason we want to get quads from the
+        // dataset rather than graphnames -> triples, is that when we later
+        // need to hash each data item, it requires that we have the graphname
+        // represented in the data structure so its bytes can be included in the line's hash.
+        // note2: should add this to the rdfquad definition
         std::vector<RDF::RDFQuad> quads = dataset.getAllGraphsAsQuads();
         for(const auto& quad : quads) {
             // 2.1)
@@ -366,6 +395,10 @@ namespace {
 
             // note: any part of the quad can be a blank node in JSON-LD, but RDF doesn't support
             // a predicate as a blank node, so we ignore those.
+
+            // todo: what the heck?
+            // note: (from spec) It seems that quads must be normalized, so that literals with different syntactic representations but the same semantic representations are merged, and that two graphs differing in the syntactic representation of a literal will produce the same set of blank node identifiers.
+
             state.addToQuadsMapIfBlankNode(quad.getSubject(), quad);
             state.addToQuadsMapIfBlankNode(quad.getObject(), quad);
             state.addToQuadsMapIfBlankNode(quad.getGraph(), quad);

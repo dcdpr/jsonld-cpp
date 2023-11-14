@@ -50,12 +50,13 @@ namespace RDF {
     bool operator<=(const RDFTriple &lhs, const RDFTriple &rhs);
     bool operator>=(const RDFTriple &lhs, const RDFTriple &rhs);
 
-    struct RDFTriplePtrLess :
-            public std::binary_function<const std::shared_ptr<RDFTriple>, const std::shared_ptr<RDFTriple>, bool> {
-        bool operator()(const std::shared_ptr<RDFTriple> & lhs, const std::shared_ptr<RDFTriple> & rhs) const {
-            return *lhs < *rhs ;
-        }
-    };
+    // todo: really not used?
+//    struct RDFTriplePtrLess :
+//            public std::binary_function<const std::shared_ptr<RDFTriple>, const std::shared_ptr<RDFTriple>, bool> {
+//        bool operator()(const std::shared_ptr<RDFTriple> & lhs, const std::shared_ptr<RDFTriple> & rhs) const {
+//            return *lhs < *rhs ;
+//        }
+//    };
 
 }
 

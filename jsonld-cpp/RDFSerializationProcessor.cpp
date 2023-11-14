@@ -15,7 +15,8 @@ namespace {
     using namespace RDF;
     using RDF::BlankNode;
 
-    void generateNodeMap(json & element, json &nodeMap, BlankNodeNames &blankNodeNames, std::string *activeGraph, nlohmann::json *activeSubject,
+    void generateNodeMap(json & element, json &nodeMap, BlankNodeNames &blankNodeNames,
+                         std::string *activeGraph, nlohmann::json *activeSubject,
                          std::string *activeProperty, json *list)
     {
         // Comments in this function are labeled with numbers that correspond to sections
@@ -47,7 +48,7 @@ namespace {
         }
         json & graph = nodeMap[*activeGraph];
 
-        json * subjectNode = nullptr;
+        json * subjectNode = nullptr; // todo: can this cause null deref?
         if(activeSubject == nullptr || activeSubject->is_object()) {
             subjectNode = nullptr;
         }
@@ -139,7 +140,7 @@ namespace {
             // blank node identifier passing id for identifier.
             std::string id;
             if(element.contains(JsonLdConsts::ID)) {
-                if(element[JsonLdConsts::ID].is_null()) // note: this can happen in some cases, see toRDF test e122
+                if(element[JsonLdConsts::ID].is_null()) // note: this can happen in some cases, see toRDF test e122. Ask on list?
                     return;
                 id = element[JsonLdConsts::ID].get<std::string>();
                 element.erase(JsonLdConsts::ID);
@@ -338,7 +339,6 @@ namespace {
         // 2) Otherwise, create an array bnodes composed of a newly generated blank node
         // identifier for each entry in list.
         std::vector<std::string> bnodes;
-        //for(const auto& e : list)
         for(size_t i=list.size(); i--;)
             bnodes.push_back(blankNodeNames.get());
 
@@ -407,6 +407,8 @@ namespace {
         // object, list object, or node object and list triples, which is an empty array.
         assert(JsonLdUtils::isObject(item) || JsonLdUtils::isListObject(item) || JsonLdUtils::isValueObject(item));
         assert(listTriples.empty());
+            // todo: make sure you understand why are we checking triples is empty (doesn't say so in the spec)
+            // todo: #2 can I move this below in the if() for step 1
 
         // 1)
         // If item is a node object and the value of its @id entry is not well-formed, return null.
@@ -414,11 +416,12 @@ namespace {
         if (JsonLdUtils::isObject(item) && !JsonLdUtils::isListObject(item) && !JsonLdUtils::isValueObject(item)) {
             std::string id = item[JsonLdConsts::ID].get<std::string>();
             if (!BlankNodeNames::hasFormOfBlankNodeName(id) && JsonLdUtils::isRelativeIri(id)) {
+                // todo: need a "well-formed" function for the various types
                 return nullptr;
             }
             // 2)
             // If item is a node object, return the IRI or blank node identifier associated with its @id entry.
-            if (id.find_first_of("_:") == 0) {
+            if (id.find_first_of("_:") == 0) {  // todo: should be BlankNodeNames::hasFormOfBlankNodeName(id)
                 return std::make_shared<BlankNode>(id);
             } else {
                 return std::make_shared<IRI>(id);
@@ -451,11 +454,11 @@ namespace {
 
         // 6)
         // If datatype is not null and neither a well-formed IRI nor @json, return null.
-        if(!datatype.is_null() && datatypeStr != JsonLdConsts::JSON && !JsonLdUtils::isAbsoluteIri(datatype.get<std::string>()))
+        if(!datatype.is_null() && datatypeStr != JsonLdConsts::JSON && !JsonLdUtils::isAbsoluteIri(datatypeStr))
             return nullptr;
 
         // 7)
-        // If item has an @language entry which is not well-formed, return null.
+        // If item has an @language entry which is not well-formed, return null. // todo: add well-formed helper function
         if(item.contains(JsonLdConsts::LANGUAGE) &&
                 (item[JsonLdConsts::LANGUAGE].empty() || !JsonLdUtils::isLanguageForm(item[JsonLdConsts::LANGUAGE].get<std::string>())))
             return nullptr;
@@ -598,7 +601,7 @@ namespace {
             return std::make_shared<Literal>(
                     value.get<std::string>(),
                     &datatypeStr,
-                    &languageStr);
+                    &languageStr); // todo: should I use setValue() here? don't I want to get rid of setValue totally?
         }
         else {
             return std::make_shared<Literal>(
@@ -615,11 +618,6 @@ namespace {
         // from the description of the Deserialize JSON-LD to RDF algorithm.
         // See: https://www.w3.org/TR/json-ld11-api/#deserialize-json-ld-to-rdf-algorithm
 
-        // todo: remove?
-        std::shared_ptr<Node> rdf_first = std::make_shared<IRI>(JsonLdConsts::RDF_FIRST);
-        std::shared_ptr<Node> rdf_rest = std::make_shared<IRI>(JsonLdConsts::RDF_REST);
-        std::shared_ptr<Node> rdf_nil = std::make_shared<IRI>(JsonLdConsts::RDF_NIL);
-
         // 1.1)
         // If graph name is not well-formed, continue with the next graph name-graph pair.
         // todo: better well-formed checking
@@ -634,7 +632,7 @@ namespace {
 
         // 1.3)
         // For each subject and node in graph ordered by subject:
-        // todo: ordered by subject? not insertion order?
+        // todo: possible spec bug? ordered by subject? not insertion order?
         std::vector<std::string> subjects;
         if(graph.contains("key_insertion_order")) {
             for (const auto & it : graph["key_insertion_order"]) {
@@ -646,7 +644,7 @@ namespace {
 
             // 1.3.1)
             // If subject is not well-formed, continue with the next subject-node pair.
-            // todo: better well-formed checking
+            // todo: need better well-formed checking
             if (!BlankNodeNames::hasFormOfBlankNodeName(subject) && JsonLdUtils::isRelativeIri(subject)) {
                 continue;
             }
@@ -774,7 +772,7 @@ namespace {
 
         // 1)
         // For each graph name and graph in node map ordered by graph name:
-        // todo: ordered?
+        // todo: check if ordered is needed?
         for (json::iterator it = nodeMap.begin(); it != nodeMap.end(); ++it) {
             auto & graphName = static_cast<const std::string &>(it.key());
             json & graph = it.value();
@@ -798,7 +796,7 @@ RDF::RDFDataset RDFSerializationProcessor::toRDF(nlohmann::json expandedInput, c
 
     // 3)
     // Create a new RdfDataset dataset.
-    //RDF::RDFDataset dataset(options);
+    // Note: dataset created and populated in step 6)
 
     // 4)
     // Create a new map node map.

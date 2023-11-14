@@ -129,7 +129,8 @@ RDFDataset JsonLdProcessor::toRDF(const std::string& documentLocation, JsonLdOpt
 
     // 1)
     // Create a new Promise promise and return it. The following steps are then deferred.
-    // todo: promise?
+    // Note: we do not feel Promises are appropriate in this spec
+    // todo: word more nicely and make sure you denote personal notes from spec notes
 
     // 2)
     // Set expanded input to the result of using the expand() method using input and options
@@ -137,7 +138,7 @@ RDFDataset JsonLdProcessor::toRDF(const std::string& documentLocation, JsonLdOpt
     nlohmann::json expandedInput = expand(documentLocation, options);
 
     // 3-7)
-    // Rest of the algorithm in toRDF().
+    // Rest of the algorithm in RDFSerializationProcessor::toRDF().
     RDFDataset dataset = RDFSerializationProcessor::toRDF(expandedInput, options);
 
     return dataset;
