@@ -18,10 +18,17 @@ std::map<std::string, TestCase> UrdnaManifestLoader::load() {
 
     for (auto& element : manifest["entries"]) {
         // make copies of existing data with labels expected by TestCase
-        element["@id"] = element["id"];
-        element["@type"] = element["type"];
-        element["input"] = element["action"];
-        element["expect"] = element["result"];
+        if(element.contains("id"))
+            element["@id"] = element["id"];
+
+        if(element.contains("type"))
+            element["@type"] = element["type"];
+
+        if(element.contains("action"))
+            element["input"] = element["action"];
+
+        if(element.contains("result"))
+            element["expect"] = element["result"];
 
         TestCase tc = TestCase::create(element, manifestName, manifestBase, baseUri);
         result.insert({tc.id, tc});

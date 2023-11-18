@@ -65,7 +65,7 @@ add_test(NAME UnitTests_jsonld-cpp
 #
 # API
 #
-set(ALGORITHMS "expand;toRDF;normalize-urdna2015")
+set(ALGORITHMS "expand;toRDF;normalize-urdna2015;normalize-rdfc10")
 
 foreach(ALGO ${ALGORITHMS})
     message(STATUS "Adding ${ALGO}")
