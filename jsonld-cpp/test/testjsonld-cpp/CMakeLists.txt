@@ -51,6 +51,7 @@ add_executable(
     test_Uri.cpp
     test_UriParser.cpp
     test_Sha256.cpp
+    test_Sha384.cpp
 )
 
 target_compile_features(UnitTests_jsonld-cpp PRIVATE cxx_std_11)

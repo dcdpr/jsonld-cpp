@@ -449,6 +449,13 @@ namespace {
             return {};
         }
 
+        // Note: For step 19.1 below, the spec states that "...map which is empty, or contains
+        // only..." and that seems to indicate that part of the if() statement should include
+        // "result.size() == 1" but if we add that clause today then expansion test #t0046 will
+        // fail. This has been noted by the JSON-LD working group and documented
+        // here: https://github.com/w3c/json-ld-api/issues/496 but the latest published spec does
+        // not include any changes yet. When it does, we will update this code.
+
         // 19)
         // If active property is null or @graph, drop free-floating values as follows:
         if (activeProperty == nullptr || *activeProperty == JsonLdConsts::GRAPH) {
@@ -456,12 +463,12 @@ namespace {
             // If result is a map which is empty, or contains only the entries @value or
             // @list, set result to null.
             if (!result.is_null() && result.is_object() &&
-                (result.empty() || result.contains(JsonLdConsts::VALUE) || result.contains(JsonLdConsts::LIST))) { // todo: need to check for size() ==1 for "only"
+                (result.empty() || result.contains(JsonLdConsts::VALUE) || result.contains(JsonLdConsts::LIST))) {
                 result = json();
             }
-                // 19.2)
-                // Otherwise, if result is a map whose only entry is @id, set result to null. When the
-                // frameExpansion flag is set, a map containing only the @id entry is retained.
+            // 19.2)
+            // Otherwise, if result is a map whose only entry is @id, set result to null. When the
+            // frameExpansion flag is set, a map containing only the @id entry is retained.
             else if (!result.is_null() && !activeContext.getOptions().isFrameExpansion() && result.contains(JsonLdConsts::ID)
                      && result.size() == 1) {
                 result = json();

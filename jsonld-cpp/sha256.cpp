@@ -24,7 +24,7 @@
            | (static_cast<uint32> (*((str) + 0) << 24));   \
 }
 
-const unsigned int SHA256::sha256_k[64] = //UL = uint32
+const SHA256::uint32 SHA256::sha256_k[64] =
         {0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
          0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
          0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
@@ -48,8 +48,7 @@ void SHA256::transform(const unsigned char *message, std::size_t block_nb)
     uint32 wv[8];
     uint32 t1, t2;
     const unsigned char *sub_block;
-    unsigned int i;
-    unsigned int j;
+    unsigned int i, j;
     for (i = 0; i < block_nb; i++) {
         sub_block = message + (i << 6);
         for (j = 0; j < 16; j++) {
