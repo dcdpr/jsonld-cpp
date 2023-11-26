@@ -5,6 +5,7 @@
 #include "jsonld-cpp/RDFTriple.h"
 #include "jsonld-cpp/RDFDataset.h"
 #include "jsonld-cpp/sha256.h"
+#include "jsonld-cpp/sha384.h"
 #include "jsonld-cpp/Permutator.h"
 #include "jsonld-cpp/BlankNodeNames.h"
 
@@ -23,6 +24,10 @@ namespace {
 
         // keep track of insertion order of keys for bnode_to_quads
         std::vector<std::string> bnode_to_quads_insertion_order_keys;
+
+        // which hash function to use
+        std::string (*hash)(const std::string & input);
+        std::string (*hashVec)(const std::vector<std::string> & input);
 
         void addToQuadsMapIfBlankNode(const std::shared_ptr<RDF::Node>& node, const RDF::RDFQuad& quad) {
             if(node != nullptr) {
@@ -103,7 +108,7 @@ namespace {
 
         // 5)
         // Return the hash that results from passing the sorted, joined nquads through the hash algorithm.
-        std::string hash = sha256(nquads);
+        std::string hash = state.hashVec(nquads);
 
         // debug
         std::cout << "hashFirstDegreeQuads: \n";
@@ -152,12 +157,12 @@ namespace {
         // debug
         std::cout << "hashRelatedBlankNode: \n";
         std::cout << "input: [" << input << "]\n";
-        std::cout << "returns: " << sha256(input) << "\n";
+        std::cout << "returns: " << state.hash(input) << "\n";
         std::cout << std::flush;
 
         // 5)
         // Return the hash that results from passing input through the hash algorithm.
-        return sha256(input);
+        return state.hash(input);
     }
 
     HashNDegreeQuadsResult
@@ -354,7 +359,7 @@ namespace {
         // 6)
         // Return issuer and the hash that results from passing data to hash through the hash algorithm.
         HashNDegreeQuadsResult result;
-        result.hash = sha256(dataToHash);
+        result.hash = state.hash(dataToHash);
         result.issuerUsed = issuer;
         // todo: do I really need this since I've passed in a reference? ...
 
@@ -378,6 +383,14 @@ namespace {
         // 1)
         // Create the canonicalization state.
         CanonicalizationState state;
+        if(options.getHashAlgorithm() == "SHA384") {
+            state.hash = sha384;
+            state.hashVec = sha384;
+        }
+        else {
+            state.hash = sha256;
+            state.hashVec = sha256;
+        }
 
         // 2)
         // For every quad in input dataset:
