@@ -5,7 +5,7 @@
 #include <jsonld-cpp/jsoninc.h>
 
 struct TestCaseOptions {
-    static TestCaseOptions create(nlohmann::json o, std::string baseUri);
+    static TestCaseOptions create(nlohmann::json manifestEntryOptions, const std::string& baseUri);
     void copyTo(JsonLdOptions & jsonLdOptions);
 
     std::string specVersion;
@@ -20,6 +20,7 @@ struct TestCaseOptions {
     bool useNativeTypes = false;
     bool useRdfType = false;
     bool omitGraph = false;
+    std::string hashAlgorithm;
 
 };
 

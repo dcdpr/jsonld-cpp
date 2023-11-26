@@ -1,86 +1,65 @@
 #include <jsonld-cpp/JsonLdUrl.h>
 #include "TestCaseOptions.h"
 
-TestCaseOptions TestCaseOptions::create(nlohmann::json o, std::string baseUri) {
+namespace {
+
+    std::string getEntryOr(const nlohmann::json &manifestEntry, const std::string & entryKey, const std::string & defaultEntry) {
+        return manifestEntry.contains(entryKey) ?
+               manifestEntry[entryKey].get<std::string>() : defaultEntry;
+    }
+
+    bool getBool(const nlohmann::json &manifestEntry, const std::string & entryKey) {
+        return manifestEntry.contains(entryKey) && manifestEntry[entryKey].get<bool>();
+    }
+
+}
+
+TestCaseOptions TestCaseOptions::create(nlohmann::json manifestEntryOptions, const std::string& baseUri) {
     TestCaseOptions result;
 
-    result.specVersion = o.contains("specVersion") ?
-        o["specVersion"].get<std::string>() :
-        "";
+    result.specVersion = getEntryOr(manifestEntryOptions, "specVersion", "");
 
-    result.base = o.contains("base") ?
-        o["base"].get<std::string>() :
-        "";
+    result.base = getEntryOr(manifestEntryOptions, "base", "");
 
-    result.processingMode = o.contains("processingMode") ?
-        o["processingMode"].get<std::string>() :
-        "";
+    result.processingMode = getEntryOr(manifestEntryOptions, "processingMode", "");
 
-    result.normative = o.contains("normative") && o["normative"].get<bool>();
+    result.normative = getBool(manifestEntryOptions, "normative");
 
-    if(o.contains("expandContext")) {
-        std::string context = o["expandContext"].get<std::string>();
+    if(manifestEntryOptions.contains("expandContext")) {
+        std::string context = manifestEntryOptions["expandContext"].get<std::string>();
         result.expandContext = JsonLdUrl::resolve(&baseUri, &context);
     }
 
-    result.compactArrays = o.contains("compactArrays") && o["compactArrays"].get<bool>();
+    result.compactArrays = getBool(manifestEntryOptions, "compactArrays");
 
-    result.compactToRelative = o.contains("compactToRelative") && o["compactToRelative"].get<bool>();
+    result.compactToRelative = getBool(manifestEntryOptions, "compactToRelative");
 
-    result.rdfDirection = o.contains("rdfDirection") ?
-        o["rdfDirection"].get<std::string>() :
-        "";
+    result.rdfDirection = getEntryOr(manifestEntryOptions, "rdfDirection", "");
 
-    result.produceGeneralizedRdf = o.contains("produceGeneralizedRdf") && o["produceGeneralizedRdf"].get<bool>();
+    result.produceGeneralizedRdf = getBool(manifestEntryOptions, "produceGeneralizedRdf");
 
-    result.useNativeTypes = o.contains("useNativeTypes") && o["useNativeTypes"].get<bool>();
+    result.useNativeTypes = getBool(manifestEntryOptions, "useNativeTypes");
 
-    result.useRdfType = o.contains("useRdfType") && o["useRdfType"].get<bool>();
+    result.useRdfType = getBool(manifestEntryOptions, "useRdfType");
 
-    result.omitGraph = o.contains("omitGraph") && o["omitGraph"].get<bool>();
+    result.omitGraph = getBool(manifestEntryOptions, "omitGraph");
+
+    result.hashAlgorithm = getEntryOr(manifestEntryOptions, "hashAlgorithm", "");
 
     return result;
 }
 
 void TestCaseOptions::copyTo(JsonLdOptions & jsonLdOptions) {
-    if (!processingMode.empty()) {
-        jsonLdOptions.setProcessingMode(processingMode);
-    }
-
-    if (!base.empty()) {
-        jsonLdOptions.setBase(base);
-    }
-
+    jsonLdOptions.setProcessingMode(processingMode);
+    jsonLdOptions.setBase(base);
     if (!expandContext.empty()) {
         jsonLdOptions.setExpandContext(expandContext);
     }
-
-    if (compactArrays) {
-        jsonLdOptions.setCompactArrays(compactArrays);
-    }
-
-//    if (compactToRelative) {
-//        jsonLdOptions.setCompactToRelative(compactToRelative);
-//    }
-
-    if (!rdfDirection.empty()) {
-        jsonLdOptions.setRdfDirection(rdfDirection);
-    }
-
-    if (produceGeneralizedRdf) {
-        jsonLdOptions.setProduceGeneralizedRdf(produceGeneralizedRdf);
-    }
-
-    if (useNativeTypes) {
-        jsonLdOptions.setUseNativeTypes(useNativeTypes);
-    }
-
-    if (useRdfType) {
-        jsonLdOptions.setUseRdfType(useRdfType);
-    }
-
-    if (omitGraph) {
-        jsonLdOptions.setOmitGraph(omitGraph);
-    }
-
+    jsonLdOptions.setCompactArrays(compactArrays);
+    jsonLdOptions.setCompactToRelative(compactToRelative);
+    jsonLdOptions.setRdfDirection(rdfDirection);
+    jsonLdOptions.setProduceGeneralizedRdf(produceGeneralizedRdf);
+    jsonLdOptions.setUseNativeTypes(useNativeTypes);
+    jsonLdOptions.setUseRdfType(useRdfType);
+    jsonLdOptions.setOmitGraph(omitGraph);
 }

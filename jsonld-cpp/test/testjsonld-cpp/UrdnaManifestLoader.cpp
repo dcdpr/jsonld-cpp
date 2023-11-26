@@ -30,6 +30,9 @@ std::map<std::string, TestCase> UrdnaManifestLoader::load() {
         if(element.contains("result"))
             element["expect"] = element["result"];
 
+        if(element.contains("hashAlgorithm"))
+            element["hashAlgorithm"] = element["hashAlgorithm"];
+
         TestCase tc = TestCase::create(element, manifestName, manifestBase, baseUri);
         result.insert({tc.id, tc});
     }

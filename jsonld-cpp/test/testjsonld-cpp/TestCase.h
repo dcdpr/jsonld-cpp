@@ -12,9 +12,9 @@ class TestCase {
 public:
     explicit TestCase(const std::string &testsBase);
 
-    static TestCase create(nlohmann::json o, const std::string& manifestUri, const std::string& manifestBase, const std::string& baseUri);
+    static TestCase create(nlohmann::json manifestEntry, const std::string& manifestUri, const std::string& manifestBase, const std::string& baseUri);
 
-
+    enum class HashAlgorithm { sha256, sha384 };
 
     std::string id;
 
@@ -37,6 +37,8 @@ public:
     std::set<std::string> type;
 
     std::string testsBase;
+
+    HashAlgorithm hashAlgorithm;
 
     TestCaseOptions options;
 

@@ -21,3 +21,11 @@ bool JsonLdOptions::isOrdered() const {
 void JsonLdOptions::setOrdered(bool ordered) {
     ordered_ = ordered;
 }
+
+const std::string &JsonLdOptions::getHashAlgorithm() const {
+    return hashAlgorithm_;
+}
+
+void JsonLdOptions::setHashAlgorithm(const std::string &hashAlgorithm) {
+    hashAlgorithm_ = hashAlgorithm;
+}

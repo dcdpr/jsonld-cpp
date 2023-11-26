@@ -1,51 +1,56 @@
-#include <jsonld-cpp/FileLoader.h>
 #include "TestCase.h"
+#include <jsonld-cpp/FileLoader.h>
 #include <jsonld-cpp/JsonLdConsts.h>
 #include "UriBaseRewriter.h"
 #include "TestCaseOptions.h"
 
+namespace {
+
+    std::string getEntryOr(const nlohmann::json &manifestEntry, const std::string & entryKey, const std::string & defaultEntry) {
+        return manifestEntry.contains(entryKey) ?
+               manifestEntry[entryKey].get<std::string>() : defaultEntry;
+    }
+
+}
+
 TestCase::TestCase(const std::string &itestsBase) : testsBase(itestsBase) {}
 
 TestCase TestCase::create(
-        nlohmann::json o,
+        nlohmann::json manifestEntry,
         const std::string& manifestUri,
         const std::string& manifestBase,
         const std::string& baseUri) {
 
     TestCase testCase(manifestBase);
 
-    testCase.id = o[JsonLdConsts::ID].get<std::string>();
+    testCase.id = manifestEntry[JsonLdConsts::ID].get<std::string>();
 
     testCase.uri = baseUri + manifestUri.substr(0, manifestUri.size() - strlen(".jsonld")) + testCase.id;
 
-    for(auto& element : o[JsonLdConsts::TYPE]) {
+    for(auto& element : manifestEntry[JsonLdConsts::TYPE]) {
         testCase.type.insert(element.get<std::string>());
     }
 
-    testCase.name = o["name"].get<std::string>();
+    testCase.name = manifestEntry["name"].get<std::string>();
 
-    testCase.input = o.contains("input") ?
-                     baseUri + o["input"].get<std::string>() :
-                     "";
+    testCase.input = baseUri + getEntryOr(manifestEntry, "input", "");
 
-    testCase.context = o.contains("context") ?
-                       baseUri + o["context"].get<std::string>() :
-                       "";
+    testCase.context = baseUri + getEntryOr(manifestEntry, "context", "");
 
-    testCase.expect = o.contains("expect") ?
-                       baseUri + o["expect"].get<std::string>() :
-                       "";
+    testCase.expect = baseUri + getEntryOr(manifestEntry, "expect", "");
 
-    testCase.frame = o.contains("frame") ?
-                       baseUri + o["frame"].get<std::string>() :
-                       "";
+    testCase.frame = baseUri + getEntryOr(manifestEntry, "frame", "");
 
-    testCase.expectErrorCode = o.contains("expectErrorCode") ?
-                       o["expectErrorCode"].get<std::string>() :
-                       "";
+    testCase.expectErrorCode = getEntryOr(manifestEntry, "expectErrorCode", "");
 
-    if(o.contains("option")) {
-        testCase.options = TestCaseOptions::create(o["option"], baseUri);
+    testCase.hashAlgorithm = HashAlgorithm::sha256;
+    if(manifestEntry.contains("hashAlgorithm")) {
+        if(manifestEntry["hashAlgorithm"].get<std::string>() == "SHA384")
+            testCase.hashAlgorithm = HashAlgorithm::sha384;
+    }
+
+    if(manifestEntry.contains("option")) {
+        testCase.options = TestCaseOptions::create(manifestEntry["option"], baseUri);
     }
 
     testCase.baseUri = baseUri;
@@ -62,7 +67,11 @@ JsonLdOptions TestCase::getOptions() {
             ));
 
     JsonLdOptions jsonLdOptions(std::move(loader));
-    //jsonLdOptions.setOrdered(true);
+
+    if(hashAlgorithm == HashAlgorithm::sha256)
+        jsonLdOptions.setHashAlgorithm("SHA256");
+    else if(hashAlgorithm == HashAlgorithm::sha384)
+        jsonLdOptions.setHashAlgorithm("SHA384");
 
     options.copyTo(jsonLdOptions);
 

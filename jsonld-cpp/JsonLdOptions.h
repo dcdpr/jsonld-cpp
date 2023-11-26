@@ -144,6 +144,12 @@ private:
      */
     bool requireAll_ = false;
 
+    std::string hashAlgorithm_;
+public:
+    const std::string &getHashAlgorithm() const;
+
+    void setHashAlgorithm(const std::string &hashAlgorithm);
+
 public:
 
 
@@ -165,20 +171,24 @@ public:
     JsonLdOptions(const JsonLdOptions& other) {
         base_ = other.base_;
         compactArrays_ = other.compactArrays_;
-        expandContext_ = other.expandContext_;
-        processingMode_ = other.processingMode_;
+        compactToRelative_ = other.compactToRelative_;
         if(other.documentLoader_)
             documentLoader_.reset( other.documentLoader_->clone() );
-
         embed_ = other.embed_;
+        expandContext_ = other.expandContext_;
         explicit_ = other.explicit_;
+        extractAllScripts_ = other.extractAllScripts_;
+        frameExpansion_ = other.frameExpansion_;
+        hashAlgorithm_ = other.hashAlgorithm_;
         omitDefault_ = other.omitDefault_;
         omitGraph_ = other.omitGraph_;
-        requireAll_ = other.requireAll_;
-
-        useRdfType_ = other.useRdfType_;
-        useNativeTypes_ = other.useNativeTypes_;
+        ordered_ = other.ordered_;
+        processingMode_ = other.processingMode_;
         produceGeneralizedRdf_ = other.produceGeneralizedRdf_;
+        rdfDirection_ = other.rdfDirection_;
+        requireAll_ = other.requireAll_;
+        useNativeTypes_ = other.useNativeTypes_;
+        useRdfType_ = other.useRdfType_;
     }
 
     JsonLdOptions & operator=(const JsonLdOptions& other) {
@@ -274,6 +284,14 @@ public:
 
     void setCompactArrays(bool compactArrays) {
         this->compactArrays_ = compactArrays;
+    }
+
+    bool getCompactToRelative() const {
+        return compactToRelative_;
+    }
+
+    void setCompactToRelative(bool compactToRelative) {
+        this->compactToRelative_ = compactToRelative;
     }
 
     nlohmann::json getExpandContext() const {
