@@ -1,7 +1,6 @@
 #pragma ide diagnostic ignored "cert-err58-cpp"
 #include <jsonld-cpp/JsonLdError.h>
-#include <jsonld-cpp/JsonLdProcessor.h>
-#include <jsonld-cpp/FileLoader.h>
+#include <jsonld-cpp/CanonicalizationProcessor.h>
 #include <jsonld-cpp/RemoteDocument.h>
 #include <jsonld-cpp/NQuadsSerialization.h>
 #include "UrdnaManifestLoader.h"
@@ -43,7 +42,7 @@ public:
 
         std::string normalized;
         try {
-            normalized = JsonLdProcessor::normalize(testCase.input, options);
+            normalized = CanonicalizationProcessor::normalize(testCase.input, options);
         }
         catch (JsonLdError &e) {
             std::cout << "JsonLdError: " << e.what() << std::endl;

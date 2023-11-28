@@ -17,6 +17,7 @@ find_package(uriparser 0.9.5 CONFIG REQUIRED char wchar_t)
 # Define library target
 
 set(LIB_HEADER_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/CanonicalizationProcessor.h
         ${CMAKE_CURRENT_SOURCE_DIR}/Context.h
         ${CMAKE_CURRENT_SOURCE_DIR}/ContextProcessor.h
         ${CMAKE_CURRENT_SOURCE_DIR}/DocumentLoader.h
@@ -53,6 +54,7 @@ set(LIB_HEADER_FILES
         )
 
 set(LIB_SOURCE_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/CanonicalizationProcessor.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/Context.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/ContextProcessor.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/DocumentLoader.cpp
