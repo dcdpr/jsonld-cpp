@@ -1959,17 +1959,17 @@ TEST_F(JsonLdProcessorToRDFTest, toRdf_twf07) {
 }
 
 TEST_F(JsonLdProcessorToRDFTest, toRdf_0300) {
-    // this is an extra test Dan added while trying to debug issues with normalize test 0008
+    // this is an extra test Dan added while trying to debug issues with canonicalize test 0008
     performToRDFTestFromManifest("#t0300", "toRdf-manifest-extra.jsonld");
 }
 
 TEST_F(JsonLdProcessorToRDFTest, toRdf_0301) {
-    // this is an extra test Dan added while trying to debug issues with normalize test 0020
+    // this is an extra test Dan added while trying to debug issues with canonicalize test 0020
     performToRDFTestFromManifest("#t0301", "toRdf-manifest-extra.jsonld");
 }
 
 TEST_F(JsonLdProcessorToRDFTest, toRdf_0302) {
-    // this is an extra test Dan added while trying to debug issues with normalize test 0044
+    // this is an extra test Dan added while trying to debug issues with canonicalize test 0044
     performToRDFTestFromManifest("#t0302", "toRdf-manifest-extra.jsonld");
 }
 

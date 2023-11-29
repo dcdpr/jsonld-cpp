@@ -8,17 +8,17 @@
 using RDF::RDFDataset;
 
 
-std::string CanonicalizationProcessor::normalize(const std::string& documentLocation, JsonLdOptions& options) {
+std::string CanonicalizationProcessor::canonicalize(const std::string& documentLocation, JsonLdOptions& options) {
 
     auto document = options.getDocumentLoader()->loadDocument(documentLocation);
 
     if(document->getContentType() == MediaType::json_ld()) {
         RDFDataset dataset = JsonLdProcessor::toRDF(documentLocation, options);
-        return RDFCanonicalizationProcessor::normalize(dataset, options);
+        return RDFCanonicalizationProcessor::canonicalize(dataset, options);
     }
     else if(document->getContentType() == MediaType::n_quads()) {
         RDFDataset dataset = document->getRDFContent();
-        return RDFCanonicalizationProcessor::normalize(dataset, options);
+        return RDFCanonicalizationProcessor::canonicalize(dataset, options);
     }
     else {
         std::stringstream ss;

@@ -10,7 +10,7 @@
  * Loads a test manifest file and returns collection of TestCases
  *
  * This class is slightly different than ManifestLoader for dealing with
- * the "URDNA" normalize test case manifests
+ * the "URDNA" canonicalize test case manifests
  */
 class UrdnaManifestLoader {
 public:

@@ -26,4 +26,4 @@ std::map<std::string, TestCase> ManifestLoader::load() {
 
 // todo: make sure to clean up extra test files like duplicate_quads.nq ... what was that for?
 
-// todo: also create a readme for what and how we updated the normalize tests when we go from 2015 to the new 1.0 spec
+// todo: also create a readme for what and how we updated the canonicalize tests when we go from 2015 to the new 1.0 spec

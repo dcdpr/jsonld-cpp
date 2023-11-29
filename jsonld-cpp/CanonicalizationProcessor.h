@@ -6,10 +6,10 @@
 
 namespace CanonicalizationProcessor {
 
-    // Normalizes (canonicalizes) JSON-LD or RDF document located at filename or IRI into
+    // Canonicalize JSON-LD or RDF document located at filename or IRI into
     // an RdfDataset according to the steps in the RDF Canonicalization Algorithm
     // See: https://w3c-ccg.github.io/rdf-dataset-canonicalization/spec/#canonicalization-algorithm
-    std::string normalize(const std::string& documentLocation, JsonLdOptions& options);
+    std::string canonicalize(const std::string& documentLocation, JsonLdOptions& options);
 }
 
 #endif //LIBJSONLD_CPP_CANONICALIZATIONPROCESSOR_H

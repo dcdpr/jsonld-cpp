@@ -373,7 +373,7 @@ namespace {
     }
 
 
-    RDF::RDFDataset normalize(const RDF::RDFDataset &dataset, const JsonLdOptions& options) {
+    RDF::RDFDataset canonicalize(const RDF::RDFDataset &dataset, const JsonLdOptions& options) {
 
         // Comments in this function are labeled with numbers that correspond to sections
         // from the description of the RDF dataset canonicalization algorithm.
@@ -546,7 +546,7 @@ namespace {
             }
         }
 
-        RDF::RDFDataset normalizedDataset(options);
+        RDF::RDFDataset canonicalizedDataset(options);
 
         // 7)
         // For each quad, quad, in input dataset:
@@ -564,20 +564,20 @@ namespace {
             // Add quad copy to the normalized dataset.
             RDF::RDFTriple triple{quadCopy.getSubject(), quadCopy.getPredicate(), quadCopy.getObject()};
             if(quadCopy.getGraph())
-                normalizedDataset.addTripleToGraph(quadCopy.getGraph()->getValue(), triple);
+                canonicalizedDataset.addTripleToGraph(quadCopy.getGraph()->getValue(), triple);
             else
-                normalizedDataset.addTripleToGraph(JsonLdConsts::DEFAULT, triple);
+                canonicalizedDataset.addTripleToGraph(JsonLdConsts::DEFAULT, triple);
         }
 
         // 8)
         // Return the normalized dataset.
-        return normalizedDataset;
+        return canonicalizedDataset;
     }
 
 }
 
-std::string RDFCanonicalizationProcessor::normalize(const RDF::RDFDataset& dataset, const JsonLdOptions& options) {
+std::string RDFCanonicalizationProcessor::canonicalize(const RDF::RDFDataset& dataset, const JsonLdOptions& options) {
 
-    return NQuadsSerialization::toNQuads(::normalize(dataset, options));
+    return NQuadsSerialization::toNQuads(::canonicalize(dataset, options));
 
 }
