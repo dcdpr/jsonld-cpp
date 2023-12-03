@@ -57,10 +57,6 @@ void Context::setOriginalBaseUrl(const std::string &originalBaseUrl) {
     originalBaseURL = originalBaseUrl;
 }
 
-Context *Context::getPreviousContext() const {
-    return previousContext.get();
-}
-
 std::string Context::getDefaultBaseDirection() const {
     return defaultBaseDirection;
 }
@@ -87,4 +83,20 @@ const std::string &Context::getVocabularyMapping() const {
 
 void Context::setVocabularyMapping(const std::string &ivocabularyMapping) {
     vocabularyMapping = ivocabularyMapping;
+}
+
+const std::shared_ptr<Context> &Context::getPreviousContext() const {
+    return previousContext;
+}
+
+void Context::setPreviousContext(const std::shared_ptr<Context> &previousContext) {
+    Context::previousContext = previousContext;
+}
+
+const std::shared_ptr<Context> &Context::getInverseContext() const {
+    return inverseContext;
+}
+
+void Context::setInverseContext(const std::shared_ptr<Context> &inverseContext) {
+    Context::inverseContext = inverseContext;
 }

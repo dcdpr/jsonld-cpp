@@ -11,8 +11,6 @@
 class Context {
 public:
     // todo: need to encapsulate these?
-    Context *inverseContext{};
-    std::shared_ptr<Context> previousContext;
     nlohmann::json termDefinitions;
     void setDefaultBaseDirection(const std::string & direction);
 
@@ -27,6 +25,8 @@ private:
     std::string defaultLanguage;
 
     std::string defaultBaseDirection; // todo: this should be an enum
+    std::shared_ptr<Context> previousContext;
+    std::shared_ptr<Context> inverseContext;
 
 
 public:
@@ -53,9 +53,15 @@ public:
     const std::string &getVocabularyMapping() const;
     void setVocabularyMapping(const std::string &vocabularyMapping);
 
-    std::string getDefaultBaseDirection() const; // used by expansion processor
+    const std::shared_ptr<Context> &getPreviousContext() const; // used by expansion processor
 
-    Context *getPreviousContext() const;// used by expansion processor
+    void setPreviousContext(const std::shared_ptr<Context> &previousContext);  // used by context processor
+
+    const std::shared_ptr<Context> &getInverseContext() const;
+
+    void setInverseContext(const std::shared_ptr<Context> &inverseContext);
+
+    std::string getDefaultBaseDirection() const; // used by expansion processor
 
     const JsonLdOptions &getOptions() const;// used by expansion processor
 

@@ -953,7 +953,7 @@ namespace {
         // 1)
         // Initialize result to the result of cloning active context, with inverse context set to null.
         Context result = activeContext;
-        result.inverseContext = nullptr;
+        result.setInverseContext(nullptr);
 
         // 2)
         // If local context is an object containing the member @propagate, its value MUST be
@@ -969,8 +969,8 @@ namespace {
         // 3)
         // If propagate is false, and result does not have a previous context, set previous
         // context in result to active context.
-        if (!propagate && result.previousContext == nullptr) {
-            result.previousContext = std::make_shared<Context>(activeContext);
+        if (!propagate && result.getPreviousContext() == nullptr) {
+            result.setPreviousContext(std::make_shared<Context>(activeContext));
         }
 
         // 4)
@@ -1010,7 +1010,7 @@ namespace {
                 c.setBaseIri(originalBaseURL);
                 c.setOriginalBaseUrl(originalBaseURL);
                 if (!propagate)
-                    c.previousContext = std::make_shared<Context>(result);
+                    c.setPreviousContext(std::make_shared<Context>(result));
                 result = c;
 
                 // 5.1.3)
