@@ -373,7 +373,7 @@ namespace {
     }
 
 
-    RDF::RDFDataset canonicalize(const RDF::RDFDataset &dataset, const JsonLdOptions& options) {
+    RDF::RDFDataset canonicalizeDataset(const RDF::RDFDataset &dataset, const JsonLdOptions& options) {
 
         // Comments in this function are labeled with numbers that correspond to sections
         // from the description of the RDF dataset canonicalization algorithm.
@@ -578,6 +578,6 @@ namespace {
 
 std::string RDFCanonicalizationProcessor::canonicalize(const RDF::RDFDataset& dataset, const JsonLdOptions& options) {
 
-    return NQuadsSerialization::toNQuads(::canonicalize(dataset, options));
+    return NQuadsSerialization::toNQuads(::canonicalizeDataset(dataset, options));
 
 }
