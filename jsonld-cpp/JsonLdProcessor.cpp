@@ -51,15 +51,15 @@ nlohmann::json JsonLdProcessor::expand(const std::string& documentLocation, Json
         }
     }
     else
-        return json::array(); // todo: what else should happen?
+        return json::array();
 
     // 5)
     // Initialize a new empty active context. The base IRI and original base URL of the active
     // context is set to the documentUrl from remote document, if available; otherwise to the
     // base option from options. If set, the base option from options overrides the base IRI.
     Context activeContext(options);
+    // todo: set to the documentUrl from remote document, if available
     activeContext.setBaseIri(options.getBase());
-    // todo: documentUrl
     activeContext.setOriginalBaseUrl(options.getBase());
 
     // 6)

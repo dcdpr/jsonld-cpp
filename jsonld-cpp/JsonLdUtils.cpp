@@ -7,7 +7,7 @@
 #include <regex>
 
 using namespace JsonLdConsts;
-
+//todo: the large functions in here need to be refactored and commented
 namespace {
 
     std::set<std::string> knownKeywords = {
@@ -88,54 +88,6 @@ bool JsonLdUtils::isRelativeIri(const std::string &str) {
 
 bool JsonLdUtils::isIri(const std::string &str) {
     return !isKeyword(str) && Uri::isUri(str);
-}
-
-bool JsonLdUtils::deepCompare(json j1, json j2) { // todo: need better comments here
-    if (j1.is_null())
-        return j2.is_null();
-
-    else if (j2.is_null())
-        return j1.is_null();
-
-    else if (j1.is_object() && j2.is_object()) {
-        if (j1.size() != j2.size()) {
-            return false;
-        }
-        for (auto &el: j1.items()) {
-            if (!j2.contains(el.key()) || !deepCompare(el.value(), j2.at(el.key())))
-                return false;
-        }
-        return true;
-    }
-
-    else if (j1.is_array() && j2.is_array()) {
-        if (j1.size() != j2.size()) {
-            return false;
-        }
-        // used to mark members of j2 that we have already matched to avoid
-        // matching the same item twice for lists that have duplicates
-        std::vector<bool> alreadyMatched(j2.size());
-        for (const auto &o1: j1) {
-            bool gotmatch = false;
-
-            for (size_t j = 0; j < j2.size(); j++) {
-                if (!alreadyMatched[j] && deepCompare(o1, j2.at(j))) {
-                    alreadyMatched[j] = true;
-                    gotmatch = true;
-                    break;
-                }
-            }
-
-            if (!gotmatch) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    else
-        return j1 == j2;
-
 }
 
 bool JsonLdUtils::isListObject(const json& j) {
@@ -221,7 +173,7 @@ bool JsonLdUtils::isArrayOfScalars(const json& j) {
 }
 
 bool JsonLdUtils::deepContains(const json& values, const json& value) {
-    return std::any_of(values.cbegin(), values.cend(), [&value](const json &v){ return deepCompare(v, value); });
+    return std::any_of(values.cbegin(), values.cend(), [&value](const json &v){ return v == value; });
 }
 
 void JsonLdUtils::mergeValue(json & obj, const std::string& key, const json& value) {

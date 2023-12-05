@@ -40,7 +40,7 @@ namespace NQuadsSerialization {
      * RDF Canonicalization spec. See the description of the Hash First Degree Quads algorithm:
      * https://w3c-ccg.github.io/rdf-dataset-canonicalization/spec/#hash-first-degree-quads
      */
-    std::string toNQuadForNormalization(const RDF::RDFQuad& quad, std::string *bnode);
+    std::string toNQuadForNormalization(const RDF::RDFQuad& quad, const std::string& referenceBlankNode);
 
     /**
      * Converts an RDFTriple into a string in the form of an N-Quad

@@ -6,6 +6,7 @@
 #include "jsonld-cpp/BlankNodeNames.h"
 #include "jsonld-cpp/Uri.h"
 #include <set>
+#include <iostream>
 
 using nlohmann::json;
 
@@ -256,9 +257,7 @@ namespace {
             // defined. If the result does not have the form of an IRI or a blank node
             // identifier, an invalid IRI mapping error has been detected and processing is aborted.
             reverseStr = expandIri(activeContext, reverseStr, false, true, localContext, defined);
-            //if (!JsonLdUtils::isAbsoluteIri(reverseStr) || !BlankNodeNames::hasFormOfBlankNodeName(reverseStr)) {
-            //todo: if we add call for hasFormOfBlankNodeName as the description seems to say, we fail more tests
-            if (!JsonLdUtils::isAbsoluteIri(reverseStr)) {
+            if (!(JsonLdUtils::isAbsoluteIri(reverseStr) || BlankNodeNames::hasFormOfBlankNodeName(reverseStr))) {
                 throw JsonLdError(JsonLdError::InvalidIriMapping,
                                   "Non-absolute @reverse IRI: " + reverseStr);
             }
@@ -855,7 +854,7 @@ namespace {
                 td.contains(JsonLdConsts::ID))
                 return td.at(JsonLdConsts::ID).get<std::string>();
             else
-                return ""; // todo: this return isn't in the spec, but expand_t0032 test fails without it
+                return ""; // note: this return of an empty string doesn't seem to be called for by the spec, but expand_t0032 test fails without it
         }
 
         // 6)
@@ -945,7 +944,6 @@ namespace {
         // See: https://www.w3.org/TR/json-ld11-api/#context-processing-algorithm
 
         std::string originalBaseURL = baseURL;
-        // todo: get rid of or move these to context?
         bool overrideProtected = ioverrideProtected;
         bool propagate = ipropagate;
         bool validateScopedContext = ivalidateScopedContext;
@@ -1068,7 +1066,6 @@ namespace {
                 // context using the LoadDocumentCallback, passing context for url, and
                 // http://www.w3.org/ns/json-ld#context for profile and for requestProfile.
 
-                // todo, fix indentation here...
                 // 5.2.5.1)
                 // If context cannot be dereferenced, or the document from context document cannot
                 // be transformed into the internal representation , a loading remote context
@@ -1118,9 +1115,9 @@ namespace {
                 // Continue with the next context.
                 continue;
             }
-                // 5.3)
-                // If context is not a map, an invalid local context error has been detected
-                // and processing is aborted.
+            // 5.3)
+            // If context is not a map, an invalid local context error has been detected
+            // and processing is aborted.
             else if (!(context.is_object())) {
                 if (context.is_string())
                     throw JsonLdError(JsonLdError::InvalidLocalContext, context);

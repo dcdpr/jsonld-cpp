@@ -13,7 +13,6 @@ public:
     static MediaType html() { return of(TYPE_TEXT, "html"); }
     static MediaType json() { return of(TYPE_APPLICATION, "json"); }
     static MediaType json_ld() { return of(TYPE_APPLICATION, "ld+json"); }
-    static MediaType xhtml() { return of(TYPE_APPLICATION, "xhtml+xml"); }
     static MediaType n_quads() { return of(TYPE_APPLICATION, "n-quads"); }
     static MediaType any() { return of(WILDCARD, WILDCARD); }
 

@@ -6,6 +6,7 @@
 #include "jsonld-cpp/JsonLdError.h"
 #include "jsonld-cpp/DoubleFormatter.h"
 #include <cmath>
+#include <iostream>
 
 using nlohmann::json;
 
@@ -48,7 +49,7 @@ namespace {
         }
         json & graph = nodeMap[*activeGraph];
 
-        json * subjectNode = nullptr; // todo: can this cause null deref?
+        json *subjectNode = nullptr;
         if(activeSubject == nullptr || activeSubject->is_object()) {
             subjectNode = nullptr;
         }
@@ -69,7 +70,7 @@ namespace {
             oldTypes = element[JsonLdConsts::TYPE];
             for (const auto& item : oldTypes) {
                 std::string s = item.get<std::string>();
-                if (s.find_first_of("_:") == 0) {
+                if (BlankNodeNames::hasFormOfBlankNodeName(s)) {
                     newTypes.push_back(blankNodeNames.get(s));
                 } else {
                     newTypes.push_back(item);
@@ -99,8 +100,8 @@ namespace {
                 // they have equivalent map entries.
                 JsonLdUtils::mergeValue(*subjectNode, *activeProperty, element);
             }
-                // 4.2)
-                // Otherwise, append element to the @list entry of list.
+            // 4.2)
+            // Otherwise, append element to the @list entry of list.
             else {
                 list->at(JsonLdConsts::LIST).push_back(element);
             }
@@ -124,8 +125,8 @@ namespace {
             if (list == nullptr) {
                 JsonLdUtils::mergeValue(*subjectNode, *activeProperty, result);
             }
-                // 5.4)
-                // Otherwise, append result to the @list entry of list.
+            // 5.4)
+            // Otherwise, append result to the @list entry of list.
             else {
                 list->at(JsonLdConsts::LIST).push_back(result);
             }
@@ -181,8 +182,8 @@ namespace {
                 // equal if they have equivalent map entries.
                 JsonLdUtils::mergeValue(node, *activeProperty, *activeSubject);
             }
-                // 6.6)
-                // Otherwise, if active property is not null, perform the following steps:
+            // 6.6)
+            // Otherwise, if active property is not null, perform the following steps:
             else if (activeProperty != nullptr) {
                 // 6.6.1)
                 // Create a new map reference consisting of a single entry @id whose value is id.
@@ -200,8 +201,8 @@ namespace {
                     // considered equal if they have equivalent map entries.
                     JsonLdUtils::mergeValue(*subjectNode, *activeProperty, reference);
                 }
-                    // 6.6.3)
-                    // Otherwise, append reference to the @list entry of list.
+                // 6.6.3)
+                // Otherwise, append reference to the @list entry of list.
                 else {
                     list->at(JsonLdConsts::LIST).push_back(reference);
                 }
@@ -224,8 +225,8 @@ namespace {
             if (element.contains(JsonLdConsts::INDEX)) {
                 json elemIndex = element[JsonLdConsts::INDEX];
                 if (node.contains(JsonLdConsts::INDEX)) {
-                    if (!JsonLdUtils::deepCompare(node.at(JsonLdConsts::INDEX), elemIndex)) {
-                        throw JsonLdError(JsonLdError::ConflictingIndexes);
+                    if (node.at(JsonLdConsts::INDEX) != elemIndex) {
+                        throw JsonLdError(JsonLdError::ConflictingIndexes); // todo: I don't think there is a test for this, can we ask for one or make one?
                     }
                 }
                 node[JsonLdConsts::INDEX] = elemIndex;
@@ -405,10 +406,12 @@ namespace {
 
         // pre) The algorithm takes as two arguments item which MUST be either a value
         // object, list object, or node object and list triples, which is an empty array.
-        assert(JsonLdUtils::isObject(item) || JsonLdUtils::isListObject(item) || JsonLdUtils::isValueObject(item));
-        assert(listTriples.empty());
-            // todo: make sure you understand why are we checking triples is empty (doesn't say so in the spec)
-            // todo: #2 can I move this below in the if() for step 1
+        if(!(JsonLdUtils::isObject(item) || JsonLdUtils::isListObject(item) || JsonLdUtils::isValueObject(item))) {
+            throw JsonLdError(JsonLdError::IllegalArgument, "item must be either a value object, list object, or node object");
+        }
+        if(!listTriples.empty()) {
+            throw JsonLdError(JsonLdError::IllegalArgument, "listTriples must be an empty array");
+        }
 
         // 1)
         // If item is a node object and the value of its @id entry is not well-formed, return null.
@@ -421,7 +424,7 @@ namespace {
             }
             // 2)
             // If item is a node object, return the IRI or blank node identifier associated with its @id entry.
-            if (id.find_first_of("_:") == 0) {  // todo: should be BlankNodeNames::hasFormOfBlankNodeName(id)
+            if (BlankNodeNames::hasFormOfBlankNodeName(id)) {
                 return std::make_shared<BlankNode>(id);
             } else {
                 return std::make_shared<IRI>(id);
@@ -597,11 +600,11 @@ namespace {
         // 15)
         // Return literal.
         if(item.contains(JsonLdConsts::LANGUAGE)) {
-            std::string languageStr = item["@language"].get<std::string>();
+            std::string languageStr = item[JsonLdConsts::LANGUAGE].get<std::string>();
             return std::make_shared<Literal>(
                     value.get<std::string>(),
                     &datatypeStr,
-                    &languageStr); // todo: should I use setValue() here? don't I want to get rid of setValue totally?
+                    &languageStr);
         }
         else {
             return std::make_shared<Literal>(
@@ -621,7 +624,7 @@ namespace {
         // 1.1)
         // If graph name is not well-formed, continue with the next graph name-graph pair.
         // todo: better well-formed checking
-        if(graphName != "@default" && !JsonLdUtils::isGraphNameForm(graphName))
+        if(graphName != JsonLdConsts::DEFAULT && !JsonLdUtils::isGraphNameForm(graphName))
             return;
 
         // 1.2)
@@ -632,13 +635,14 @@ namespace {
 
         // 1.3)
         // For each subject and node in graph ordered by subject:
-        // todo: possible spec bug? ordered by subject? not insertion order?
         std::vector<std::string> subjects;
-        if(graph.contains("key_insertion_order")) {
-            for (const auto & it : graph["key_insertion_order"]) {
-                subjects.push_back(it.get<std::string>());
-            }
+        for (auto& el : graph.items()) {
+            // skip the key_insertion_order helper we added in generateNodeMap()
+            if(el.key() != "key_insertion_order")
+                subjects.push_back(el.key());
         }
+        std::sort(subjects.begin(), subjects.end());
+
         for (const auto& subject : subjects) {
             const json &node = graph[subject];
 
@@ -657,7 +661,7 @@ namespace {
             }
             std::sort(properties.begin(), properties.end());
 
-            for (auto property : properties) {
+            for (const auto& property : properties) {
 
                 const json * values;
 
@@ -772,11 +776,14 @@ namespace {
 
         // 1)
         // For each graph name and graph in node map ordered by graph name:
-        // todo: check if ordered is needed?
+        std::vector<std::string> graphNames;
         for (json::iterator it = nodeMap.begin(); it != nodeMap.end(); ++it) {
-            auto & graphName = static_cast<const std::string &>(it.key());
-            json & graph = it.value();
+            graphNames.push_back(static_cast<const std::string &>(it.key()));
+        }
+        std::sort(graphNames.begin(), graphNames.end());
 
+        for(const auto& graphName : graphNames) {
+            json & graph = nodeMap[graphName];
             graphToRDF(graphName, graph, dataset, blankNodeNames, options);
         }
 
@@ -788,7 +795,7 @@ namespace {
 RDF::RDFDataset RDFSerializationProcessor::toRDF(nlohmann::json expandedInput, const JsonLdOptions& options) {
 
     // Comments in this function are labeled with numbers that correspond to sections
-    // from the description of the deserialize JSON-LD to RDF algorithm.
+    // from the description of the Deserialize JSON-LD to RDF algorithm.
     // See: https://www.w3.org/TR/json-ld11-api/#dom-jsonldprocessor-tordf
 
 
@@ -811,7 +818,6 @@ RDF::RDFDataset RDFSerializationProcessor::toRDF(nlohmann::json expandedInput, c
     // 6)
     // Invoke the Deserialize JSON-LD to RDF Algorithm passing node map, dataset, and the
     // produceGeneralizedRdf flag from options.
-    //dataset.toRDF(nodeMap);
     RDF::RDFDataset dataset = ::toRDF(nodeMap, blankNodeNames, options);
 
     // 7)

@@ -42,11 +42,7 @@ public:
     static const char InvalidReverseValue[];
     static const char InvalidReversePropertyValue[];
     static const char SyntaxError[];
-    static const char NotImplemented[];
-    static const char UnknownFormat[];
-    static const char InvalidInput[];
-    static const char ParseError[];
-    static const char UnknownError[];
+    static const char IllegalArgument[];
 
     static const char InvalidVersionValue[];
     static const char ProcessingModeConflict[];

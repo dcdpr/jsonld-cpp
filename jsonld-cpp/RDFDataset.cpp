@@ -1,13 +1,7 @@
 #include "jsonld-cpp/RDFDataset.h"
-#include "jsonld-cpp/RDFTriple.h"
-#include "jsonld-cpp/RDFQuad.h"
-#include "jsonld-cpp/JsonLdOptions.h"
-#include "jsonld-cpp/JsonLdUtils.h"
 #include "jsonld-cpp/DoubleFormatter.h"
 #include "jsonld-cpp/BlankNodeNames.h"
 #include "jsonld-cpp/NQuadsSerialization.h"
-#include "jsonld-cpp/RDFRegex.h"
-#include <regex>
 
 using nlohmann::json;
 
@@ -15,7 +9,6 @@ namespace RDF {
 
     RDFDataset::RDFDataset(const JsonLdOptions & ioptions)
             : options(ioptions) {
-
     }
 
     RDFGraph RDFDataset::getGraph(const std::string & graphName) const {
@@ -53,8 +46,8 @@ namespace RDF {
 
     RDFGraph::size_type RDFDataset::numTriples() const {
         RDFGraph::size_type count=0;
-        for (const auto& g : storedGraphs)
-            count += g.second.size();
+        for (const auto& graph : storedGraphs)
+            count += graph.second.size();
         return count;
     }
 

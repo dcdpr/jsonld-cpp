@@ -4,7 +4,7 @@ MediaType::MediaType(const std::string &itype, const std::string &isubType) :
         type(itype), subType(isubType) {}
 
 MediaType MediaType::of(const std::string &type, const std::string &subType) {
-    return MediaType(type, subType);
+    return {type, subType};
 }
 
 bool MediaType::operator==(const MediaType &rhs) const {

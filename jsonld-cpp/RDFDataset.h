@@ -48,7 +48,7 @@ namespace RDF {
     private:
         typedef std::map<std::string, RDFGraph> GraphNameToGraph;
         JsonLdOptions options;
-        GraphNameToGraph storedGraphs; // todo: not a good name
+        GraphNameToGraph storedGraphs;
 
     public:
         explicit RDFDataset(const JsonLdOptions & options);

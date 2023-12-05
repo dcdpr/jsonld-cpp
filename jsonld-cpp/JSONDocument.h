@@ -12,7 +12,7 @@ private:
     MediaType contentType;
     std::string documentUrl;
     nlohmann::json document;
-    std::string contextUrl;// todo: used?
+    std::string contextUrl;
 
     JSONDocument(MediaType contentType, nlohmann::json document, std::string documentUrl);
 

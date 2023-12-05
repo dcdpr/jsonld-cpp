@@ -66,7 +66,6 @@ namespace {
                 if (typeScopedContext.getTermDefinition(term).contains(JsonLdConsts::LOCALCONTEXT)) {
                     auto termValue = activeContext.getTermDefinition(term);
                     auto localContext = typeScopedContext.getTermDefinition(term).at(JsonLdConsts::LOCALCONTEXT);
-                    std::vector<std::string> remoteContexts;
                     if(termValue.contains(JsonLdConsts::BASEURL))
                         activeContext = ContextProcessor::process(activeContext, localContext,
                                                                   termValue.at(JsonLdConsts::BASEURL).get<std::string>(),
@@ -78,7 +77,7 @@ namespace {
             }
         }
 
-        // 12)
+        // 12) (second part)
         // [...] Initialize input type to expansion of the last value of the first entry in
         // element expanding to @type (if any), ordering entries lexicographically by key. Both
         // the key and value of the matched entry are IRI expanded.
@@ -102,7 +101,7 @@ namespace {
             }
 
             if(!lastValue.empty()) {
-                inputType = ContextProcessor::expandIri(activeContext, lastValue,false,true);
+                inputType = ContextProcessor::expandIri(activeContext, lastValue, false, true);
             }
         }
 
@@ -281,12 +280,12 @@ namespace {
         return activeContext;
     }
 
-    void expandObjectElement_step13(const std::string *activeProperty, const json &element, const std::string &baseUrl, bool fromMap,
+    void expandObjectElement_step13(const std::string *activeProperty, const json &element, const std::string &baseUrl,
              Context &typeScopedContext, const std::string &inputType, Context &activeContext, json &result,
              json &nests);
 
     void expandObjectElement_step14(Context &activeContext, const std::string *activeProperty, const json &element,
-                                    const std::string &baseUrl, bool fromMap, Context &typeScopedContext, json &result,
+                                    const std::string &baseUrl, Context &typeScopedContext, json &result,
                                     json &nests, const std::string &inputType);
 
     json expandObjectElement(
@@ -352,20 +351,21 @@ namespace {
         // that may be relevant to any previous type-scoped context.
         Context typeScopedContext = activeContext;
 
-        // 11, 12)
-        // Initialize two empty maps, result and nests. [Find input type...]
+        // 11) [Find input type...] For each key and value in element [...]
+        std::string inputType = findInputType(activeContext, typeScopedContext, element);
+
+        // 12)
+        // Initialize two empty maps, result and nests.
         json result = json::object();
         json nests = json::object();
-        std::string inputType = findInputType(activeContext, typeScopedContext, element);
-        // todo: inputType only used in 13.4.7.1 and 13.4.16. wait until then to create?
 
         // 13)
         // For each key and value in element, ordered lexicographically by key if ordered is true:
-        expandObjectElement_step13(activeProperty, element, baseUrl, fromMap, typeScopedContext, inputType, activeContext, result, nests);
+        expandObjectElement_step13(activeProperty, element, baseUrl, typeScopedContext, inputType, activeContext, result, nests);
 
         // 14)
         // For each key nesting-key in nests, ordered lexicographically if ordered is true:
-        expandObjectElement_step14(activeContext, activeProperty, element, baseUrl, fromMap, typeScopedContext, result,
+        expandObjectElement_step14(activeContext, activeProperty, element, baseUrl, typeScopedContext, result,
                                    nests, inputType);
 
         // 15)
@@ -479,7 +479,7 @@ namespace {
         return result;
     }
 
-    void expandObjectElement_step13(const std::string *activeProperty, const json &element, const std::string &baseUrl, bool fromMap,
+    void expandObjectElement_step13(const std::string *activeProperty, const json &element, const std::string &baseUrl,
              Context &typeScopedContext, const std::string &inputType, Context &activeContext, json &result,
              json &nests) {
 
@@ -663,20 +663,19 @@ namespace {
                         expandedValue = t;
                     }
                 }
-                    // 13.4.5)
-                    // If expanded property is @graph, set expanded value to the result of using
-                    // this algorithm recursively passing active context, @graph for active
-                    // property, value for element, base URL, and the frameExpansion and ordered
-                    // flags, ensuring that expanded value is an array of one or more maps.
+                // 13.4.5)
+                // If expanded property is @graph, set expanded value to the result of using
+                // this algorithm recursively passing active context, @graph for active
+                // property, value for element, base URL, and the frameExpansion and ordered
+                // flags, ensuring that expanded value is an array of one or more maps.
                 else if (expandedProperty == JsonLdConsts::GRAPH) {
-                    std::string currentProperty = JsonLdConsts::GRAPH;
-                    expandedValue = ExpansionProcessor::expand(activeContext, &currentProperty, element_value, baseUrl, fromMap); // todo: do we need to pass fromMap? spec does not.
+                    expandedValue = ExpansionProcessor::expand(activeContext, &expandedProperty, element_value, baseUrl);
                     if(!expandedValue.is_array()) {
                         expandedValue = json::array({expandedValue});
                     }
                 }
-                    // 13.4.6)
-                    // If expanded property is @included:
+                // 13.4.6)
+                // If expanded property is @included:
                 else if (expandedProperty == JsonLdConsts::INCLUDED) {
                     // 13.4.6.1)
                     // If processing mode is json-ld-1.0, continue with the next key from element.
@@ -1341,7 +1340,7 @@ namespace {
     }
 
     void expandObjectElement_step14(Context &activeContext, const std::string *activeProperty, const json &element,
-                                    const std::string &baseUrl, bool fromMap, Context &typeScopedContext, json &result,
+                                    const std::string &baseUrl, Context &typeScopedContext, json &result,
                                     json &nests, const std::string &inputType) {
         // 14)
         // For each key nesting-key in nests, ordered lexicographically if ordered is true:
@@ -1408,11 +1407,11 @@ namespace {
 
                 // 13)
                 // For each key and value in element, ordered lexicographically by key if ordered is true:
-                expandObjectElement_step13(&nestingKey, nestedValue, baseUrl, fromMap, typeScopedContext, inputType, copyActiveContext, result, localNests);
+                expandObjectElement_step13(&nestingKey, nestedValue, baseUrl, typeScopedContext, inputType, copyActiveContext, result, localNests);
 
                 // 14)
                 // For each key nesting-key in nests, ordered lexicographically if ordered is true:
-                expandObjectElement_step14(copyActiveContext, &nestingKey, nestedValue, baseUrl, fromMap, typeScopedContext, result,
+                expandObjectElement_step14(copyActiveContext, &nestingKey, nestedValue, baseUrl, typeScopedContext, result,
                                            localNests, inputType);
 
             }

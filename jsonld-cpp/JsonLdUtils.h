@@ -166,13 +166,6 @@ namespace JsonLdUtils {
     bool deepContains(const json& values, const json& value);
 
     /**
-     * Does JSON structure j1 equal JSON structure j2?
-     *
-     * Performs recursive comparison of all structure elements.
-     */
-    bool deepCompare(json j1, json j2);
-
-    /**
      * Merges value into the array at obj[key], if array at obj[key] does not yet contain it. If
      * array at obj[key] does not exist, create it and add value.
      *

@@ -12,5 +12,5 @@ std::string JsonLdUrl::resolve(const std::string *baseUri, const std::string *pa
     if(Uri::ResolveUri(*baseUri, *pathToResolve, &result))
         return result;
     else
-        return ""; // todo: throw?
+        return "";
 }

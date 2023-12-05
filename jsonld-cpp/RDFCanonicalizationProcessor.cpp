@@ -99,7 +99,7 @@ namespace {
             // If the blank node's existing blank node identifier matches the reference blank
             // node identifier then use the blank node identifier _:a, otherwise, use the blank
             // node identifier _:z.
-            nquads.push_back(NQuadsSerialization::toNQuadForNormalization(quad, &referenceBlankNodeId));
+            nquads.push_back(NQuadsSerialization::toNQuadForNormalization(quad, referenceBlankNodeId));
         }
 
         // 4)

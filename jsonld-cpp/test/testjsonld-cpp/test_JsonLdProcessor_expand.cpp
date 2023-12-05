@@ -77,7 +77,7 @@ public:
 
         const json& expected = expectedDocument->getJSONContent();
 
-        EXPECT_TRUE(JsonLdUtils::deepCompare(expected, expanded));
+        EXPECT_TRUE(expected == expanded);
         std::cout << "  Actual JSON: " << expanded.dump() << std::endl;
         std::cout << "Expected JSON: " << expected.dump() << std::endl;
     }

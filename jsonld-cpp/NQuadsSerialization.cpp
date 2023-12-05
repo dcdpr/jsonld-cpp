@@ -280,18 +280,18 @@ std::string NQuadsSerialization::toNQuad(const RDF::RDFTriple& triple) {
 
 }
 
-std::string NQuadsSerialization::toNQuadForNormalization(const RDF::RDFQuad& quad, std::string *bnode) {
-    assert(bnode);
+std::string NQuadsSerialization::toNQuadForNormalization(const RDF::RDFQuad& quad, const std::string& referenceBlankNode) {
     std::stringstream ss;
 
-    // subject: IRI or bnode (https://www.w3.org/TR/rdf11-concepts/#section-triples)
+    // subject: IRI or blank node (https://www.w3.org/TR/rdf11-concepts/#section-triples)
     std::shared_ptr<RDF::Node> s = quad.getSubject();
     if (s->isIRI())
         outputIRI(s->getValue(), ss);
-    else {
-        assert(s->isBlankNode());
-        ss << ((s->getValue() == *bnode) ? "_:a" : "_:z");
-    }
+    else if (s->isBlankNode())
+        ss << ((s->getValue() == referenceBlankNode) ? "_:a" : "_:z");
+    else
+        throw JsonLdError(JsonLdError::IllegalArgument,
+                          "toNQuadForNormalization: subject must be an IRI or a blank node");
 
     ss << " ";
 
@@ -300,16 +300,17 @@ std::string NQuadsSerialization::toNQuadForNormalization(const RDF::RDFQuad& qua
     if (p->isIRI())
         outputIRI(p->getValue(), ss);
     else
-        assert(false); // todo: need better error handling, just bare assert is unfriendly
+        throw JsonLdError(JsonLdError::IllegalArgument,
+                          "toNQuadForNormalization: predicate must be an IRI");
 
     ss << " ";
 
-    // object: IRI, bnode or literal (https://www.w3.org/TR/rdf11-concepts/#section-triples)
+    // object: IRI, blank node or literal (https://www.w3.org/TR/rdf11-concepts/#section-triples)
     std::shared_ptr<RDF::Node> o = quad.getObject();
     if (o->isIRI())
         outputIRI(o->getValue(), ss);
     else if (o->isBlankNode())
-        ss << ((o->getValue() == *bnode) ? "_:a" : "_:z");
+        ss << ((o->getValue() == referenceBlankNode) ? "_:a" : "_:z");
     else {
         ss << "\"";
         escape(o->getValue(), ss);
@@ -325,13 +326,16 @@ std::string NQuadsSerialization::toNQuadForNormalization(const RDF::RDFQuad& qua
 
     ss << " ";
 
-    // graph: IRI or bnode (https://www.w3.org/TR/rdf11-concepts/#section-triples)
+    // graph: IRI or blank node (https://www.w3.org/TR/rdf11-concepts/#section-triples)
     std::shared_ptr<RDF::Node> g = quad.getGraph();
     if (g != nullptr && g->getValue() != JsonLdConsts::DEFAULT) {
         if (g->isIRI())
             outputIRI(g->getValue(), ss);
+        else if (g->isBlankNode())
+            ss << ((g->getValue() == referenceBlankNode) ? "_:a" : "_:z");
         else
-            ss << ((g->getValue() == *bnode) ? "_:a" : "_:z");
+            throw JsonLdError(JsonLdError::IllegalArgument,
+                              "toNQuadForNormalization: graph must be an IRI or blank node");
 
         ss << " ";
     }
