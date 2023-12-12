@@ -100,3 +100,11 @@ const std::shared_ptr<Context> &Context::getInverseContext() const {
 void Context::setInverseContext(const std::shared_ptr<Context> &inverseContext) {
     Context::inverseContext = inverseContext;
 }
+
+json &Context::getTermDefinitions() {
+    return termDefinitions;
+}
+
+const json &Context::getTermDefinitions() const {
+    return termDefinitions;
+}

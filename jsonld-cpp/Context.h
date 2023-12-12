@@ -9,12 +9,9 @@
 
 
 class Context {
-public:
-    // todo: need to encapsulate these?
-    nlohmann::json termDefinitions; // used by context processor
-    void setDefaultBaseDirection(const std::string & direction); // used by context processor
-
 private:
+
+    nlohmann::json termDefinitions;
 
     JsonLdOptions options;
 
@@ -65,6 +62,11 @@ public:
 
     const JsonLdOptions &getOptions() const;// used by expansion processor
 
+    void setDefaultBaseDirection(const std::string & direction); // used by context processor
+
+    const nlohmann::json &getTermDefinitions() const;
+
+    nlohmann::json &getTermDefinitions() ;
 };
 
 #endif //LIBJSONLD_CPP_CONTEXT_H

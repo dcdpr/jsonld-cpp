@@ -126,9 +126,9 @@ namespace {
         // Initialize previous definition to any existing term definition for term in
         // active context, removing that term definition from active context.
         json previousDefinition;
-        if (activeContext.termDefinitions.contains(term)) {
-            previousDefinition = activeContext.termDefinitions[term];
-            activeContext.termDefinitions.erase(term);
+        if (activeContext.getTermDefinitions().contains(term)) {
+            previousDefinition = activeContext.getTermDefinitions().at(term);
+            activeContext.getTermDefinitions().erase(term);
         }
 
         bool simpleTerm = false;
@@ -285,7 +285,7 @@ namespace {
             // 13.7)
             // Set the term definition of term in active context to definition and the value
             // associated with defined's entry term to true and return.
-            activeContext.termDefinitions[term] = definition;
+            activeContext.getTermDefinitions()[term] = definition;
             defined[term] = true;
             return;
         }
@@ -397,8 +397,8 @@ namespace {
             // If term's prefix has a term definition in active context, set the IRI mapping of
             // definition to the result of concatenating the value associated with the prefix's
             // IRI mapping and the term's suffix.
-            if (activeContext.termDefinitions.contains(prefix)) {
-                auto id = activeContext.termDefinitions.at(prefix).at(JsonLdConsts::ID);
+            if (activeContext.getTermDefinitions().contains(prefix)) {
+                auto id = activeContext.getTermDefinitions().at(prefix).at(JsonLdConsts::ID);
                 id = id.get<std::string>() + suffix;
                 definition[JsonLdConsts::ID] = id;
             }
@@ -775,7 +775,7 @@ namespace {
         }
 
         // 28)
-        activeContext.termDefinitions[term] = definition;
+        activeContext.getTermDefinitions()[term] = definition;
         defined[term] = true;
 
     }
@@ -837,8 +837,8 @@ namespace {
         // 4)
         // If active context has a term definition for value, and the associated IRI mapping
         // is a keyword, return that keyword.
-        if (activeContext.termDefinitions.contains(value)) {
-            auto td = activeContext.termDefinitions.at(value);
+        if (activeContext.getTermDefinitions().contains(value)) {
+            auto td = activeContext.getTermDefinitions().at(value);
             if (!td.is_null() &&
                 td.contains(JsonLdConsts::ID) &&
                 JsonLdUtils::isKeyword(td.at(JsonLdConsts::ID).get<std::string>()))
@@ -848,8 +848,8 @@ namespace {
         // 5)
         // If vocab is true and the active context has a term definition for value, return the
         // associated IRI mapping.
-        if (vocab && activeContext.termDefinitions.contains(value)) {
-            auto td = activeContext.termDefinitions.at(value);
+        if (vocab && activeContext.getTermDefinitions().contains(value)) {
+            auto td = activeContext.getTermDefinitions().at(value);
             if (!td.is_null() &&
                 td.contains(JsonLdConsts::ID))
                 return td.at(JsonLdConsts::ID).get<std::string>();
@@ -888,8 +888,8 @@ namespace {
             // If active context contains a term definition for prefix having a non-null IRI mapping
             // and the prefix flag of the term definition is true, return the result of concatenating
             // the IRI mapping associated with prefix and suffix.
-            if (activeContext.termDefinitions.contains(prefix)) {
-                auto prefixDef = activeContext.termDefinitions.at(prefix);
+            if (activeContext.getTermDefinitions().contains(prefix)) {
+                auto prefixDef = activeContext.getTermDefinitions().at(prefix);
                 if (prefixDef.contains(JsonLdConsts::ID) &&
                     prefixDef.contains(JsonLdConsts::IS_PREFIX_FLAG) &&
                     prefixDef.at(JsonLdConsts::IS_PREFIX_FLAG)) {
@@ -992,7 +992,7 @@ namespace {
                 // processing is aborted.
                 if (!overrideProtected) {
                     // search for any term definitions that have a protected term
-                    for (auto term : activeContext.termDefinitions) {
+                    for (auto term : activeContext.getTermDefinitions()) {
                         if (term.contains(JsonLdConsts::IS_PROTECTED_FLAG) &&
                             term[JsonLdConsts::IS_PROTECTED_FLAG])
                             throw JsonLdError(JsonLdError::InvalidContextNullification);
