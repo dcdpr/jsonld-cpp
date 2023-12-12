@@ -318,9 +318,7 @@ namespace {
 
                     // 5.4.5.4)
                     // Set issuer copy to the identifier issuer in result.
-                    // todo: do I need this since I passed a reference?
-                    assert(issuerCopy == result.issuerUsed);
-                    issuerCopy = result.issuerUsed;
+                    // note: we don't do this since we passed a reference
 
                     // 5.4.5.5)
                     // If chosen path is not empty and the length of path is greater than or
@@ -361,7 +359,6 @@ namespace {
         HashNDegreeQuadsResult result;
         result.hash = state.hash(dataToHash);
         result.issuerUsed = issuer;
-        // todo: do I really need this since I've passed in a reference? ...
 
         // debug
         std::cout << "hashNDegreeQuads: \n";

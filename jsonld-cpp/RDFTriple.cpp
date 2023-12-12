@@ -22,7 +22,9 @@ namespace RDF {
 
         BlankNodeNames::hasFormOfBlankNodeName(iobject) ?
             setObject(std::make_shared<BlankNode>(iobject)) :
-            setObject(std::make_shared<IRI>(iobject)); // todo: literal?
+            setObject(std::make_shared<IRI>(iobject));
+            // note: iobject could represent a Literal here, but we can't tell that from the string
+            // itself. If a Literal is needed then the shared_ptr form of constructor should be used.
     }
 
     std::shared_ptr<Node> RDFTriple::getPredicate() const {

@@ -11,8 +11,8 @@
 class Context {
 public:
     // todo: need to encapsulate these?
-    nlohmann::json termDefinitions;
-    void setDefaultBaseDirection(const std::string & direction);
+    nlohmann::json termDefinitions; // used by context processor
+    void setDefaultBaseDirection(const std::string & direction); // used by context processor
 
 private:
 
@@ -41,25 +41,25 @@ public:
     bool isProcessingMode(const std::string& mode) const; // reach into options, used by context and used by expansion processor
 
 
-    const std::string &getBaseIri() const;
+    const std::string &getBaseIri() const; // used by context processor
     void setBaseIri(const std::string &baseIri);// used by jsonld processor
 
     const std::string &getOriginalBaseUrl() const;// used by jsonld processor
     void setOriginalBaseUrl(const std::string &originalBaseUrl);// used by jsonld processor
 
-    const std::string &getDefaultLanguage() const;
-    void setDefaultLanguage(const std::string &defaultLanguage);
+    const std::string &getDefaultLanguage() const; // used by expansion processor
+    void setDefaultLanguage(const std::string &defaultLanguage); // used by context processor
 
-    const std::string &getVocabularyMapping() const;
-    void setVocabularyMapping(const std::string &vocabularyMapping);
+    const std::string &getVocabularyMapping() const; // used by context processor
+    void setVocabularyMapping(const std::string &vocabularyMapping); // used by context processor
 
     const std::shared_ptr<Context> &getPreviousContext() const; // used by expansion processor
 
-    void setPreviousContext(const std::shared_ptr<Context> &previousContext);  // used by context processor
+    void setPreviousContext(const std::shared_ptr<Context> &previousContext); // used by context processor
 
     const std::shared_ptr<Context> &getInverseContext() const;
 
-    void setInverseContext(const std::shared_ptr<Context> &inverseContext);
+    void setInverseContext(const std::shared_ptr<Context> &inverseContext);  // used by context processor
 
     std::string getDefaultBaseDirection() const; // used by expansion processor
 

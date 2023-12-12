@@ -46,8 +46,8 @@ namespace RDF {
     {
         if (igraph != nullptr && *igraph != "@default") {
             BlankNodeNames::hasFormOfBlankNodeName(*igraph) ?
-            setGraph(std::make_shared<BlankNode>(*igraph)) :
-            setGraph(std::make_shared<IRI>(*igraph));
+                setGraph(std::make_shared<BlankNode>(*igraph)) :
+                setGraph(std::make_shared<IRI>(*igraph));
         }
     }
 
