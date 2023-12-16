@@ -43,6 +43,7 @@ namespace {
       "@always",
       "@once",
       "@never",
+      // todo: what about "@link"? See JsonLdConsts::Embed enum
       EXPLICIT,
       ATNULL,
       OMIT_DEFAULT,

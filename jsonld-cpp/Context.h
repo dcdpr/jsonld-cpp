@@ -32,7 +32,7 @@ public:
     explicit Context(const JsonLdOptions& options);// used by context processor and used by jsonld processor
 
 
-    nlohmann::json getTermDefinition(const std::string & key);// used by expansion processor
+    nlohmann::json getTermDefinition(const std::string & key) const;// used by expansion processor
 
     bool isReverseProperty(const std::string& property) const; // reach into termdefinitions, used by expansion processor
     bool isProcessingMode(const std::string& mode) const; // reach into options, used by context and used by expansion processor

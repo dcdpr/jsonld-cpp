@@ -20,11 +20,11 @@ nlohmann::json JsonLdProcessor::expand(const std::string& documentLocation, Json
 
     // 1)
     // Create a new Promise promise and return it. The following steps are then deferred.
-    // todo: promise?
+    // Note: No Promises used in this C++ implementation.
 
     // 2)
     // If the provided input is a RemoteDocument, initialize remote document to input.
-    // todo
+    // todo: need to make separate function to handle RemoteDocument
 
     // 3)
     // Otherwise, if the provided input is a string representing the IRI of a remote
@@ -78,7 +78,7 @@ nlohmann::json JsonLdProcessor::expand(const std::string& documentLocation, Json
     // 7)
     // If remote document has a contextUrl, update the active context using the Context
     // Processing algorithm, passing the contextUrl as local context, and contextUrl as base URL.
-    // todo: contextUrl ...
+    // todo: handle the contextUrl from remote document, if available
 
     // 8)
     // Set expanded output to the result of using the Expansion algorithm, passing the active

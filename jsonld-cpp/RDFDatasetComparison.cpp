@@ -587,10 +587,7 @@ namespace RDF {
 
             iteration++;
 
-            if (iteration >=  5000000) {
-                // todo: should experiment to see if this number is too insane
-                // todo: also, how likely is this to happen? how many iterations are needed for the most
-                // complicated spec test?
+            if (iteration >=  50) {
                 std::cerr << "Too many permutations [" << mapper.permutations() << "]" << std::endl;
                 return false;
             }

@@ -4,11 +4,22 @@ JSON-LD Implementation for C++
 This is a C++ implementation of JSON-LD (http://json-ld.org)
 
 Development is still in progress--currently it only supports the
-expand(), toRdf() and normalize() functions.
+expand() and toRdf() functions.
 
 jsonld-cpp uses [http-link-header-cpp](https://github.com/danpape/http-link-header-cpp.git)
 and includes it as a submodule.  When cloning, use ```git clone --recursive```
 to include the submodule.  See repo documentation for dependencies.
+
+## Implementation Notes
+
+Some parts of the JSON-LD API spec make note of using Promises to return
+API results. This C++ does not support any Promise-like capability.
+
+The RemoteDocument implementation currently only supports local files, not
+documents from arbitrary URLs.
+
+...?
+
 
 ## Building jsonld-cpp
 

@@ -43,12 +43,12 @@ namespace {
             }
         }
 
-        void addToBlankNodeMap(const std::string& hash, const std::string& blankNodeId) {
-            if(!hash_to_bnodes.count(hash)) {
+        void addToBlankNodeMap(const std::string& hashOfBlankNodeId, const std::string& blankNodeId) {
+            if(!hash_to_bnodes.count(hashOfBlankNodeId)) {
                 std::vector<std::string> tmp;
-                hash_to_bnodes[hash] = tmp;
+                hash_to_bnodes[hashOfBlankNodeId] = tmp;
             }
-            hash_to_bnodes[hash].push_back(blankNodeId);
+            hash_to_bnodes[hashOfBlankNodeId].push_back(blankNodeId);
         }
 
         void replaceNonCanonicalIdentifiers(const std::shared_ptr<RDF::Node>& node) {
@@ -69,7 +69,7 @@ namespace {
     };
 
     std::string
-    hashFirstDegreeQuads(CanonicalizationState & state, std::string referenceBlankNodeId) {
+    hashFirstDegreeQuads(CanonicalizationState & state, const std::string& referenceBlankNodeId) {
 // debug
         std::cout << "enter hashFirstDegreeQuads: \n";
 
@@ -380,6 +380,8 @@ namespace {
         // 1)
         // Create the canonicalization state.
         CanonicalizationState state;
+
+        // set function pointers for which hash algorithm to use
         if(options.getHashAlgorithm() == "SHA384") {
             state.hash = sha384;
             state.hashVec = sha384;

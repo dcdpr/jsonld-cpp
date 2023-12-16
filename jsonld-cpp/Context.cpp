@@ -7,23 +7,20 @@ using nlohmann::json;
 
 
 bool Context::isReverseProperty(const std::string &property) const {
-    // todo: should move this function and others like it to a new TermDefinition class?
-    if(!termDefinitions.contains(property)) {
-        return false;
-    }
-    auto td = termDefinitions.at(property);
+    // todo: should move this function and others that just return termdef props to a new TermDefinition class?
+    auto td = getTermDefinition(property);
     if (td.is_null()) {
         return false;
     }
     return td.contains(JsonLdConsts::REVERSE) && td.at(JsonLdConsts::REVERSE);
 }
 
-nlohmann::json Context::getTermDefinition(const std::string & key) {
+nlohmann::json Context::getTermDefinition(const std::string & key) const {
     if(termDefinitions.contains(key)) {
         return termDefinitions.at(key);
     }
     else
-        return json::object();
+        return nullptr;
 }
 
 
