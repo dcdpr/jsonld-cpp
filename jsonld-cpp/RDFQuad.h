@@ -20,10 +20,10 @@ namespace RDF {
 
     public:
 
-        RDFQuad(std::shared_ptr<Node> isubject, std::shared_ptr<Node> ipredicate, std::shared_ptr<Node> iobject,
-                std::string * igraph);
+        RDFQuad(std::shared_ptr<Node> subject, std::shared_ptr<Node> predicate, std::shared_ptr<Node> object,
+                std::string * graph);
 
-        RDFQuad(const std::string& isubject, const std::string& ipredicate, const std::string& iobject, std::string * igraph);
+        RDFQuad(const std::string& subject, const std::string& predicate, const std::string& object, std::string * graph);
 
         RDFQuad(const RDFQuad &rhs);
         RDFQuad(RDFQuad&& rhs) noexcept;
@@ -49,8 +49,7 @@ namespace RDF {
     bool operator<=(const RDFQuad &lhs, const RDFQuad &rhs);
     bool operator>=(const RDFQuad &lhs, const RDFQuad &rhs);
 
-    struct QuadPtrLess :
-            public std::binary_function<const std::shared_ptr<RDFQuad>, const std::shared_ptr<RDFQuad>, bool> {
+    struct QuadPtrLess  {
         bool operator()(const std::shared_ptr<RDFQuad> & lhs, const std::shared_ptr<RDFQuad> & rhs) const {
             return *lhs < *rhs ;
         }

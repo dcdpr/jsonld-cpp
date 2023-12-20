@@ -10,11 +10,11 @@ namespace RDF {
 
     class RDFQuadImpl : private RDFTriple {
     public:
-        RDFQuadImpl(std::shared_ptr<Node> &isubject, std::shared_ptr<Node> &ipredicate, std::shared_ptr<Node> &iobject)
-                : RDFTriple(isubject, ipredicate, iobject) {}
+        RDFQuadImpl(std::shared_ptr<Node> &subject, std::shared_ptr<Node> &predicate, std::shared_ptr<Node> &object)
+                : RDFTriple(subject, predicate, object) {}
 
-        RDFQuadImpl(const std::string &isubject, const std::string &ipredicate, const std::string &iobject)
-                : RDFTriple(isubject, ipredicate, iobject) {}
+        RDFQuadImpl(const std::string &subject, const std::string &predicate, const std::string &object)
+                : RDFTriple(subject, predicate, object) {}
 
         explicit RDFQuadImpl(const RDFTriple &rhs) : RDFTriple(rhs) {}
 
@@ -40,24 +40,24 @@ namespace RDF {
         return RDFTriple::getObject();
     }
 
-    RDFQuad::RDFQuad(std::shared_ptr<Node> isubject, std::shared_ptr<Node> ipredicate, std::shared_ptr<Node> iobject,
-                     std::string *igraph)
-            : pimpl_(new RDFQuadImpl(isubject, ipredicate, iobject))
+    RDFQuad::RDFQuad(std::shared_ptr<Node> subject, std::shared_ptr<Node> predicate, std::shared_ptr<Node> object,
+                     std::string *graph)
+            : pimpl_(new RDFQuadImpl(subject, predicate, object))
     {
-        if (igraph != nullptr && *igraph != "@default") {
-            BlankNodeNames::hasFormOfBlankNodeName(*igraph) ?
-                setGraph(std::make_shared<BlankNode>(*igraph)) :
-                setGraph(std::make_shared<IRI>(*igraph));
+        if (graph != nullptr && *graph != "@default") {
+            BlankNodeNames::hasFormOfBlankNodeName(*graph) ?
+                setGraph(std::make_shared<BlankNode>(*graph)) :
+                setGraph(std::make_shared<IRI>(*graph));
         }
     }
 
-    RDFQuad::RDFQuad(const std::string& isubject, const std::string& ipredicate, const std::string& iobject, std::string *igraph)
-            : pimpl_(new RDFQuadImpl(isubject, ipredicate, iobject))
+    RDFQuad::RDFQuad(const std::string& subject, const std::string& predicate, const std::string& object, std::string *graph)
+            : pimpl_(new RDFQuadImpl(subject, predicate, object))
     {
-        if (igraph != nullptr && *igraph != "@default") {
-            BlankNodeNames::hasFormOfBlankNodeName(*igraph) ?
-                setGraph(std::make_shared<BlankNode>(*igraph)) :
-                setGraph(std::make_shared<IRI>(*igraph));
+        if (graph != nullptr && *graph != "@default") {
+            BlankNodeNames::hasFormOfBlankNodeName(*graph) ?
+                setGraph(std::make_shared<BlankNode>(*graph)) :
+                setGraph(std::make_shared<IRI>(*graph));
         }
     }
 

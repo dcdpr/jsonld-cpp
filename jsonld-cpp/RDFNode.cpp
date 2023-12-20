@@ -53,19 +53,23 @@ namespace RDF {
             return "";
     }
 
+    bool Node::isLiteral() const {
+        return false;
+    }
+
+    bool Node::isIRI() const {
+        return false;
+    }
+
+    bool Node::isBlankNode() const {
+        return false;
+    }
+
     Node::Node() = default;
     Node::~Node() = default;
 
     bool Literal::isLiteral() const {
         return true;
-    }
-
-    bool Literal::isIRI() const {
-        return false;
-    }
-
-    bool Literal::isBlankNode() const {
-        return false;
     }
 
     Literal::Literal(const std::string &value, std::string *datatype, std::string *language) {
@@ -75,16 +79,8 @@ namespace RDF {
         map["language"] = language != nullptr ? *language : "";
     }
 
-    bool IRI::isLiteral() const {
-        return false;
-    }
-
     bool IRI::isIRI() const {
         return true;
-    }
-
-    bool IRI::isBlankNode() const {
-        return false;
     }
 
     IRI::IRI(const std::string &iri) {
@@ -94,14 +90,6 @@ namespace RDF {
 
     bool BlankNode::isBlankNode() const {
         return true;
-    }
-
-    bool BlankNode::isIRI() const {
-        return false;
-    }
-
-    bool BlankNode::isLiteral() const {
-        return false;
     }
 
     BlankNode::BlankNode(const std::string &attribute) {

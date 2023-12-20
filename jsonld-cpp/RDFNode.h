@@ -17,9 +17,9 @@ namespace RDF {
         Node();
         virtual ~Node();
 
-        virtual bool isLiteral() const = 0;
-        virtual bool isIRI() const = 0;
-        virtual bool isBlankNode() const = 0;
+        virtual bool isLiteral() const;
+        virtual bool isIRI() const;
+        virtual bool isBlankNode() const;
 
         std::string getDatatype() const;
         std::string getLanguage() const;
@@ -44,25 +44,19 @@ namespace RDF {
         explicit Literal(const std::string& value, std::string * datatype = nullptr, std::string * language = nullptr);
 
         bool isLiteral() const override;
-        bool isIRI() const override;
-        bool isBlankNode() const override;
     };
 
     class IRI : public Node {
     public:
         explicit IRI(const std::string& iri);
 
-        bool isLiteral() const override;
         bool isIRI() const override;
-        bool isBlankNode() const override;
     };
 
     class BlankNode : public Node {
     public:
         explicit BlankNode(const std::string& attribute);
 
-        bool isLiteral() const override;
-        bool isIRI() const override;
         bool isBlankNode() const override;
     };
 
