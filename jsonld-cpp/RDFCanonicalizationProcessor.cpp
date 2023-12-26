@@ -1,6 +1,9 @@
 #include <iostream>
 #include "jsonld-cpp/RDFCanonicalizationProcessor.h"
+#include "jsonld-cpp/JsonLdProcessor.h"
+#include "jsonld-cpp/JsonLdError.h"
 #include "jsonld-cpp/NQuadsSerialization.h"
+#include "jsonld-cpp/RemoteDocument.h"
 #include "jsonld-cpp/RDFQuad.h"
 #include "jsonld-cpp/RDFTriple.h"
 #include "jsonld-cpp/RDFDataset.h"
@@ -578,5 +581,27 @@ namespace {
 std::string RDFCanonicalizationProcessor::canonicalize(const RDF::RDFDataset& dataset, const JsonLdOptions& options) {
 
     return NQuadsSerialization::toNQuads(::canonicalizeDataset(dataset, options));
+
+}
+
+std::string RDFCanonicalizationProcessor::canonicalize(const std::string& documentLocation, JsonLdOptions& options) {
+
+    auto document = options.getDocumentLoader()->loadDocument(documentLocation);
+
+    if(document->getContentType() == MediaType::json_ld()) {
+        RDF::RDFDataset dataset = JsonLdProcessor::toRDF(documentLocation, options);
+        return canonicalize(dataset, options);
+    }
+    else if(document->getContentType() == MediaType::n_quads()) {
+        RDF::RDFDataset dataset = document->getRDFContent();
+        return canonicalize(dataset, options);
+    }
+    else {
+        std::stringstream ss;
+        ss << "Unsupported content type: '" << document->getContentType()
+           << "'. Supported content types for normalization are: "
+           << MediaType::json_ld() << " and " << MediaType::n_quads();
+        throw JsonLdError(JsonLdError::LoadingDocumentFailed, ss.str());
+    }
 
 }

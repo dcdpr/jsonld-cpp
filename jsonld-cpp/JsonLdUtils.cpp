@@ -199,8 +199,13 @@ bool JsonLdUtils::iriEndsWithGeneralDelimiterCharacter(const std::string &iri) {
 
 void JsonLdUtils::addValue(json &object, const std::string & key, const json & value, bool asArray) {
 
+    // Comments in this function are labeled with numbers that correspond to sections
+    // from the description of the 'add value' algorithm.
+    // See: https://w3c.github.io/json-ld-api/#dfn-add-value
+
     // 1)
-    // If asArray is true and the value of key in object does not exist or is not an array, set it to a new array containing any original value.
+    // If asArray is true and the value of key in object does not exist or is not an
+    // array, set it to a new array containing any original value.
     if(asArray) {
         if (!object.contains(key))
             object[key] = json::array();
@@ -213,7 +218,8 @@ void JsonLdUtils::addValue(json &object, const std::string & key, const json & v
     }
 
     // 2)
-    // If value is an array, then for each element v in value, use addValue() recursively to add v to key in entry.
+    // If value is an array, then for each element v in value, use addValue()
+    // recursively to add v to key in entry.
     if(isArray(value)) {
         for(const auto& v: value)
             addValue(object, key, v, asArray);
@@ -231,7 +237,8 @@ void JsonLdUtils::addValue(json &object, const std::string & key, const json & v
         // Otherwise:
         else {
             // 3.2.1)
-            // If the value of the key entry in object is not an array, set it to a new array containing the original value.
+            // If the value of the key entry in object is not an array, set it to a
+            // new array containing the original value.
             json origValue = object[key];
             if (!isArray(origValue)) {
                 object[key] = json::array({origValue});

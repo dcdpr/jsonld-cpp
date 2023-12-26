@@ -20,6 +20,17 @@ struct RDFCanonicalizationProcessor {
      */
     static std::string canonicalize(const RDF::RDFDataset& dataset, const JsonLdOptions& options);
 
+    /**
+     * Canonicalization Algorithm
+     *
+     * This algorithm converts a JSON-LD or RDF document located at filename or IRI into a
+     * canonicalized RDFDataset. This algorithm will assign deterministic identifiers to
+     * any blank nodes in the input dataset.
+     *
+     * https://w3c-ccg.github.io/rdf-dataset-canonicalization/spec/#canonicalization-algorithm
+     */
+    static std::string canonicalize(const std::string& documentLocation, JsonLdOptions& options);
+
 };
 
 
