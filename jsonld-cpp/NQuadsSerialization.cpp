@@ -27,10 +27,6 @@ namespace {
         return lines;
     }
 
-    std::string escape(const std::string &input);
-
-    std::string unescape(const std::string &input);
-
     /**
      * Escapes input string, writes output to given stringstream
      * See N-Quads escaping rules: https://www.w3.org/TR/turtle/#sec-escapes
@@ -93,32 +89,26 @@ namespace {
                 const std::smatch &match = *reg_it;
                 std::string match_str = match.str();
 
-                // print all matches for debugging:
-//            for (size_t i = 0; i < match.size(); ++i) {
-//                std::ssub_match sub_match = match[i];
-//                std::string piece = sub_match.str();
-//                std::cout << "  submatch " << i << ": [" << piece << "]\n";
-//            }
-
                 std::string u;
                 if (!match[1].matched) {
                     std::string hex = match[2].matched ? match[2].str() : match[3].str();
                     long v = std::stol(hex, nullptr, 16);
-                    if (v > 0xFFFF) {
-                        throw JsonLdError(JsonLdError::SyntaxError,
-                                          "UTF-32 chars not yet supported");
-                    } else {
-                        auto it = std::back_inserter(u);
-                        if (v < 0x80)                        // one octet
-                            *(it++) = static_cast<char>(v);
-                        else if (v < 0x800) {                // two octets
-                            *(it++) = static_cast<char>((v >> 6) | 0xc0);
-                            *(it++) = static_cast<char>((v & 0x3f) | 0x80);
-                        } else {                             // three octets
-                            *(it++) = static_cast<char>((v >> 12) | 0xe0);
-                            *(it++) = static_cast<char>(((v >> 6) & 0x3f) | 0x80);
-                            *(it++) = static_cast<char>((v & 0x3f) | 0x80);
-                        }
+
+                    auto it = std::back_inserter(u);
+                    if (v < 0x80)                        // one octet
+                        *(it++) = static_cast<char>(v);
+                    else if (v < 0x800) {                // two octets
+                        *(it++) = static_cast<char>((v >> 6) | 0xc0);
+                        *(it++) = static_cast<char>((v & 0x3f) | 0x80);
+                    } else if (v < 0x10000) {            // three octets
+                        *(it++) = static_cast<char>((v >> 12) | 0xe0);
+                        *(it++) = static_cast<char>(((v >> 6) & 0x3f) | 0x80);
+                        *(it++) = static_cast<char>((v & 0x3f) | 0x80);
+                    } else {                             // four octets
+                        *(it++) = static_cast<char>((v >> 18) | 0xf0);
+                        *(it++) = static_cast<char>(((v >> 12) & 0x3f) | 0x80);
+                        *(it++) = static_cast<char>(((v >> 6) & 0x3f) | 0x80);
+                        *(it++) = static_cast<char>((v & 0x3f) | 0x80);
                     }
                 } else {
                     char c = match[1].str()[0];
@@ -154,7 +144,7 @@ namespace {
                             continue;
                     }
                 }
-                std::regex pat(escape(match[0].str()));
+                std::regex pat(NQuadsSerialization::escape(match[0].str()));
                 rval = std::regex_replace(rval, pat, u);
             }
 
@@ -163,38 +153,37 @@ namespace {
         ss << rval;
     }
 
-    /**
-     * Returns escaped input string
-     * See N-Quads escaping rules: https://www.w3.org/TR/turtle/#sec-escapes
-     */
-    std::string escape(const std::string &input) {
-        std::stringstream ss;
-        escape(input, ss);
-        return ss.str();
-    }
-
-    /**
-     * Returns Un-escaped input string
-     * See N-Quads escaping rules: https://www.w3.org/TR/turtle/#sec-escapes
-     */
-    std::string unescape(const std::string &input) {
-        std::stringstream ss;
-        unescape(input, ss);
-        return ss.str();
-    }
-
-    /**
-     * Writes IRI value to given stringstream, escaping characters as necessary
-     * See N-Quads escaping rules: https://www.w3.org/TR/turtle/#sec-escapes
-     */
-    void outputIRI(const std::string & value, std::stringstream & ss) {
-        ss << "<";
-        escape(value, ss);
-        ss << ">";
-    }
-
 }
 
+/**
+ * Writes IRI value to given stringstream, escaping characters as necessary
+ * See N-Quads escaping rules: https://www.w3.org/TR/turtle/#sec-escapes
+ */
+void NQuadsSerialization::outputIRI(const std::string & value, std::stringstream & ss) {
+    ss << "<";
+    ::escape(value, ss);
+    ss << ">";
+}
+
+/**
+ * Returns escaped input string
+ * See N-Quads escaping rules: https://www.w3.org/TR/turtle/#sec-escapes
+ */
+std::string NQuadsSerialization::escape(const std::string &input) {
+    std::stringstream ss;
+    ::escape(input, ss);
+    return ss.str();
+}
+
+/**
+ * Returns Un-escaped input string
+ * See N-Quads escaping rules: https://www.w3.org/TR/turtle/#sec-escapes
+ */
+std::string NQuadsSerialization::unescape(const std::string &input) {
+    std::stringstream ss;
+    ::unescape(input, ss);
+    return ss.str();
+}
 
 std::string NQuadsSerialization::toNQuads(const RDF::RDFDataset &dataset) {
 
@@ -243,13 +232,13 @@ std::string NQuadsSerialization::toNQuad(const RDF::RDFQuad& quad) {
         ss << o->getValue();
     else {
         ss << "\"";
-        escape(o->getValue(), ss);
+        ::escape(o->getValue(), ss);
         ss << "\"";
         if (o->getDatatype() == JsonLdConsts::RDF_LANGSTRING) {
             ss << "@" << o->getLanguage();
         } else if (o->getDatatype() != JsonLdConsts::XSD_STRING) {
             ss << "^^<";
-            escape(o->getDatatype(), ss);
+            ::escape(o->getDatatype(), ss);
             ss << ">";
         }
     }
@@ -280,73 +269,6 @@ std::string NQuadsSerialization::toNQuad(const RDF::RDFTriple& triple) {
 
 }
 
-std::string NQuadsSerialization::toNQuadForNormalization(const RDF::RDFQuad& quad, const std::string& referenceBlankNode) {
-    std::stringstream ss;
-
-    // subject: IRI or blank node (https://www.w3.org/TR/rdf11-concepts/#section-triples)
-    std::shared_ptr<RDF::Node> s = quad.getSubject();
-    if (s->isIRI())
-        outputIRI(s->getValue(), ss);
-    else if (s->isBlankNode())
-        ss << ((s->getValue() == referenceBlankNode) ? "_:a" : "_:z");
-    else
-        throw JsonLdError(JsonLdError::IllegalArgument,
-                          "toNQuadForNormalization: subject must be an IRI or a blank node");
-
-    ss << " ";
-
-    // predicate: only IRI (https://www.w3.org/TR/rdf11-concepts/#section-triples)
-    std::shared_ptr<RDF::Node> p = quad.getPredicate();
-    if (p->isIRI())
-        outputIRI(p->getValue(), ss);
-    else
-        throw JsonLdError(JsonLdError::IllegalArgument,
-                          "toNQuadForNormalization: predicate must be an IRI");
-
-    ss << " ";
-
-    // object: IRI, blank node or literal (https://www.w3.org/TR/rdf11-concepts/#section-triples)
-    std::shared_ptr<RDF::Node> o = quad.getObject();
-    if (o->isIRI())
-        outputIRI(o->getValue(), ss);
-    else if (o->isBlankNode())
-        ss << ((o->getValue() == referenceBlankNode) ? "_:a" : "_:z");
-    else {
-        ss << "\"";
-        escape(o->getValue(), ss);
-        ss << "\"";
-        if (o->getDatatype() == JsonLdConsts::RDF_LANGSTRING) {
-            ss << "@" << o->getLanguage();
-        } else if (o->getDatatype() != JsonLdConsts::XSD_STRING) {
-            ss << "^^<";
-            escape(o->getDatatype(), ss);
-            ss << ">";
-        }
-    }
-
-    ss << " ";
-
-    // graph: IRI or blank node (https://www.w3.org/TR/rdf11-concepts/#section-triples)
-    std::shared_ptr<RDF::Node> g = quad.getGraph();
-    if (g != nullptr && g->getValue() != JsonLdConsts::DEFAULT) {
-        if (g->isIRI())
-            outputIRI(g->getValue(), ss);
-        else if (g->isBlankNode())
-            ss << ((g->getValue() == referenceBlankNode) ? "_:a" : "_:z");
-        else
-            throw JsonLdError(JsonLdError::IllegalArgument,
-                              "toNQuadForNormalization: graph must be an IRI or blank node");
-
-        ss << " ";
-    }
-
-    ss << ".\n";
-
-    return ss.str();
-}
-
-
-
 RDF::RDFDataset NQuadsSerialization::parse(std::string input) {
     RDF::RDFDataset dataset((JsonLdOptions()));
 
@@ -367,13 +289,6 @@ RDF::RDFDataset NQuadsSerialization::parse(std::string input) {
         if (!std::regex_match(line, match, quadRgx))
             throw JsonLdError(JsonLdError::SyntaxError,
                                   "Error while parsing N-Quads; invalid quad. line:" + std::to_string(lineNumber));
-
-        // print all matches for debugging:
-//        for (size_t i = 0; i < match.size(); ++i) {
-//            std::ssub_match sub_match = match[i];
-//            std::string piece = sub_match.str();
-//            std::cout << "  submatch " << i << ": [" << piece << "]\n";
-//        }
 
         // extract subject from matches
         std::shared_ptr<RDF::Node> subject;

@@ -104,6 +104,7 @@ ExternalProject_Add(http-link-header-cpp
       GIT_REPOSITORY https://github.com/dcdpr/http-link-header-cpp.git
       GIT_TAG origin/main
       INSTALL_DIR ${installDir}
+      UPDATE_DISCONNECTED 1
       CMAKE_ARGS  -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
                   -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                   -DCMAKE_PREFIX_PATH:PATH=<INSTALL_DIR>

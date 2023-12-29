@@ -4,7 +4,6 @@
 #include "jsonld-cpp/RDFDataset.h"
 #include "jsonld-cpp/ExpansionProcessor.h"
 #include "jsonld-cpp/RDFSerializationProcessor.h"
-#include "jsonld-cpp/RDFCanonicalizationProcessor.h"
 #include "jsonld-cpp/RemoteDocument.h"
 #include "jsonld-cpp/ContextProcessor.h"
 

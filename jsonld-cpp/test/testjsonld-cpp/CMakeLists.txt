@@ -12,8 +12,6 @@ add_library(
     main.cpp
     ManifestLoader.cpp
     ManifestLoader.h
-    UrdnaManifestLoader.cpp
-    UrdnaManifestLoader.h
     TestCase.cpp
     TestCase.h
     UriBaseRewriter.cpp
@@ -26,7 +24,6 @@ target_link_libraries(
     libjsonld-cpp_test
     jsonld-cpp::jsonld-cpp
     gtest
-    gmock
     rapidcheck_gtest
 )
 
@@ -42,7 +39,6 @@ add_executable(
     test_BlankNodeNames.cpp
     test_DoubleFormatter.cpp
     test_NQuadsParser.cpp
-    test_Permutator.cpp
     test_Regex.cpp
     test_RDFDataset.cpp
     test_RDFDatasetComparison.cpp
@@ -50,8 +46,6 @@ add_executable(
     test_RDFQuad.cpp
     test_Uri.cpp
     test_UriParser.cpp
-    test_Sha256.cpp
-    test_Sha384.cpp
 )
 
 target_compile_features(UnitTests_jsonld-cpp PRIVATE cxx_std_11)
@@ -66,7 +60,7 @@ add_test(NAME UnitTests_jsonld-cpp
 #
 # API
 #
-set(ALGORITHMS "expand;toRDF;normalize-urdna2015;canonicalize-rdfc10")
+set(ALGORITHMS "expand;toRDF")
 
 foreach(ALGO ${ALGORITHMS})
     message(STATUS "Adding ${ALGO}")

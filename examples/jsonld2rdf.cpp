@@ -10,7 +10,9 @@
 
 #include <jsonld-cpp/FileLoader.h>
 #include <jsonld-cpp/JsonLdOptions.h>
-#include <jsonld-cpp/CanonicalizationProcessor.h>
+#include <jsonld-cpp/JsonLdProcessor.h>
+#include <jsonld-cpp/RDFDataset.h>
+#include <jsonld-cpp/NQuadsSerialization.h>
 #include <iostream>
 #include <fstream>
 
@@ -46,7 +48,8 @@ int main (int argc, char *argv[]) {
     JsonLdOptions opts(fileUri);
     opts.setDocumentLoader(std::move(loader));
 
-    std::string nquads = CanonicalizationProcessor::canonicalize(fileUri, opts);
+    RDF::RDFDataset dataset = JsonLdProcessor::toRDF(fileUri, opts);
+    std::string nquads =  NQuadsSerialization::toNQuads(dataset);
 
     std::cout << nquads;
     std::flush(std::cout);

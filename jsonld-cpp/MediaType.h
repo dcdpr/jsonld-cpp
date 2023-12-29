@@ -22,6 +22,7 @@ public:
     friend std::ostream &operator<<(std::ostream &os, const MediaType &type);
 
 private:
+    // todo: why have these and not the others above? convert to all consts or not?
     static constexpr const char TYPE_TEXT[] = "text";
     static constexpr const char TYPE_APPLICATION[] = "application";
     static constexpr const char WILDCARD[] = "*";

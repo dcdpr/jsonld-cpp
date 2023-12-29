@@ -17,7 +17,6 @@ find_package(uriparser 0.9.5 CONFIG REQUIRED char wchar_t)
 # Define library target
 
 set(LIB_HEADER_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/CanonicalizationProcessor.h
         ${CMAKE_CURRENT_SOURCE_DIR}/Context.h
         ${CMAKE_CURRENT_SOURCE_DIR}/ContextProcessor.h
         ${CMAKE_CURRENT_SOURCE_DIR}/DocumentLoader.h
@@ -33,8 +32,6 @@ set(LIB_HEADER_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/JsonLdUtils.h
         ${CMAKE_CURRENT_SOURCE_DIR}/MediaType.h
         ${CMAKE_CURRENT_SOURCE_DIR}/NQuadsSerialization.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/Permutator.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/RDFCanonicalizationProcessor.h
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFDataset.h
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFDatasetComparison.h
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFDocument.h
@@ -49,12 +46,9 @@ set(LIB_HEADER_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/UriParser.h
         ${CMAKE_CURRENT_SOURCE_DIR}/json.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/jsoninc.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/sha256.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/sha384.h
-        )
+)
 
 set(LIB_SOURCE_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/CanonicalizationProcessor.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/Context.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/ContextProcessor.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/DocumentLoader.cpp
@@ -69,8 +63,6 @@ set(LIB_SOURCE_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/JsonLdUtils.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/MediaType.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/NQuadsSerialization.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/Permutator.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/RDFCanonicalizationProcessor.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFDataset.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFDatasetComparison.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/RDFDocument.cpp
@@ -83,8 +75,7 @@ set(LIB_SOURCE_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/BlankNodeNames.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/Uri.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/UriParser.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/sha256.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/sha384.cpp)
+)
 
 add_library(jsonld-cpp STATIC ${LIB_HEADER_FILES} ${LIB_SOURCE_FILES})
 add_library(jsonld-cpp::jsonld-cpp ALIAS jsonld-cpp)
