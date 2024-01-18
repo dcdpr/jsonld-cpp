@@ -83,8 +83,9 @@ namespace JsonLdConsts {
     static constexpr const char LOCALCONTEXT[] = "@td.localcontext";
     static constexpr const char BASEURL[] = "@td.baseurl";
 
+    // todo: should this be an enum? what does it give us?
     enum Embed {
-        ALWAYS, NEVER, ONCE, LINK
+        ALWAYS, NEVER, ONCE
     };
 
 }

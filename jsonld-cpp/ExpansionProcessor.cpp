@@ -761,8 +761,8 @@ namespace {
                         continue;
                     }
                 }
-                    // 13.4.8)
-                    // If expanded property is @language:
+                // 13.4.8)
+                // If expanded property is @language:
                 else if (expandedProperty == JsonLdConsts::LANGUAGE) {
                     // 13.4.8.1)
                     // If value is not a string, an invalid language-tagged string error has been
@@ -787,8 +787,8 @@ namespace {
                         throw JsonLdError(JsonLdError::InvalidLanguageTaggedString);
                     }
                 }
-                    // 13.4.9)
-                    // If expanded property is @direction:
+                // 13.4.9)
+                // If expanded property is @direction:
                 else if (expandedProperty == JsonLdConsts::DIRECTION) {
                     // 13.4.9.1)
                     // If processing mode is json-ld-1.0, continue with the next key from element.
@@ -1043,7 +1043,7 @@ namespace {
                         std::transform(language.begin(), language.end(), language.begin(), &tolower);
                         v[JsonLdConsts::VALUE] = item;
                         v[JsonLdConsts::LANGUAGE] = language;
-                        // todo: issue warnings
+                        // todo: issue warning about non-well-formed language strings
 
                         // 13.7.4.2.4)
                         // If language is @none, or expands to @none, remove @language from v.

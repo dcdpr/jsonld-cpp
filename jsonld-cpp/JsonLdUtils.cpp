@@ -43,15 +43,12 @@ namespace {
       "@always",
       "@once",
       "@never",
-      // todo: what about "@link"? See JsonLdConsts::Embed enum
       EXPLICIT,
       ATNULL,
       OMIT_DEFAULT,
       REQUIRE_ALL,
-            // this is another keyword found reading through the api spec. Not sure why they aren't
-            // included in the above.
-            // todo: is this still a valid comment? I should write it better.
-            // ... I think it was present in a test case but I didn't find it in the spec. (maybe not)
+      ATNULL,
+      NONE,
       ANY
     };
 }

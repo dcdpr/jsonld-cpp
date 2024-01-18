@@ -24,7 +24,8 @@ namespace RDF {
         std::string getDatatype() const;
         std::string getLanguage() const;
         std::string getValue() const;
-        void setValue(const std::string & s); // todo: only used in one place. make a friend?
+
+        void setValue(const std::string & s);
 
         friend bool operator==(const Node& lhs, const Node& rhs);
         friend bool operator!=(const Node& lhs, const Node& rhs);

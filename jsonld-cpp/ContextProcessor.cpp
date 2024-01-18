@@ -119,7 +119,7 @@ namespace {
             // If term has the form of a keyword (i.e., it matches the ABNF rule "@"1*ALPHA from [RFC5234]),
             // return; processors SHOULD generate a warning.
             return;
-            // todo: emit a warning
+            // todo: emit a warning about term has the form of a keyword
         }
 
         // 6)
@@ -247,7 +247,7 @@ namespace {
             // a keyword (i.e., it matches the ABNF rule "@"1*ALPHA from [RFC5234]), return;
             // processors SHOULD generate a warning.
             if(JsonLdUtils::isKeywordForm(reverseStr)) {
-                // todo: emit a warning
+                // todo: emit a warning about value has the form of a keyword
                 return;
             }
 
@@ -379,10 +379,9 @@ namespace {
                 }
             }
         }
-            // 15)
-            // Otherwise if the term contains a colon (:) anywhere after the first character:
+        // 15)
+        // Otherwise if the term contains a colon (:) anywhere after the first character:
         else if (term.find(':', 1) != std::string::npos) {
-            // todo: maybe need a new "compact uri" class? See https://www.w3.org/TR/curie/ ...
             // 15.1)
             // If term is a compact IRI with a prefix that is an entry in local context
             // a dependency has been found. Use this algorithm recursively passing active
@@ -402,15 +401,15 @@ namespace {
                 id = id.get<std::string>() + suffix;
                 definition[JsonLdConsts::ID] = id;
             }
-                // 15.3)
-                // Otherwise, term is an IRI or blank node identifier. Set the IRI mapping of
-                // definition to term.
+            // 15.3)
+            // Otherwise, term is an IRI or blank node identifier. Set the IRI mapping of
+            // definition to term.
             else {
                 definition[JsonLdConsts::ID] = term;
             }
         }
-            // 16)
-            // Otherwise if the term contains a slash (/):
+        // 16)
+        // Otherwise if the term contains a slash (/):
         else if (term.find('/') != std::string::npos) {
             // 16.1
             // Term is a relative IRI reference.
@@ -427,16 +426,16 @@ namespace {
                                   "expanded term is not an IRI");
             }
         }
-            // 17)
-            // Otherwise, if term is @type, set the IRI mapping of definition to @type.
+        // 17)
+        // Otherwise, if term is @type, set the IRI mapping of definition to @type.
         else if (term == JsonLdConsts::TYPE) {
             definition[JsonLdConsts::ID] = JsonLdConsts::TYPE;
         }
-            // 18)
-            // Otherwise, if active context has a vocabulary mapping, the IRI mapping of definition
-            // is set to the result of concatenating the value associated with the vocabulary mapping
-            // and term. If it does not have a vocabulary mapping, an invalid IRI mapping error been
-            // detected and processing is aborted.
+        // 18)
+        // Otherwise, if active context has a vocabulary mapping, the IRI mapping of definition
+        // is set to the result of concatenating the value associated with the vocabulary mapping
+        // and term. If it does not have a vocabulary mapping, an invalid IRI mapping error been
+        // detected and processing is aborted.
         else if (!activeContext.getVocabularyMapping().empty()) {
             definition[JsonLdConsts::ID] = activeContext.getVocabularyMapping() + term;
         }
@@ -815,7 +814,7 @@ namespace {
         //  If value has the form of a keyword (i.e., it matches the ABNF rule "@"1*ALPHA
         //  from [RFC5234]), a processor SHOULD generate a warning and return null.
         if (JsonLdUtils::isKeywordForm(value)) {
-            // todo: emit a warning
+            // todo: emit a warning about value has the form of a keyword
             return "";
         }
 
@@ -1059,12 +1058,13 @@ namespace {
                 // internal representation: set context document to the previously dereferenced
                 // document, and set loaded context to the value of the @context entry from the
                 // document in context document.
-                // todo: ...
+                // todo: ...? not having this doesn't break any tests but will effect real world usage.
 
                 // 5.2.5)
                 // Otherwise, set context document to the RemoteDocument obtained by dereferencing
                 // context using the LoadDocumentCallback, passing context for url, and
                 // http://www.w3.org/ns/json-ld#context for profile and for requestProfile.
+                // todo: ...? not having this doesn't break any tests but will effect real world usage.
 
                 // 5.2.5.1)
                 // If context cannot be dereferenced, or the document from context document cannot

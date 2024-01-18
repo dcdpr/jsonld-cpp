@@ -28,6 +28,7 @@ private:
 
 public:
 
+    // todo: remove all these "used by" comments?
     Context() = default;
     explicit Context(const JsonLdOptions& options);// used by context processor and used by jsonld processor
 

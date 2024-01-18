@@ -192,11 +192,11 @@ namespace JsonLdUtils {
     void addValue(json & object, const std::string& key, const json& value, bool asArray);
 
     /**
-     * Returns whether a json object contains or equals a given string. We need this
+     * Returns whether a json variable contains or equals a given string. We need this
      * function because the json library requires slightly different syntax if the json
      * object is an "object", "array" or "string".
      *
-     * @param j the json object
+     * @param j the json variable
      * @param value the value to compare with
      * @return true if the object contains or equals the given value
      */

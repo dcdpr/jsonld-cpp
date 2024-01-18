@@ -10,11 +10,11 @@ public:
 
     static MediaType of(const std::string &type, const std::string &subType);
 
-    static MediaType html() { return of(TYPE_TEXT, "html"); }
-    static MediaType json() { return of(TYPE_APPLICATION, "json"); }
-    static MediaType json_ld() { return of(TYPE_APPLICATION, "ld+json"); }
-    static MediaType n_quads() { return of(TYPE_APPLICATION, "n-quads"); }
-    static MediaType any() { return of(WILDCARD, WILDCARD); }
+    static MediaType html() { return of("text", "html"); }
+    static MediaType json() { return of("application", "json"); }
+    static MediaType json_ld() { return of("application", "ld+json"); }
+    static MediaType n_quads() { return of("application", "n-quads"); }
+    static MediaType any() { return of("*", "*"); }
 
     bool operator==(const MediaType &rhs) const;
     bool operator!=(const MediaType &rhs) const;
@@ -22,10 +22,6 @@ public:
     friend std::ostream &operator<<(std::ostream &os, const MediaType &type);
 
 private:
-    // todo: why have these and not the others above? convert to all consts or not?
-    static constexpr const char TYPE_TEXT[] = "text";
-    static constexpr const char TYPE_APPLICATION[] = "application";
-    static constexpr const char WILDCARD[] = "*";
 
     std::string type;
     std::string subType;

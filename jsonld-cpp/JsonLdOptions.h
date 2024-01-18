@@ -204,8 +204,6 @@ public:
                 return "@never";
             case JsonLdConsts::ONCE:
                 return "@once";
-            case JsonLdConsts::LINK:
-                return "@link";
         }
     }
 
@@ -232,8 +230,6 @@ public:
             this->embed_ = JsonLdConsts::NEVER;
         } else if (embed == "@once") {
             this->embed_ = JsonLdConsts::ONCE;
-        } else if (embed == "@link") {
-            this->embed_ = JsonLdConsts::LINK;
         } else {
             std::stringstream ss;
             ss << "Error: Invalid embed value: [" << embed << "]";

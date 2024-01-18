@@ -20,7 +20,3 @@ std::ostream &operator<<(std::ostream &os, const MediaType &type) {
     os << type.type << "/" << type.subType;
     return os;
 }
-
-constexpr const char MediaType::TYPE_TEXT[];
-constexpr const char MediaType::TYPE_APPLICATION[];
-constexpr const char MediaType::WILDCARD[];
