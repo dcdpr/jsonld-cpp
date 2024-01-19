@@ -3,6 +3,7 @@
 #include "jsonld-cpp/JsonLdUtils.h"
 #include "jsonld-cpp/JsonLdError.h"
 #include "jsonld-cpp/ContextProcessor.h"
+#include "WellFormed.h"
 #include <set>
 #include <string>
 #include <iostream>
@@ -718,8 +719,8 @@ namespace {
                         expandedValue = t;
                     }
                 }
-                    // 13.4.7)
-                    // If expanded property is @value
+                // 13.4.7)
+                // If expanded property is @value
                 else if (expandedProperty == JsonLdConsts::VALUE) {
                     // 13.4.7.1)
                     // If input type is @json, set expanded value to value. If processing mode
@@ -779,7 +780,9 @@ namespace {
                         //  be an array of one or more string values or an array containing
                         //  an empty map.
                         std::string v = element_value.get<std::string>();
-                        // todo: add warning about non-well-formed language strings
+                        if(!WellFormed::language(v)) {
+                            std::cerr << "Warning: language tag " << v << " is not well-formed.\n";
+                        }
                         // todo: When the frameExpansion flag is set...
                         std::transform(v.begin(), v.end(), v.begin(), &tolower);
                         expandedValue = v;
@@ -1043,7 +1046,13 @@ namespace {
                         std::transform(language.begin(), language.end(), language.begin(), &tolower);
                         v[JsonLdConsts::VALUE] = item;
                         v[JsonLdConsts::LANGUAGE] = language;
-                        // todo: issue warning about non-well-formed language strings
+
+                        // note: The spec text above says "If item is neither..." but it should actually
+                        // say "If language is neither..."
+                        // See https://github.com/w3c/json-ld-api/issues/563
+                        if(language != JsonLdConsts::NONE && !WellFormed::language(language)) {
+                            std::cerr << "Warning: language tag " << language << " is not well-formed.\n";
+                        }
 
                         // 13.7.4.2.4)
                         // If language is @none, or expands to @none, remove @language from v.

@@ -27,7 +27,6 @@ const std::string &RDFDocument::getDocumentUrl() const {
 }
 
 const nlohmann::json &RDFDocument::getJSONContent() const {
-    // todo: could return std::optional when using C++17
     throw JsonLdError(JsonLdError::LoadingDocumentFailed,
                       "No JSON content for this RDFDocument");
 }

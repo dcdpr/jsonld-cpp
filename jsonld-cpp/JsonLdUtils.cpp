@@ -64,7 +64,7 @@ bool JsonLdUtils::isKeywordForm(const std::string& str) {
 }
 
 bool JsonLdUtils::isLanguageForm(const std::string& str) {
-    // this is different than isLanguageTagForm because we aren't matching the '@'
+    // this is different from isLanguageTagForm because we aren't matching the '@'
     std::regex re("([a-z]+(?:-[a-zA-Z0-9]+)*)");
     std::smatch match;
     return std::regex_match(str, match, re);

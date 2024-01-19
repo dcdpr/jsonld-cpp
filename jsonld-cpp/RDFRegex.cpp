@@ -11,8 +11,9 @@ namespace RDFRegex {
     const std::string BNODE(R"((_:(?:[A-Za-z_:0-9])(?:(?:[A-Za-z_:0-9\.-])*[A-Za-z_:0-9-])?))");
     const std::string PLAIN(R"lit("([^"\\]*(?:\\.[^"\\]*)*)")lit");
     const std::string DATATYPE("(?:\\^\\^" + IRI + ")");
-    const std::string LANGUAGE("(?:@([a-z]+(?:-[a-zA-Z0-9]+)*))");
-    const std::string LITERAL("(?:" + PLAIN + "(?:" + DATATYPE + "|" + LANGUAGE + ")?)");
+    const std::string LANGUAGETAG("(?:@([a-z]+(?:-[a-zA-Z0-9]+)*))");
+    const std::string LANGUAGE("([a-z]+(?:-[a-zA-Z0-9]+)*)");
+    const std::string LITERAL("(?:" + PLAIN + "(?:" + DATATYPE + "|" + LANGUAGETAG + ")?)");
 
     const std::string SUBJECT("(?:" + IRI + "|" + BNODE + ")" + WS);
     const std::string PROPERTY(IRI + WS);

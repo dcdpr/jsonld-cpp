@@ -5,6 +5,7 @@
 #include "jsonld-cpp/RemoteDocument.h"
 #include "jsonld-cpp/BlankNodeNames.h"
 #include "jsonld-cpp/Uri.h"
+#include "jsonld-cpp/WellFormed.h"
 #include <set>
 #include <iostream>
 
@@ -110,16 +111,16 @@ namespace {
             }
 
         }
-            // 5)
-            // Otherwise, since keywords cannot be overridden, term MUST NOT be a keyword and
-            // a keyword redefinition error has been detected and processing is aborted.
+        // 5)
+        // Otherwise, since keywords cannot be overridden, term MUST NOT be a keyword and
+        // a keyword redefinition error has been detected and processing is aborted. If term
+        // has the form of a keyword (i.e., it matches the ABNF rule "@"1*ALPHA from [RFC5234]),
+        // return; processors SHOULD generate a warning.
         else if (JsonLdUtils::isKeyword(term)) {
             throw JsonLdError(JsonLdError::KeywordRedefinition, term);
         } else if (JsonLdUtils::isKeywordForm(term)){
-            // If term has the form of a keyword (i.e., it matches the ABNF rule "@"1*ALPHA from [RFC5234]),
-            // return; processors SHOULD generate a warning.
+            std::cerr << "Warning: term " << term << " should not have the form of a keyword.\n";
             return;
-            // todo: emit a warning about term has the form of a keyword
         }
 
         // 6)
@@ -247,7 +248,7 @@ namespace {
             // a keyword (i.e., it matches the ABNF rule "@"1*ALPHA from [RFC5234]), return;
             // processors SHOULD generate a warning.
             if(JsonLdUtils::isKeywordForm(reverseStr)) {
-                // todo: emit a warning about value has the form of a keyword
+                std::cerr << "Warning: @reverse entry " << reverseStr << " should not have the form of a keyword.\n";
                 return;
             }
 
@@ -320,7 +321,7 @@ namespace {
                 // form of a keyword (i.e., it matches the ABNF rule "@"1*ALPHA from [RFC5234]),
                 // return; processors SHOULD generate a warning.
                 if(!JsonLdUtils::isKeyword(idStr) && JsonLdUtils::isKeywordForm(idStr)) {
-                    // todo: emit a warning
+                    std::cerr << "Warning: @id entry " << idStr << " should not have the form of a keyword.\n";
                     return;
                 }
 
@@ -634,7 +635,9 @@ namespace {
             auto language = value.at(JsonLdConsts::LANGUAGE);
 
             if (language.is_null() || language.is_string()) {
-                // todo: need to check if language is not well-formed, and if so, emit a warning
+                if(language.is_string() && !WellFormed::language(language.get<std::string>())) {
+                    std::cerr << "Warning: language tag " << language << " is not well-formed.\n";
+                }
                 // 22.2)
                 // Set the language mapping of definition to language.
                 definition[JsonLdConsts::LANGUAGE] = language;
@@ -814,7 +817,7 @@ namespace {
         //  If value has the form of a keyword (i.e., it matches the ABNF rule "@"1*ALPHA
         //  from [RFC5234]), a processor SHOULD generate a warning and return null.
         if (JsonLdUtils::isKeywordForm(value)) {
-            // todo: emit a warning about value has the form of a keyword
+            std::cerr << "Warning: IRI value " << value << " should not have the form of a keyword.\n";
             return "";
         }
 
@@ -1058,13 +1061,13 @@ namespace {
                 // internal representation: set context document to the previously dereferenced
                 // document, and set loaded context to the value of the @context entry from the
                 // document in context document.
-                // todo: ...? not having this doesn't break any tests but will effect real world usage.
+                // todo: ...? not having this code doesn't break any tests but will effect real world usage.
 
                 // 5.2.5)
                 // Otherwise, set context document to the RemoteDocument obtained by dereferencing
                 // context using the LoadDocumentCallback, passing context for url, and
                 // http://www.w3.org/ns/json-ld#context for profile and for requestProfile.
-                // todo: ...? not having this doesn't break any tests but will effect real world usage.
+                // todo: ...? not having this code doesn't break any tests but will effect real world usage.
 
                 // 5.2.5.1)
                 // If context cannot be dereferenced, or the document from context document cannot
@@ -1319,7 +1322,9 @@ namespace {
                     std::string v = value.get<std::string>();
                     std::transform(v.begin(), v.end(), v.begin(), &::tolower);
                     result.setDefaultLanguage(v);
-                    // todo: need to check if language is not well-formed, and if so, emit a warning
+                    if(!WellFormed::language(v)) {
+                        std::cerr << "Warning: language tag " << v << " is not well-formed.\n";
+                    }
                 } else {
                     throw JsonLdError(JsonLdError::InvalidDefaultLanguage);
                 }

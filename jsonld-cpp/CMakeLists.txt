@@ -46,6 +46,7 @@ set(LIB_HEADER_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/UriParser.h
         ${CMAKE_CURRENT_SOURCE_DIR}/json.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/jsoninc.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/WellFormed.h
 )
 
 set(LIB_SOURCE_FILES
@@ -75,6 +76,7 @@ set(LIB_SOURCE_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/BlankNodeNames.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/Uri.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/UriParser.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/WellFormed.cpp
 )
 
 add_library(jsonld-cpp STATIC ${LIB_HEADER_FILES} ${LIB_SOURCE_FILES})

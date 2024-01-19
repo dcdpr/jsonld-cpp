@@ -5,6 +5,7 @@
 #include "jsonld-cpp/JsonLdUtils.h"
 #include "jsonld-cpp/JsonLdError.h"
 #include "jsonld-cpp/DoubleFormatter.h"
+#include "jsonld-cpp/WellFormed.h"
 #include <cmath>
 #include <iostream>
 
@@ -418,8 +419,7 @@ namespace {
         // todo: better detection of node object
         if (JsonLdUtils::isObject(item) && !JsonLdUtils::isListObject(item) && !JsonLdUtils::isValueObject(item)) {
             std::string id = item[JsonLdConsts::ID].get<std::string>();
-            if (!BlankNodeNames::hasFormOfBlankNodeName(id) && JsonLdUtils::isRelativeIri(id)) {
-                // todo: need a "well-formed" function for the various types
+            if (!WellFormed::blankNodeIdentifier(id) && !WellFormed::iri(id)) {
                 return nullptr;
             }
             // 2)
@@ -457,13 +457,13 @@ namespace {
 
         // 6)
         // If datatype is not null and neither a well-formed IRI nor @json, return null.
-        if(!datatype.is_null() && datatypeStr != JsonLdConsts::JSON && !JsonLdUtils::isAbsoluteIri(datatypeStr))
+        if(!datatype.is_null() && datatypeStr != JsonLdConsts::JSON && !WellFormed::iri(datatypeStr))
             return nullptr;
 
         // 7)
-        // If item has an @language entry which is not well-formed, return null. // todo: add well-formed helper function
+        // If item has an @language entry which is not well-formed, return null.
         if(item.contains(JsonLdConsts::LANGUAGE) &&
-                (item[JsonLdConsts::LANGUAGE].empty() || !JsonLdUtils::isLanguageForm(item[JsonLdConsts::LANGUAGE].get<std::string>())))
+                (item[JsonLdConsts::LANGUAGE].empty() || !WellFormed::language(item[JsonLdConsts::LANGUAGE].get<std::string>())))
             return nullptr;
 
         // 8)
@@ -623,8 +623,7 @@ namespace {
 
         // 1.1)
         // If graph name is not well-formed, continue with the next graph name-graph pair.
-        // todo: better well-formed checking
-        if(graphName != JsonLdConsts::DEFAULT && !JsonLdUtils::isGraphNameForm(graphName))
+        if(graphName != JsonLdConsts::DEFAULT && !WellFormed::rdf_graph_name(graphName))
             return;
 
         // 1.2)
@@ -638,7 +637,7 @@ namespace {
         std::vector<std::string> subjects;
         for (auto& el : graph.items()) {
             // skip the key_insertion_order helper we added in generateNodeMap()
-            if(el.key() != "key_insertion_order")
+            if(el.key() != "key_insertion_order") // todo: do i still need to bother with the key insertion order?
                 subjects.push_back(el.key());
         }
         std::sort(subjects.begin(), subjects.end());
@@ -648,8 +647,7 @@ namespace {
 
             // 1.3.1)
             // If subject is not well-formed, continue with the next subject-node pair.
-            // todo: need better well-formed checking
-            if (!BlankNodeNames::hasFormOfBlankNodeName(subject) && JsonLdUtils::isRelativeIri(subject)) {
+            if (!WellFormed::rdf_subject(subject)) {
                 continue;
             }
 
@@ -673,7 +671,9 @@ namespace {
                     values = &node[JsonLdConsts::TYPE];
 
                     for(const auto& type : *values) {
-                        if(!type.is_string())
+                        if(!type.is_string() ||
+                           (!WellFormed::blankNodeIdentifier(type.get<std::string>()) &&
+                            !WellFormed::iri(type.get<std::string>())))
                             continue;
 
                         std::shared_ptr<Node> s;
@@ -715,7 +715,7 @@ namespace {
 
                 // 1.3.2.4)
                 // Otherwise, if property is not well-formed, continue with the next property-values pair.
-                else if (JsonLdUtils::isRelativeIri(property)) {
+                else if (!WellFormed::iri(property)) {
                     continue;
                 } else {
 
