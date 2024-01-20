@@ -117,41 +117,9 @@ private:
      */
     bool useRdfType_ = false;
 
-    // //////////////////////////////////////////////////////////
-    // Framing options : https://www.w3.org/TR/json-ld11-framing/
-
-    /**
-     * https://www.w3.org/TR/json-ld11-framing/#dom-jsonldoptions-embed
-     */
-    JsonLdConsts::Embed embed_ = JsonLdConsts::ONCE;
-
-    /**
-     * https://www.w3.org/TR/json-ld11-framing/#dom-jsonldoptions-explicit
-     */
-    bool explicit_ = false;
-
-    /**
-     * https://www.w3.org/TR/json-ld11-framing/#dom-jsonldoptions-omitdefault
-     */
-    bool omitDefault_ = false;
-
-    /**
-     * https://www.w3.org/TR/json-ld11-framing/#dom-jsonldoptions-omitgraph
-     */
-    bool omitGraph_ = false;
-    /**
-     * https://www.w3.org/TR/json-ld11-framing/#dom-jsonldoptions-requireall
-     */
-    bool requireAll_ = false;
-
     std::string hashAlgorithm_;
-public:
-    const std::string &getHashAlgorithm() const;
-
-    void setHashAlgorithm(const std::string &hashAlgorithm);
 
 public:
-
 
     /**
      * Constructs an instance of JsonLdOptions using the given base IRI. Defaults to
@@ -174,19 +142,14 @@ public:
         compactToRelative_ = other.compactToRelative_;
         if(other.documentLoader_)
             documentLoader_.reset( other.documentLoader_->clone() );
-        embed_ = other.embed_;
         expandContext_ = other.expandContext_;
-        explicit_ = other.explicit_;
         extractAllScripts_ = other.extractAllScripts_;
         frameExpansion_ = other.frameExpansion_;
         hashAlgorithm_ = other.hashAlgorithm_;
-        omitDefault_ = other.omitDefault_;
-        omitGraph_ = other.omitGraph_;
         ordered_ = other.ordered_;
         processingMode_ = other.processingMode_;
         produceGeneralizedRdf_ = other.produceGeneralizedRdf_;
         rdfDirection_ = other.rdfDirection_;
-        requireAll_ = other.requireAll_;
         useNativeTypes_ = other.useNativeTypes_;
         useRdfType_ = other.useRdfType_;
     }
@@ -196,17 +159,6 @@ public:
         return *this;
     }
 
-    std::string getEmbed() {
-        switch (embed_) {
-            case JsonLdConsts::ALWAYS:
-                return "@always";
-            case JsonLdConsts::NEVER:
-                return "@never";
-            case JsonLdConsts::ONCE:
-                return "@once";
-        }
-    }
-
     bool isFrameExpansion() const;
 
     void setFrameExpansion(bool frameExpansion);
@@ -214,65 +166,6 @@ public:
     bool isOrdered() const;
 
     void setOrdered(bool ordered);
-
-    JsonLdConsts::Embed getEmbedVal() {
-        return embed_;
-    }
-
-    void setEmbed(bool embed) {
-        this->embed_ = embed ? JsonLdConsts::ONCE : JsonLdConsts::NEVER;
-    }
-
-    void setEmbed(const std::string& embed) {
-        if (embed == "@always") {
-            this->embed_ = JsonLdConsts::ALWAYS;
-        } else if (embed == "@never") {
-            this->embed_ = JsonLdConsts::NEVER;
-        } else if (embed == "@once") {
-            this->embed_ = JsonLdConsts::ONCE;
-        } else {
-            std::stringstream ss;
-            ss << "Error: Invalid embed value: [" << embed << "]";
-            throw std::runtime_error(ss.str());
-            //throw new JsonLdError(JsonLdError.Error.INVALID_EMBED_VALUE);
-        }
-    }
-
-    void setEmbed(JsonLdConsts::Embed embed)  {
-        this->embed_ = embed;
-    }
-
-    bool getExplicit() const {
-        return explicit_;
-    }
-
-    void setExplicit(bool explicitFlag) {
-        this->explicit_ = explicitFlag;
-    }
-
-    bool getOmitDefault() const {
-        return omitDefault_;
-    }
-
-    void setOmitDefault(bool omitDefault) {
-        this->omitDefault_ = omitDefault;
-    }
-
-    bool getOmitGraph() const {
-        return omitGraph_;
-    }
-
-    void setOmitGraph(bool omitGraph) {
-        this->omitGraph_ = omitGraph;
-    }
-
-    bool getRequireAll() const {
-        return requireAll_;
-    }
-
-    void setRequireAll(bool requireAll) {
-        this->requireAll_ = requireAll;
-    }
 
     bool getCompactArrays() const {
         return compactArrays_;
@@ -304,9 +197,9 @@ public:
 
     void setProcessingMode(const std::string& processingMode) {
         this->processingMode_ = processingMode;
-        if (processingMode == JsonLdConsts::JSON_LD_1_1) {
-            omitGraph_ = true;
-        }
+//        if (processingMode == JsonLdConsts::JSON_LD_1_1) {
+//            omitGraph_ = true;
+//        }
     }
 
     std::string getBase() const {
@@ -356,6 +249,10 @@ public:
     void setDocumentLoader(std::unique_ptr<DocumentLoader> documentLoader) {
         this->documentLoader_ = std::move(documentLoader);
     }
+
+    const std::string &getHashAlgorithm() const;
+
+    void setHashAlgorithm(const std::string &hashAlgorithm);
 
 };
 

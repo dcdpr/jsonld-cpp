@@ -42,8 +42,6 @@ TestCaseOptions TestCaseOptions::create(nlohmann::json manifestEntryOptions, con
 
     result.useRdfType = getBool(manifestEntryOptions, "useRdfType");
 
-    result.omitGraph = getBool(manifestEntryOptions, "omitGraph");
-
     result.hashAlgorithm = getEntryOr(manifestEntryOptions, "hashAlgorithm", "");
 
     return result;
@@ -61,5 +59,4 @@ void TestCaseOptions::copyTo(JsonLdOptions & jsonLdOptions) {
     jsonLdOptions.setProduceGeneralizedRdf(produceGeneralizedRdf);
     jsonLdOptions.setUseNativeTypes(useNativeTypes);
     jsonLdOptions.setUseRdfType(useRdfType);
-    jsonLdOptions.setOmitGraph(omitGraph);
 }

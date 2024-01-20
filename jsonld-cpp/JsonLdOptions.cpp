@@ -29,3 +29,4 @@ const std::string &JsonLdOptions::getHashAlgorithm() const {
 void JsonLdOptions::setHashAlgorithm(const std::string &hashAlgorithm) {
     hashAlgorithm_ = hashAlgorithm;
 }
+//todo: why are these functions defined here?> can they just all be in the header file?

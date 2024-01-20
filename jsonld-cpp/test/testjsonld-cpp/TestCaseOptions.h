@@ -19,7 +19,6 @@ struct TestCaseOptions {
     bool produceGeneralizedRdf = false;
     bool useNativeTypes = false;
     bool useRdfType = false;
-    bool omitGraph = false;
     std::string hashAlgorithm;
 
 };

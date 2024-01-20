@@ -82,12 +82,7 @@ namespace JsonLdConsts {
     // used to store other json values in the term definitions
     static constexpr const char LOCALCONTEXT[] = "@td.localcontext";
     static constexpr const char BASEURL[] = "@td.baseurl";
-
-    // todo: should this be an enum? what does it give us?
-    enum Embed {
-        ALWAYS, NEVER, ONCE
-    };
-
+    
 }
 
 #endif //LIBJSONLD_CPP_JSONLDCONSTS_H
