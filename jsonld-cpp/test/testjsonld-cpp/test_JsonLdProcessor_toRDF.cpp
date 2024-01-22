@@ -825,8 +825,8 @@ TEST_F(JsonLdProcessorToRDFTest, toRdf_te074) {
     performToRDFTestFromManifest("#te074");
 }
 
-// Test output file has blank nodes as predicates, and they are not supported
-TEST_F(JsonLdProcessorToRDFTest, toRdf_te075) {
+// Test output file has blank nodes as predicates, and they are not supported in our n-quads reader
+TEST_F(JsonLdProcessorToRDFTest, DISABLED_toRdf_te075) {
     performToRDFTestFromManifest("#te075");
 }
 

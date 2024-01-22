@@ -21,7 +21,7 @@ private:
     std::string vocabularyMapping;
     std::string defaultLanguage;
 
-    std::string defaultBaseDirection; // todo: this should be an enum
+    std::string defaultBaseDirection;
     std::shared_ptr<Context> previousContext;
     std::shared_ptr<Context> inverseContext;
 

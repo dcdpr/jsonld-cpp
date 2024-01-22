@@ -28,6 +28,15 @@ namespace DoubleFormatter {
      */
     std::string format(double d);
 
+    /**
+     * The JSON library we use dumps floating point numbers with no fractional part
+     * such as "123.0" but certain tests don't like the ending ".0"
+     *
+     * @param s string possibly containing a floating point number with no fractional part
+     * @return input string modified to have no ".0"s
+     */
+    std::string fixStringWithDoubles(const std::string & s);
+
 }
 
 #endif //LIBJSONLD_CPP_DOUBLEFORMATTER_H

@@ -471,6 +471,7 @@ namespace {
         // of transforming the internal representation of value to JSON and set datatype to rdf:JSON.
         if(datatypeStr == JsonLdConsts::JSON) {
             value = value.dump();
+            value = DoubleFormatter::fixStringWithDoubles(value.get<std::string>());
             datatypeStr = JsonLdConsts::RDF_JSON;
         }
 

@@ -270,7 +270,7 @@ std::string NQuadsSerialization::toNQuad(const RDF::RDFTriple& triple) {
 }
 
 RDF::RDFDataset NQuadsSerialization::parse(std::string input) {
-    RDF::RDFDataset dataset((JsonLdOptions()));
+    RDF::RDFDataset dataset((JsonLdOptions()));//todo: should be a version of this that passes in existing options object?
 
     std::vector<std::string> lines = ::splitLines(input);
     std::regex emptyRgx(RDFRegex::EMPTY);
