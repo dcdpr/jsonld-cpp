@@ -498,7 +498,9 @@ namespace {
             // number and datatype equals xsd:double, convert value to a string in canonical
             // lexical form of an xsd:double as defined in [XMLSCHEMA11-2] and described in
             // § 8.6 Data Round Tripping. If datatype is null, set datatype to xsd:double.
-            if ((value.is_number_float() && std::fmod(value.get<double>(), 1) != 0.0) || datatype == JsonLdConsts::XSD_DOUBLE) {
+            if (std::fmod(value.get<double>(), 1) != 0.0 ||
+                value.get<double>() >= (1e21) ||
+                datatype == JsonLdConsts::XSD_DOUBLE) {
                 if (datatype.is_null())
                     datatypeStr = JsonLdConsts::XSD_DOUBLE;
                 double d = value.get<double>();
