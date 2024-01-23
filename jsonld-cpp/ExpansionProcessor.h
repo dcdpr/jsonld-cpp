@@ -24,10 +24,10 @@ struct ExpansionProcessor {
      *                associated with non-propagated contexts. Defaults to false.
      * @return Fully expanded JSON-LD document.
      */
-    static nlohmann::json expand(
+    static nlohmann::ordered_json expand(
             Context activeContext,
             const std::string *activeProperty,
-            nlohmann::json element,
+            nlohmann::ordered_json element,
             const std::string & baseUrl,
             bool fromMap=false);
 

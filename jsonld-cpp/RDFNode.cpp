@@ -2,7 +2,6 @@
 #include "jsonld-cpp/JsonLdConsts.h"
 #include "jsonld-cpp/DoubleFormatter.h"
 
-using nlohmann::json;
 
 namespace RDF {
 

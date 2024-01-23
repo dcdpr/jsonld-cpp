@@ -3,8 +3,8 @@
 #include "jsonld-cpp/RemoteDocument.h"
 #include <memory>
 
-using nlohmann::json;
 
+using json = nlohmann::ordered_json;
 
 bool Context::isReverseProperty(const std::string &property) const {
     // todo: should move this function and others that just return termdef props to a new TermDefinition class?
@@ -15,7 +15,7 @@ bool Context::isReverseProperty(const std::string &property) const {
     return td.contains(JsonLdConsts::REVERSE) && td.at(JsonLdConsts::REVERSE);
 }
 
-nlohmann::json Context::getTermDefinition(const std::string & key) const {
+json Context::getTermDefinition(const std::string & key) const {
     if(termDefinitions.contains(key)) {
         return termDefinitions.at(key);
     }

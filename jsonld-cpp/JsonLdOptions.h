@@ -51,7 +51,7 @@ private:
      * A context that is used to initialize the active context when expanding a document.
      * https://www.w3.org/TR/json-ld-api/#dom-jsonldoptions-expandcontext
      */
-    nlohmann::json expandContext_;
+    nlohmann::ordered_json expandContext_;
 
     /**
      * If set to true, when extracting JSON-LD script elements from HTML, unless a specific
@@ -183,11 +183,11 @@ public:
         this->compactToRelative_ = compactToRelative;
     }
 
-    nlohmann::json getExpandContext() const {
+    nlohmann::ordered_json getExpandContext() const {
         return expandContext_;
     }
 
-    void setExpandContext(nlohmann::json expandContext) {
+    void setExpandContext(nlohmann::ordered_json expandContext) {
         this->expandContext_ = std::move(expandContext);
     }
 

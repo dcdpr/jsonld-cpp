@@ -1,6 +1,8 @@
 #include "jsonld-cpp/JsonLdError.h"
 
-JsonLdError::JsonLdError(const std::string& itype, const nlohmann::json& idetail)
+using json = nlohmann::ordered_json;
+
+JsonLdError::JsonLdError(const std::string& itype, const json& idetail)
         : std::runtime_error(itype + ": " + idetail.get<std::string>())
 {
 }

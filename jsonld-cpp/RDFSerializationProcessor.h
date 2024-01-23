@@ -22,7 +22,7 @@ struct RDFSerializationProcessor {
      *
      * https://www.w3.org/TR/json-ld11-api/#dom-jsonldprocessor-tordf
      */
-    static RDF::RDFDataset toRDF(nlohmann::json expandedInput, const JsonLdOptions& options);
+    static RDF::RDFDataset toRDF(nlohmann::ordered_json expandedInput, const JsonLdOptions& options);
 
 
 };

@@ -5,8 +5,6 @@
 
 namespace JsonLdUtils {
 
-    using json = nlohmann::json;
-
     /**
      * Is str a reserved JSON-LD keyword?
      *
@@ -76,7 +74,7 @@ namespace JsonLdUtils {
      *
      * See: https://www.w3.org/TR/json-ld11/#dfn-list-object
      */
-    bool isListObject(const json& j);
+    bool isListObject(const nlohmann::ordered_json& j);
 
     /**
      * Is j a graph object?
@@ -85,7 +83,7 @@ namespace JsonLdUtils {
      *
      * See: https://www.w3.org/TR/json-ld11/#dfn-graph-object
      */
-    bool isGraphObject(const json& j);
+    bool isGraphObject(const nlohmann::ordered_json& j);
 
     /**
      * Is name in the form of a graph name?
@@ -103,21 +101,21 @@ namespace JsonLdUtils {
      *
      * See: https://www.w3.org/TR/json-ld11/#dfn-value-object
      */
-    bool isValueObject(const json& j);
+    bool isValueObject(const nlohmann::ordered_json& j);
 
     /**
      * Is j a JSON object?
      *
      * A object in this sense is a JSON object, or a map. Not to be confused with an RDF object.
      */
-    bool isObject(const json& j);
+    bool isObject(const nlohmann::ordered_json& j);
 
     /**
      * Is j an empty object?
      *
      * An empty object is an empty map.
      */
-    bool isEmptyObject(const json& j);
+    bool isEmptyObject(const nlohmann::ordered_json& j);
 
     /**
      * Is j a default object?
@@ -126,44 +124,44 @@ namespace JsonLdUtils {
      *
      * https://www.w3.org/TR/json-ld11/#dfn-default-object
      */
-    bool isDefaultObject(const json& j);
+    bool isDefaultObject(const nlohmann::ordered_json& j);
 
     /**
      * Is j a node object?
      *
      * https://www.w3.org/TR/json-ld11/#dfn-node-object
      */
-    bool isNodeObject(const json& j);
+    bool isNodeObject(const nlohmann::ordered_json& j);
 
     /**
      * Is j a JSON array?
      */
-    bool isArray(const json& j);
+    bool isArray(const nlohmann::ordered_json& j);
 
     /**
      * Is j an empty JSON array?
      */
-    bool isEmptyArray(const json& j);
+    bool isEmptyArray(const nlohmann::ordered_json& j);
 
     /**
      * Is j a JSON array of JSON strings?
      */
-    bool isArrayOfStrings(const json& j);
+    bool isArrayOfStrings(const nlohmann::ordered_json& j);
 
     /**
      * Is j a JSON scalar?
      */
-    bool isScalar(const json& j);
+    bool isScalar(const nlohmann::ordered_json& j);
 
     /**
      * Is j a JSON array of JSON scalars?
      */
-    bool isArrayOfScalars(const json& j);
+    bool isArrayOfScalars(const nlohmann::ordered_json& j);
 
     /**
      * Does JSON structure values contain the JSON structure value within it?
      */
-    bool deepContains(const json& values, const json& value);
+    bool deepContains(const nlohmann::ordered_json& values, const nlohmann::ordered_json& value);
 
     /**
      * Merges value into the array at obj[key], if array at obj[key] does not yet contain it. If
@@ -173,7 +171,7 @@ namespace JsonLdUtils {
      * @param key the key
      * @param value the value to store in array at obj[key]
      */
-    void mergeValue(json & obj, const std::string& key, const json& value);
+    void mergeValue(nlohmann::json & obj, const std::string& key, const nlohmann::ordered_json& value);
 
     /**
      * Add a value to an entry in a JSON object using a specified key.
@@ -189,7 +187,7 @@ namespace JsonLdUtils {
      * @param asArray if true, and value of key in the object doesn't exist or is not an
      *                array, set key to a new array containing the value
      */
-    void addValue(json & object, const std::string& key, const json& value, bool asArray);
+    void addValue(nlohmann::ordered_json & object, const std::string& key, const nlohmann::ordered_json& value, bool asArray);
 
     /**
      * Returns whether a json variable contains or equals a given string. We need this
@@ -200,7 +198,7 @@ namespace JsonLdUtils {
      * @param value the value to compare with
      * @return true if the object contains or equals the given value
      */
-    bool containsOrEquals(json & j, const std::string& value);
+    bool containsOrEquals(nlohmann::ordered_json & j, const std::string& value);
 }
 
 #endif //LIBJSONLD_CPP_JSONLDUTILS_H

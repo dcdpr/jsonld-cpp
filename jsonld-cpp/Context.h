@@ -11,7 +11,7 @@
 class Context {
 private:
 
-    nlohmann::json termDefinitions;
+    nlohmann::ordered_json termDefinitions;
 
     JsonLdOptions options;
 
@@ -33,7 +33,7 @@ public:
     explicit Context(const JsonLdOptions& options);// used by context processor and used by jsonld processor
 
 
-    nlohmann::json getTermDefinition(const std::string & key) const;// used by expansion processor
+    nlohmann::ordered_json getTermDefinition(const std::string & key) const;// used by expansion processor
 
     bool isReverseProperty(const std::string& property) const; // reach into termdefinitions, used by expansion processor
     bool isProcessingMode(const std::string& mode) const; // reach into options, used by context and used by expansion processor
@@ -65,9 +65,9 @@ public:
 
     void setDefaultBaseDirection(const std::string & direction); // used by context processor
 
-    const nlohmann::json &getTermDefinitions() const;
+    const nlohmann::ordered_json &getTermDefinitions() const;
 
-    nlohmann::json &getTermDefinitions() ;
+    nlohmann::ordered_json &getTermDefinitions() ;
 };
 
 #endif //LIBJSONLD_CPP_CONTEXT_H

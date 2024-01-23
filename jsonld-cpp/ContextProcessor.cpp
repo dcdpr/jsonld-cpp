@@ -9,7 +9,7 @@
 #include <set>
 #include <iostream>
 
-using nlohmann::json;
+using json = nlohmann::ordered_json;
 
 namespace {
 
@@ -22,7 +22,7 @@ namespace {
 
     Context process(
             const Context & activeContext,
-            const nlohmann::json & localContext,
+            const json & localContext,
             const std::string &baseURL,
             std::vector<std::string> remoteContexts,
             bool overrideProtected,
@@ -37,7 +37,7 @@ namespace {
          */
     void createTermDefinition(
             Context & activeContext,
-            nlohmann::json localContext,
+            json localContext,
             const std::string& term,
             std::map<std::string, bool> & defined,
             const std::string& baseURL = "",
@@ -934,7 +934,7 @@ namespace {
 
     Context process(
             const Context & activeContext,
-            const nlohmann::json & ilocalContext,
+            const json & ilocalContext,
             const std::string &baseURL,
             std::vector<std::string> remoteContexts,
             bool ioverrideProtected,
@@ -979,8 +979,12 @@ namespace {
         json localContext = json::array();
         if (!ilocalContext.is_array())
             localContext = json::array({ilocalContext});
-        else
-            localContext.insert(localContext.end(), ilocalContext.begin(), ilocalContext.end());
+        else {
+            //localContext.insert(ilocalContext.begin(), ilocalContext.end());
+            for (const auto& e : ilocalContext) {
+                localContext.push_back(e);
+            }
+        }
 
         // 5)
         // For each item context in local context:
@@ -1410,7 +1414,7 @@ namespace {
 Context
 ContextProcessor::process(
         const Context & activeContext,
-        const nlohmann::json & ilocalContext,
+        const json & ilocalContext,
         const std::string &baseURL,
         bool ioverrideProtected,
         bool ipropagate,

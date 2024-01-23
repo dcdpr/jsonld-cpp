@@ -1,3 +1,4 @@
+#pragma ide diagnostic ignored "cert-err58-cpp"
 #include <jsonld-cpp/BlankNodeNames.h>
 #include <algorithm>
 

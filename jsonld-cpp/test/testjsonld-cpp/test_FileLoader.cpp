@@ -1,9 +1,9 @@
+#pragma ide diagnostic ignored "cert-err58-cpp"
 #include <jsonld-cpp/FileLoader.h>
 #include <jsonld-cpp/RemoteDocument.h>
-#include <jsonld-cpp/jsoninc.h>
 #include <jsonld-cpp/RDFDataset.h>
+#include <jsonld-cpp/jsoninc.h>
 
-using nlohmann::json;
 
 #include <gtest/gtest.h>
 #pragma clang diagnostic push
@@ -25,7 +25,7 @@ TEST(DocumentLoaderTest, load_sample_json_document_from_filesystem) {
     std::string docPath = resource_dir + "test_data/pi-is-four.json";
 
     auto d = dl.loadDocument(docPath);
-    json j = d->getJSONContent();
+    nlohmann::ordered_json j = d->getJSONContent();
 
     EXPECT_FALSE(j == nullptr);
     EXPECT_FALSE(j.is_null());

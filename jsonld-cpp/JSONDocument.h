@@ -1,6 +1,7 @@
 #ifndef LIBJSONLD_CPP_JSONDOCUMENT_H
 #define LIBJSONLD_CPP_JSONDOCUMENT_H
 
+#include "jsonld-cpp/jsoninc.h"
 #include "jsonld-cpp/RemoteDocument.h"
 
 namespace RDF {
@@ -11,10 +12,10 @@ class JSONDocument : public RemoteDocument {
 private:
     MediaType contentType;
     std::string documentUrl;
-    nlohmann::json document;
+    nlohmann::ordered_json document;
     std::string contextUrl;
 
-    JSONDocument(MediaType contentType, nlohmann::json document, std::string documentUrl);
+    JSONDocument(MediaType contentType, nlohmann::ordered_json document, std::string documentUrl);
 
 public:
 
@@ -26,7 +27,7 @@ public:
     MediaType getContentType() const override;
     const std::string &getContextUrl() const override;
     const std::string &getDocumentUrl() const override;
-    const nlohmann::json &getJSONContent() const override;
+    const nlohmann::ordered_json &getJSONContent() const override;
     const RDF::RDFDataset & getRDFContent() const override;
 
     void setContextUrl(const std::string &url) override;

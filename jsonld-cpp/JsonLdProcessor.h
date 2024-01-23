@@ -19,7 +19,7 @@ namespace JsonLdProcessor {
     // Expansion algorithm
     // See: https://www.w3.org/TR/json-ld11-api/#dom-jsonldprocessor-expand
     // See: https://www.w3.org/TR/json-ld11-api/#expansion-algorithm
-    nlohmann::json expand(const std::string& documentLocation, JsonLdOptions& options);
+    nlohmann::ordered_json expand(const std::string& documentLocation, JsonLdOptions& options);
 
     // Transforms JSON-LD document located at filename or IRI into an RdfDataset
     // according to the steps in the Deserialize JSON-LD to RDF Algorithm

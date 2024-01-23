@@ -22,7 +22,7 @@ public:
     virtual MediaType getContentType() const = 0;
     virtual const std::string &getContextUrl() const = 0;
     virtual const std::string &getDocumentUrl() const = 0;
-    virtual const nlohmann::json &getJSONContent() const = 0;
+    virtual const nlohmann::ordered_json &getJSONContent() const = 0;
     virtual const RDF::RDFDataset & getRDFContent() const = 0;
 
     virtual void setContextUrl(const std::string &url) = 0;

@@ -1,3 +1,4 @@
+#pragma ide diagnostic ignored "cert-err58-cpp"
 #include <jsonld-cpp/NQuadsSerialization.h>
 
 #include <gtest/gtest.h>
@@ -26,6 +27,7 @@ TEST(RegexTest, regexp_replace) {
 
 }
 
+// todo: do we need these?
 //TEST(RegexTest, regexp_replace_uchars) {
 //
 //    std::string str = "\\u0022\\u005c";

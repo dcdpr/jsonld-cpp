@@ -16,7 +16,6 @@
 #pragma clang diagnostic pop
 #pragma GCC diagnostic pop
 
-using nlohmann::json;
 
 // test suite fixture class
 class JsonLdProcessorToRDFTest : public ::testing::Test {

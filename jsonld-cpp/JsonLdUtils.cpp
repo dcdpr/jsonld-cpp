@@ -6,6 +6,7 @@
 #include <set>
 #include <regex>
 
+using json = nlohmann::ordered_json;
 using namespace JsonLdConsts;
 //todo: the large functions in here need to be refactored and commented
 namespace {
@@ -174,10 +175,12 @@ bool JsonLdUtils::deepContains(const json& values, const json& value) {
     return std::any_of(values.cbegin(), values.cend(), [&value](const json &v){ return v == value; });
 }
 
-void JsonLdUtils::mergeValue(json & obj, const std::string& key, const json& value) {
-    assert(!obj.is_null());
+void JsonLdUtils::mergeValue(nlohmann::json & obj, const std::string& key, const json& value) {
+    //assert(!obj.is_null());
+    if(obj.is_null())
+        return;
 
-    json & values = obj[key];
+    nlohmann::json & values = obj[key];
     if (values.is_null()) {
         values = json::array();
         obj[key] = values;

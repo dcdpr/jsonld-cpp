@@ -26,7 +26,7 @@ const std::string &RDFDocument::getDocumentUrl() const {
     return documentUrl;
 }
 
-const nlohmann::json &RDFDocument::getJSONContent() const {
+const nlohmann::ordered_json &RDFDocument::getJSONContent() const {
     throw JsonLdError(JsonLdError::LoadingDocumentFailed,
                       "No JSON content for this RDFDocument");
 }

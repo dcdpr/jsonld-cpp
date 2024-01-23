@@ -1,7 +1,6 @@
 #pragma ide diagnostic ignored "cert-err58-cpp"
 #include <jsonld-cpp/JsonLdError.h>
 #include <jsonld-cpp/JsonLdProcessor.h>
-#include <jsonld-cpp/JsonLdUtils.h>
 #include <jsonld-cpp/RemoteDocument.h>
 #include "ManifestLoader.h"
 
@@ -15,7 +14,6 @@
 #pragma clang diagnostic pop
 #pragma GCC diagnostic pop
 
-using nlohmann::json;
 
 // test suite fixture class
 class JsonLdProcessorExpandTest : public ::testing::Test {
@@ -35,6 +33,9 @@ public:
     static void performExpandTest(TestCase &testCase) {
         JsonLdOptions options = testCase.getOptions();
 
+        // set ordered so results are easier to compare
+        options.setOrdered(true);
+
         std::cout << "Id: " << testCase.id << std::endl;
         std::cout << "Name: " << testCase.name << std::endl;
         if(!testCase.options.specVersion.empty())
@@ -49,7 +50,7 @@ public:
         else
             std::cout << std::endl;
 
-        json expanded;
+        nlohmann::ordered_json expanded;
         try {
             expanded = JsonLdProcessor::expand(testCase.input, options);
         }
@@ -75,11 +76,19 @@ public:
         std::unique_ptr<RemoteDocument> expectedDocument =
                 options.getDocumentLoader()->loadDocument(testCase.expect);
 
-        const json& expected = expectedDocument->getJSONContent();
+        const nlohmann::ordered_json& expected = expectedDocument->getJSONContent();
 
-        EXPECT_TRUE(expected == expanded);
+        const nlohmann::json a1 = expanded;
+        const nlohmann::json e1 = expected;
+
+
+        //EXPECT_TRUE(expected == expanded);
         std::cout << "  Actual JSON: " << expanded.dump() << std::endl;
         std::cout << "Expected JSON: " << expected.dump() << std::endl;
+
+        EXPECT_TRUE(a1 == e1);
+        std::cout << "  Actual basic JSON: " << a1.dump() << std::endl;
+        std::cout << "Expected basic JSON: " << e1.dump() << std::endl;
     }
 
     static void performExpandTestFromAlternateManifest(const std::string& testName, const std::string& manifestName) {

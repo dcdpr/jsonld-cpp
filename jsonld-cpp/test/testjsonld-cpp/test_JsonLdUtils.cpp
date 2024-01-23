@@ -1,7 +1,7 @@
+#pragma ide diagnostic ignored "cert-err58-cpp"
 #include <jsonld-cpp/JsonLdUtils.h>
 #include <jsonld-cpp/jsoninc.h>
 
-using nlohmann::json;
 
 #include <gtest/gtest.h>
 #pragma clang diagnostic push
@@ -14,9 +14,9 @@ using nlohmann::json;
 #pragma GCC diagnostic pop
 
 
-TEST(JsonLdUtilsTest, test_iteration_order) {
+TEST(JsonLdUtilsTest, test_iteration_order_basic_json) {
 
-    json j = json::object();
+    nlohmann::json j = nlohmann::json::object();
 
     j["b"] = "b"; j["key_insertion_order"].push_back("b");
     j["c"] = "c"; j["key_insertion_order"].push_back("c");
@@ -24,7 +24,7 @@ TEST(JsonLdUtilsTest, test_iteration_order) {
     j["d"] = "d"; j["key_insertion_order"].push_back("d");
 
     // test that regular order is sorted
-    json::const_iterator it = j.begin();
+    nlohmann::json::const_iterator it = j.begin();
     EXPECT_EQ("a", *it++);
     EXPECT_EQ("b", *it++);
     EXPECT_EQ("c", *it++);
@@ -41,11 +41,11 @@ TEST(JsonLdUtilsTest, test_iteration_order) {
 
 TEST(JsonLdUtilsTest, null_insertions) {
 
-    json j = json::object();
+    nlohmann::ordered_json j = nlohmann::ordered_json::object();
 
     // test that different ways of inserting null into the json object produce the same result
     j["a"] = nullptr;
-    j["b"] = json();
+    j["b"] = nlohmann::ordered_json();
 
     EXPECT_TRUE(j["a"].is_null());
     EXPECT_TRUE(j["b"].is_null());
@@ -53,7 +53,7 @@ TEST(JsonLdUtilsTest, null_insertions) {
 
 TEST(JsonLdUtilsTest, addValue_keyDoesntExist_createsKeyWithSingleStringValue) {
 
-    json j = json::object();
+    nlohmann::ordered_json j = nlohmann::ordered_json::object();
 
     JsonLdUtils::addValue(j, "key", "value", false);
 
@@ -64,7 +64,7 @@ TEST(JsonLdUtilsTest, addValue_keyDoesntExist_createsKeyWithSingleStringValue) {
 
 TEST(JsonLdUtilsTest, addValue_keyDoesExistWithSingleStringValue_createsArrayAndAppendsValue) {
 
-    json j = json::object();
+    nlohmann::ordered_json j = nlohmann::ordered_json::object();
 
     JsonLdUtils::addValue(j, "key", "value", false);
 
@@ -81,7 +81,7 @@ TEST(JsonLdUtilsTest, addValue_keyDoesExistWithSingleStringValue_createsArrayAnd
 
 TEST(JsonLdUtilsTest, addValue_keyDoesExistWithArrayOfValues_appendsValue) {
 
-    json j = json::object();
+    nlohmann::ordered_json j = nlohmann::ordered_json::object();
 
     JsonLdUtils::addValue(j, "key", "value", false);
 
@@ -101,7 +101,7 @@ TEST(JsonLdUtilsTest, addValue_keyDoesExistWithArrayOfValues_appendsValue) {
 
 TEST(JsonLdUtilsTest, addValue_keyDoesntExist_createsArrayWithAsArrayFlag) {
 
-    json j = json::object();
+    nlohmann::ordered_json j = nlohmann::ordered_json::object();
 
     JsonLdUtils::addValue(j, "key", "value", true);
 
@@ -113,7 +113,7 @@ TEST(JsonLdUtilsTest, addValue_keyDoesntExist_createsArrayWithAsArrayFlag) {
 
 TEST(JsonLdUtilsTest, addValue_keyDoesExist_appendsValueWithAsArrayFlag) {
 
-    json j = json::object();
+    nlohmann::ordered_json j = nlohmann::ordered_json::object();
 
     JsonLdUtils::addValue(j, "key", "value", false);
 
@@ -128,9 +128,9 @@ TEST(JsonLdUtilsTest, addValue_keyDoesExist_appendsValueWithAsArrayFlag) {
 
 TEST(JsonLdUtilsTest, addValue_keyDoesntExist_appendsArrayOfValues) {
 
-    json j = json::object();
+    nlohmann::ordered_json j = nlohmann::ordered_json::object();
 
-    JsonLdUtils::addValue(j, "key", json::array({"value", "value2"}), false);
+    JsonLdUtils::addValue(j, "key", nlohmann::ordered_json::array({"value", "value2"}), false);
 
     EXPECT_TRUE(!j["key"].is_null());
     EXPECT_TRUE(j["key"].is_array());
@@ -141,9 +141,9 @@ TEST(JsonLdUtilsTest, addValue_keyDoesntExist_appendsArrayOfValues) {
 
 TEST(JsonLdUtilsTest, addValue_keyDoesntExist_appendsArrayOfValuesWithAsArrayFlag) {
 
-    json j = json::object();
+    nlohmann::ordered_json j = nlohmann::ordered_json::object();
 
-    JsonLdUtils::addValue(j, "key", json::array({"value", "value2"}), true);
+    JsonLdUtils::addValue(j, "key", nlohmann::ordered_json::array({"value", "value2"}), true);
 
     EXPECT_TRUE(!j["key"].is_null());
     EXPECT_TRUE(j["key"].is_array());
@@ -154,7 +154,7 @@ TEST(JsonLdUtilsTest, addValue_keyDoesntExist_appendsArrayOfValuesWithAsArrayFla
 
 TEST(JsonLdUtilsTest, containsOrEquals_StringVsString) {
 
-    json j = "a";
+    nlohmann::ordered_json j = "a";
 
     EXPECT_TRUE(JsonLdUtils::containsOrEquals(j, "a"));
     EXPECT_FALSE(JsonLdUtils::containsOrEquals(j, "b"));
@@ -162,7 +162,7 @@ TEST(JsonLdUtilsTest, containsOrEquals_StringVsString) {
 
 TEST(JsonLdUtilsTest, containsOrEquals_ArrayVsString) {
 
-    json j = json::array({"a", "b", "c"});
+    nlohmann::ordered_json j = nlohmann::ordered_json::array({"a", "b", "c"});
 
     EXPECT_TRUE(JsonLdUtils::containsOrEquals(j, "b"));
     EXPECT_FALSE(JsonLdUtils::containsOrEquals(j, "d"));
@@ -170,7 +170,7 @@ TEST(JsonLdUtilsTest, containsOrEquals_ArrayVsString) {
 
 TEST(JsonLdUtilsTest, containsOrEquals_ObjectVsString) {
 
-    json j = json::object({{"a", 1}, {"b", 2}, {"c", 3}});
+    nlohmann::ordered_json j = nlohmann::ordered_json::object({{"a", 1}, {"b", 2}, {"c", 3}});
 
     EXPECT_TRUE(JsonLdUtils::containsOrEquals(j, "b"));
     EXPECT_FALSE(JsonLdUtils::containsOrEquals(j, "d"));

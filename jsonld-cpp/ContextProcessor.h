@@ -18,7 +18,7 @@ struct ContextProcessor {
      */
     static Context process(
             const Context & activeContext,
-            const nlohmann::json & localContext,
+            const nlohmann::ordered_json & localContext,
             const std::string & baseURL,
             bool overrideProtected = false,
             bool propagate = true,

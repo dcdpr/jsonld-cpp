@@ -4,7 +4,7 @@
 #include <utility>
 #include <sstream>
 
-JSONDocument::JSONDocument(MediaType icontentType, nlohmann::json idocument, std::string idocumentUrl)
+JSONDocument::JSONDocument(MediaType icontentType, nlohmann::ordered_json idocument, std::string idocumentUrl)
         : contentType(std::move(icontentType)), documentUrl(std::move(idocumentUrl)), document(std::move(idocument))
 {
 }
@@ -26,7 +26,7 @@ const std::string &JSONDocument::getDocumentUrl() const {
     return documentUrl;
 }
 
-const nlohmann::json &JSONDocument::getJSONContent() const {
+const nlohmann::ordered_json &JSONDocument::getJSONContent() const {
     return document;
 }
 
@@ -37,7 +37,7 @@ JSONDocument JSONDocument::of(const MediaType& contentType, std::istream &in, co
         throw JsonLdError(JsonLdError::LoadingDocumentFailed,
                           "Failed to create JSONDocument.");
     std::string fileData {std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>() };
-    nlohmann::json jsonData = nlohmann::json::parse(fileData);
+    nlohmann::ordered_json jsonData = nlohmann::ordered_json::parse(fileData);
     return {contentType, jsonData, documentUrl};
 }
 

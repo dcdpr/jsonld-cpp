@@ -11,7 +11,7 @@ namespace RDF {
 
     class Node {
     protected:
-        nlohmann::json map;
+        nlohmann::ordered_json map;
 
     public:
         Node();

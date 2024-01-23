@@ -8,10 +8,9 @@
 #include "jsonld-cpp/ContextProcessor.h"
 
 using RDF::RDFDataset;
-using nlohmann::json;
+using json = nlohmann::ordered_json;
 
-
-nlohmann::json JsonLdProcessor::expand(const std::string& documentLocation, JsonLdOptions& options) {
+json JsonLdProcessor::expand(const std::string& documentLocation, JsonLdOptions& options) {
 
     // Comments in this function are labeled with numbers that correspond to sections
     // from the description of the expand() function in the JsonLdProcessor interface.
@@ -134,7 +133,8 @@ RDFDataset JsonLdProcessor::toRDF(const std::string& documentLocation, JsonLdOpt
     // 2)
     // Set expanded input to the result of using the expand() method using input and options
     // with ordered set to false.
-    nlohmann::json expandedInput = expand(documentLocation, options);
+    options.setOrdered(false);
+    json expandedInput = expand(documentLocation, options);
 
     // 3-7)
     // Rest of the algorithm in RDFSerializationProcessor::toRDF().

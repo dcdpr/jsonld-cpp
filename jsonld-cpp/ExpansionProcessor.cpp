@@ -3,12 +3,12 @@
 #include "jsonld-cpp/JsonLdUtils.h"
 #include "jsonld-cpp/JsonLdError.h"
 #include "jsonld-cpp/ContextProcessor.h"
-#include "WellFormed.h"
+#include "jsonld-cpp/WellFormed.h"
 #include <set>
 #include <string>
 #include <iostream>
 
-using nlohmann::json;
+using json = nlohmann::ordered_json;
 
 namespace {
 
@@ -283,7 +283,7 @@ namespace {
 
     void expandObjectElement_step13(const std::string *activeProperty, const json &element, const std::string &baseUrl,
              Context &typeScopedContext, const std::string &inputType, Context &activeContext, json &result,
-             json &nests);
+                                    json &nests);
 
     void expandObjectElement_step14(Context &activeContext, const std::string *activeProperty, const json &element,
                                     const std::string &baseUrl, Context &typeScopedContext, json &result,
@@ -294,7 +294,7 @@ namespace {
             const std::string * activeProperty,
             json element,
             const std::string & baseUrl,
-            nlohmann::json * propertyScopedContext,
+            json * propertyScopedContext,
             bool fromMap) {
 
         // Comments in this function are labeled with numbers that correspond to sections
@@ -1009,6 +1009,7 @@ namespace {
                 for (json::iterator it = element_value.begin(); it != element_value.end(); ++it) {
                     value_keys.push_back(it.key());
                 }
+                // todo: if I comment the next line then I fix 7 tests, but that doesn't seem right
                 if(activeContext.getOptions().isOrdered())
                     std::sort(value_keys.begin(), value_keys.end());
 
@@ -1429,10 +1430,10 @@ namespace {
 
 }
 
-nlohmann::json ExpansionProcessor::expand(
+json ExpansionProcessor::expand(
         Context activeContext,
         const std::string *activeProperty,
-        nlohmann::json element,
+        json element,
         const std::string &baseUrl,
         bool fromMap)
 {

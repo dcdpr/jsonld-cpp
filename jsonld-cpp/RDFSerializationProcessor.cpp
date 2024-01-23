@@ -9,16 +9,15 @@
 #include <cmath>
 #include <iostream>
 
-using nlohmann::json;
-
+using json = nlohmann::ordered_json;
 
 namespace {
 
     using namespace RDF;
     using RDF::BlankNode;
 
-    void generateNodeMap(json & element, json &nodeMap, BlankNodeNames &blankNodeNames,
-                         std::string *activeGraph, nlohmann::json *activeSubject,
+    void generateNodeMap(json & element, nlohmann::json &nodeMap, BlankNodeNames &blankNodeNames,
+                         std::string *activeGraph, json *activeSubject,
                          std::string *activeProperty, json *list)
     {
         // Comments in this function are labeled with numbers that correspond to sections
@@ -48,14 +47,14 @@ namespace {
         if (!nodeMap.contains(*activeGraph)) {
             nodeMap[*activeGraph] = json::object();
         }
-        json & graph = nodeMap[*activeGraph];
+        nlohmann::json & graph = nodeMap[*activeGraph];
 
-        json *subjectNode = nullptr;
+        nlohmann::json *subjectNode = nullptr;
         if(activeSubject == nullptr || activeSubject->is_object()) {
             subjectNode = nullptr;
         }
         else if (activeSubject->is_string() &&
-                 graph.contains(activeSubject->get<std::string>())) {
+                graph.contains(activeSubject->get<std::string>())) {
             subjectNode = &graph[activeSubject->get<std::string>()];
         }
 
@@ -163,11 +162,12 @@ namespace {
                 json tmp = { { JsonLdConsts::ID, id } };
                 graph[id] = tmp;
                 // knowing the insertion order comes in handy later in RDFDataset::graphToRDF()
+                // todo: does it still come in handy?
                 graph["key_insertion_order"].push_back(id);
             }
             // 6.4)
             // Reference the value of the id entry of graph using the variable node.
-            json &node = graph[id];
+            nlohmann::json &node = graph[id];
 
             // 6.5)
             // If active subject is a map, a reverse property relationship is being
@@ -200,6 +200,14 @@ namespace {
                     // with the active property entry of subject node. If there is no item
                     // equivalent to reference, append reference to the array. Two maps are
                     // considered equal if they have equivalent map entries.
+                    if(activeSubject == nullptr || activeSubject->is_object()) {
+                        subjectNode = nullptr;
+                    }
+                    else if (activeSubject->is_string() &&
+                            graph.contains(activeSubject->get<std::string>())) {
+                        subjectNode = &graph[activeSubject->get<std::string>()];
+                    }
+
                     JsonLdUtils::mergeValue(*subjectNode, *activeProperty, reference);
                 }
                 // 6.6.3)
@@ -224,7 +232,7 @@ namespace {
             // been detected and processing is aborted. Otherwise, continue by removing the @index
             // entry from element.
             if (element.contains(JsonLdConsts::INDEX)) {
-                json elemIndex = element[JsonLdConsts::INDEX];
+                nlohmann::json elemIndex = element[JsonLdConsts::INDEX];
                 if (node.contains(JsonLdConsts::INDEX)) {
                     if (node.at(JsonLdConsts::INDEX) != elemIndex) {
                         throw JsonLdError(JsonLdError::ConflictingIndexes); // todo: I don't think there is a test for this, can we ask for one or make one?
@@ -315,7 +323,7 @@ namespace {
         }
     }
 
-    void generateNodeMap(json & element, json & nodeMap, BlankNodeNames &blankNodeNames)
+    void generateNodeMap(json & element, nlohmann::json & nodeMap, BlankNodeNames &blankNodeNames)
     {
         std::string defaultGraph(JsonLdConsts::DEFAULT);
         generateNodeMap(element, nodeMap, blankNodeNames, &defaultGraph, nullptr, nullptr, nullptr);
@@ -769,7 +777,7 @@ namespace {
 
 
     RDF::RDFDataset
-    toRDF(nlohmann::json nodeMap, BlankNodeNames & blankNodeNames, const JsonLdOptions &options) {
+    toRDF(json nodeMap, BlankNodeNames & blankNodeNames, const JsonLdOptions &options) {
 
         // Comments in this function are labeled with numbers that correspond to sections
         // from the description of the Deserialize JSON-LD to RDF algorithm.
@@ -795,7 +803,7 @@ namespace {
 
 }
 
-RDF::RDFDataset RDFSerializationProcessor::toRDF(nlohmann::json expandedInput, const JsonLdOptions& options) {
+RDF::RDFDataset RDFSerializationProcessor::toRDF(json expandedInput, const JsonLdOptions& options) {
 
     // Comments in this function are labeled with numbers that correspond to sections
     // from the description of the Deserialize JSON-LD to RDF algorithm.
@@ -810,8 +818,8 @@ RDF::RDFDataset RDFSerializationProcessor::toRDF(nlohmann::json expandedInput, c
 
     // 4)
     // Create a new map node map.
-    auto nodeMap = json::object();
-    nodeMap[JsonLdConsts::DEFAULT] = json::object();
+    auto nodeMap = nlohmann::json::object();
+    nodeMap[JsonLdConsts::DEFAULT] = nlohmann::json::object();
 
     // 5)
     // Invoke the Node Map Generation algorithm, passing expanded input as element and node map.

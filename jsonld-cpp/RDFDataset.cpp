@@ -3,7 +3,6 @@
 #include "jsonld-cpp/BlankNodeNames.h"
 #include "jsonld-cpp/NQuadsSerialization.h"
 
-using nlohmann::json;
 
 namespace RDF {
 

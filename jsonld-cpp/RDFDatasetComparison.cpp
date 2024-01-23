@@ -2,7 +2,6 @@
 #include <set>
 #include <iostream>
 
-using nlohmann::json;
 
 namespace {
 

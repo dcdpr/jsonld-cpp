@@ -7,7 +7,6 @@
 #include <sstream>
 #include <fstream>
 
-using json = nlohmann::json;
 
 namespace {
 
