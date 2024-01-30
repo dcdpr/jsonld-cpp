@@ -299,7 +299,13 @@ namespace {
             for (json::iterator it = element.begin(); it != element.end(); ++it) {
                 keys.push_back(it.key());
             }
-            std::sort(keys.begin(), keys.end());
+
+            // Note: The above statement for step 6.12 states "...ordered by property..."
+            // but if we run this sort here, then toRDF test c019 will fail.
+            // See https://github.com/w3c/json-ld-api/issues/586
+
+            // std::sort(keys.begin(), keys.end());
+
             for (auto property : keys) {
                 json & propertyValue = element[property];
                 // 6.12.1)
