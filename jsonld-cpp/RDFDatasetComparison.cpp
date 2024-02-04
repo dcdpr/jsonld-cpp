@@ -1,5 +1,7 @@
 #include "jsonld-cpp/RDFDatasetComparison.h"
+#include <map>
 #include <set>
+#include <string>
 #include <iostream>
 
 
@@ -65,18 +67,20 @@ namespace {
     compareNQuads(
             const std::vector<RDFQuad>& nquads1,
             const std::vector<RDFQuad>& nquads2,
-            std::map<std::string, std::string> *mapping) { // todo, can we make this a smart pointer to get rid of null checking all over the place?
+            std::map<std::string, std::string> *mapping) {
 
         std::vector<RDFQuad> remaining(nquads2);
 
+        // foreach quad in first collection
         for (RDFQuad nquad1 : nquads1) {
 
             bool found = false;
 
+            // see if second collection has a matching quad
             for (auto nquad2_it = remaining.begin(); nquad2_it != remaining.end(); ) {
                 found = compareNQuad(*nquad2_it, nquad1, mapping);
 
-                if (found) { // todo (rewrite): found == if the 2nd collection has a matching node
+                if (found) {
                     remaining.erase(nquad2_it);
                     break;
                 } else {
@@ -97,8 +101,7 @@ namespace {
         int subjectCount = 0;
         int graphCount = 0;
 
-        std::set<std::string> objects;
-        std::set<std::string> subjects;
+        std::set<std::string> names;
 
     public:
         void addObject(const std::string & object);
@@ -122,27 +125,24 @@ namespace {
         std::vector<std::size_t> indices_;
         std::vector<std::size_t> mapping_;
 
-        std::size_t iterator_;
-        int permutations_;
+        std::size_t iterator_{};
+        int numPermutations_;
 
         void init();
         static int factorial(int number);
-        void swap_mapping(std::size_t a, std::size_t b);
 
     public:
         NodeCluster(
                 std::map<std::string, std::size_t> source,
-                std::vector<std::string> target,
-                int permutations);
+                std::vector<std::string> target);
 
-        static NodeCluster create(const std::vector<std::string>& source, const std::vector<std::string>& target);
-
+        static std::shared_ptr<NodeCluster> create(const std::vector<std::string>& source, const std::vector<std::string>& target);
 
         bool next();
 
         std::string mapping(const std::string& label) const;
 
-        int permutations() const;
+        int numPermutations() const;
 
     };
 
@@ -150,11 +150,13 @@ namespace {
     private:
         std::map<std::string, NodeCategory> categories;
 
+        void ensureCategoryForLabel(const std::string &label);
+
         void addSubject(const std::string &label, const std::string &object);
 
         void addSubject(const std::string &label);
 
-        void addObject(const std::string &label, const std::string &subject);
+        void addObject(const std::string &label, const std::string &object);
 
         void addObject(const std::string &label);
 
@@ -168,39 +170,35 @@ namespace {
         size_type size();
 
         std::map<NodeCategory, std::vector<std::string>> reduce();
+
     };
 
     class NodeMapper {
     private:
-        std::map<std::string, NodeCluster> mapping_;
-        std::vector<NodeCluster> clusters_;
+        std::map<std::string, std::shared_ptr<NodeCluster>> mapping_;
         int permutations_;
         int iterator_;
 
         NodeMapper();
+        NodeMapper(int permutations, std::map<std::string, std::shared_ptr<NodeCluster>> mapping);
 
-        NodeMapper(int permutations, std::map<std::string, NodeCluster> mapping, std::vector<NodeCluster> clusters);
-
-        static std::unique_ptr<std::map<std::string, NodeCluster>> merge(
+        static std::unique_ptr<std::map<std::string, std::shared_ptr<NodeCluster>>> merge(
                 const std::map<NodeCategory, std::vector<std::string>>& reducedSource,
                 const std::map<NodeCategory, std::vector<std::string>>& reducedTarget,
-                std::vector<NodeCluster> & clusters);
+                int & permutations);
+
+        std::vector<NodeCluster*> getClusters();
 
     public:
-
-        int permutations() const;
-
-        bool hasNext() const;
-
-        std::map<std::string, std::string> next();
-
         static NodeMapper create(const std::vector<RDFQuad>& from, const std::vector<RDFQuad>& to);
-
+        int permutations() const;
+        bool hasNext() const;
+        std::map<std::string, std::string> next();
     };
 
     void NodeCategory::addObject(const std::string &object) {
         objectCount++;
-        objects.insert(object);
+        names.insert(object);
     }
 
     void NodeCategory::addObject() {
@@ -209,7 +207,7 @@ namespace {
 
     void NodeCategory::addSubject(const std::string &subject) {
         subjectCount++;
-        objects.insert(subject);
+        names.insert(subject);
     }
 
     void NodeCategory::addSubject() {
@@ -221,26 +219,24 @@ namespace {
     }
 
     bool NodeCategory::operator<(const NodeCategory &rhs) const {
-        return std::tie(objectCount, subjectCount, graphCount, objects, subjects) <
-               std::tie(rhs.objectCount, rhs.subjectCount, rhs.graphCount, rhs.objects, rhs.subjects);
+        return std::tie(objectCount, subjectCount, graphCount, names) <
+               std::tie(rhs.objectCount, rhs.subjectCount, rhs.graphCount, rhs.names);
     }
 
-    NodeCluster::NodeCluster(std::map<std::string, std::size_t> source, std::vector<std::string> target,
-                             int permutations)
-            : source_(std::move(source)), target_(std::move(target)), permutations_(permutations) {
-        indices_.assign(source_.size(), 0);
-        mapping_.assign(source_.size(), 0);
-        iterator_ = 0;
+    NodeCluster::NodeCluster(std::map<std::string, std::size_t> source, std::vector<std::string> target)
+            : source_(std::move(source)), target_(std::move(target)), iterator_(0) {
+        numPermutations_ = factorial(static_cast<int>(source_.size()));
         init();
     }
 
     void NodeCluster::init() {
-        indices_.assign(indices_.size(), 0);
+        indices_.assign(source_.size(), 0);
+        mapping_.assign(source_.size(), 0);
         std::iota(mapping_.begin(), mapping_.end(), 0);
         iterator_ = 0;
     }
 
-    NodeCluster NodeCluster::create(const std::vector<std::string> &source, const std::vector<std::string> &target) {
+    std::shared_ptr<NodeCluster> NodeCluster::create(const std::vector<std::string> &source, const std::vector<std::string> &target) {
 
         if (source.size() != target.size()) {
             throw std::invalid_argument("source.size() != target.size() in NodeCluster");
@@ -251,19 +247,15 @@ namespace {
             sourceMap.insert(std::make_pair(s, sourceMap.size()));
         }
 
-        return {sourceMap, target, factorial(static_cast<int>(source.size()))};
+        return std::make_shared<NodeCluster>(sourceMap, target);
     }
 
     int NodeCluster::factorial(int number) {
         int result = 1;
         for(int i=1; i <= number; i++){
-            result = result * i;
+            result *= i;
         }
         return result;
-    }
-
-    void NodeCluster::swap_mapping(std::size_t a, std::size_t b) {
-        std::swap(mapping_[a], mapping_[b]);
     }
 
     bool NodeCluster::next() {
@@ -274,7 +266,9 @@ namespace {
 
         while (iterator_ < indices_.size()) {
             if (indices_[iterator_] < iterator_) {
-                swap_mapping((iterator_ % 2 == 0 ?  0 : indices_[iterator_]), iterator_);
+                std::swap(
+                        mapping_[(iterator_ % 2 == 0 ? 0 : indices_[iterator_])],
+                        mapping_[iterator_]);
                 indices_[iterator_]++;
                 iterator_ = 0;
                 break;
@@ -296,58 +290,40 @@ namespace {
         return target_[mapping_[source_.at(label)]];
     }
 
-    int NodeCluster::permutations() const {
-        return permutations_;
+    int NodeCluster::numPermutations() const {
+        return numPermutations_;
+    }
+
+    void NodeClassifier::ensureCategoryForLabel(const std::string &label) {
+        if (!categories.count(label)) {
+            NodeCategory nodeCategory;
+            categories[label] = nodeCategory;
+        }
     }
 
     void NodeClassifier::addSubject(const std::string &label, const std::string &object) {
-        if (categories.count(label)) {
-            categories[label].addSubject(object);
-        } else {
-            NodeCategory nodeCategory;
-            nodeCategory.addSubject(object);
-            categories.insert(std::make_pair(label, nodeCategory));
-        }
+        ensureCategoryForLabel(label);
+        categories[label].addSubject(object);
     }
 
     void NodeClassifier::addSubject(const std::string &label) {
-        if (categories.count(label)) {
-            categories[label].addSubject();
-        } else {
-            NodeCategory nodeCategory;
-            nodeCategory.addSubject();
-            categories.insert(std::make_pair(label, nodeCategory));
-        }
+        ensureCategoryForLabel(label);
+        categories[label].addSubject();
     }
 
-    void NodeClassifier::addObject(const std::string &label, const std::string &subject) {
-        if (categories.count(label)) {
-            categories[label].addObject(subject);
-        } else {
-            NodeCategory nodeCategory;
-            nodeCategory.addObject(subject);
-            categories.insert(std::make_pair(label, nodeCategory));
-        }
+    void NodeClassifier::addObject(const std::string &label, const std::string &object) {
+        ensureCategoryForLabel(label);
+        categories[label].addObject(object);
     }
 
     void NodeClassifier::addObject(const std::string &label) {
-        if (categories.count(label)) {
-            categories[label].addObject();
-        } else {
-            NodeCategory nodeCategory;
-            nodeCategory.addObject();
-            categories.insert(std::make_pair(label, nodeCategory));
-        }
+        ensureCategoryForLabel(label);
+        categories[label].addObject();
     }
 
     void NodeClassifier::addGraph(const std::string &label) {
-        if (categories.count(label)) {
-            categories[label].addGraph();
-        } else {
-            NodeCategory nodeCategory;
-            nodeCategory.addGraph();
-            categories.insert(std::make_pair(label, nodeCategory));
-        }
+        ensureCategoryForLabel(label);
+        categories[label].addGraph();
     }
 
     void NodeClassifier::add(const RDFQuad &nquad) {
@@ -396,21 +372,22 @@ namespace {
             : permutations_(-1), iterator_(0)
     { }
 
-    NodeMapper::NodeMapper(int permutations, std::map<std::string, NodeCluster> mapping,
-                           std::vector<NodeCluster> clusters)
-            : mapping_(mapping), clusters_(clusters), permutations_(permutations), iterator_(0)
+    NodeMapper::NodeMapper(int permutations, std::map<std::string, std::shared_ptr<NodeCluster>> mapping)
+            : mapping_(mapping), permutations_(permutations), iterator_(0)
     { }
 
-    std::unique_ptr<std::map<std::string, NodeCluster>>
+    std::unique_ptr<std::map<std::string, std::shared_ptr<NodeCluster>>>
     NodeMapper::merge(const std::map<NodeCategory, std::vector<std::string>> &reducedSource,
                       const std::map<NodeCategory, std::vector<std::string>> &reducedTarget,
-                      std::vector<NodeCluster> &clusters) {
+                      int &permutations) {
 
         if (reducedSource.size() != reducedTarget.size()) {
             return nullptr;
         }
 
-        std::unique_ptr<std::map<std::string, NodeCluster>> mapping(new std::map<std::string, NodeCluster>());
+        std::unique_ptr<std::map<std::string, std::shared_ptr<NodeCluster>>> mapping(new std::map<std::string, std::shared_ptr<NodeCluster>>());
+
+        permutations = 1;
 
         for (const auto &element : reducedSource) {
 
@@ -423,10 +400,10 @@ namespace {
                 return nullptr;
             }
 
-            NodeCluster cluster = NodeCluster::create(element.second, target);
-            clusters.push_back(cluster);
+            std::shared_ptr<NodeCluster> pcluster = NodeCluster::create(element.second, target);
+            permutations *= pcluster->numPermutations();
             for(const auto &l : element.second)
-                mapping->insert(std::make_pair(l, cluster));
+                mapping->insert(std::make_pair(l, pcluster));
         }
 
         return mapping;
@@ -448,8 +425,8 @@ namespace {
         }
 
         if (iterator_ > 0) {
-            for (NodeCluster cluster : clusters_) {
-                if (!cluster.next()) {
+            for (NodeCluster *cluster : getClusters()) {
+                if (!cluster->next()) {
                     break;
                 }
             }
@@ -458,12 +435,20 @@ namespace {
         std::map<std::string, std::string> result;
 
         for (const auto &element : mapping_) {
-            result.insert(std::make_pair(element.first, element.second.mapping(element.first)));
+            result.insert(std::make_pair(element.first, element.second->mapping(element.first)));
         }
 
         iterator_++;
 
         return result;
+    }
+
+    std::vector<NodeCluster*> NodeMapper::getClusters() {
+        std::set<NodeCluster*> s;
+        for( auto& nc : mapping_) {
+            s.insert(nc.second.get());
+        }
+        return {s.begin(), s.end()};
     }
 
     NodeMapper NodeMapper::create(const std::vector<RDFQuad> &from, const std::vector<RDFQuad> &to) {
@@ -487,17 +472,12 @@ namespace {
 
         auto reducedTarget = targetClassifier.reduce();
 
-        std::vector<NodeCluster> clusters;
-
-        auto mapping = merge(reducedSource, reducedTarget, clusters);
+        int permutations = 0;
+        auto mapping = merge(reducedSource, reducedTarget, permutations);
         if(!mapping)
             return {};
 
-        int permutations = 1;
-        std::accumulate(clusters.begin(), clusters.end(), permutations,
-                        [](int a, const NodeCluster& b) { return a * b.permutations(); });
-
-        return {permutations, *mapping, clusters};
+        return {permutations, *mapping};
     }
 
 }
@@ -586,8 +566,8 @@ namespace RDF {
 
             iteration++;
 
-            if (iteration >=  50) {
-                std::cerr << "Too many permutations [" << mapper.permutations() << "]" << std::endl;
+            if (iteration >= 50) {
+                std::cerr << "Too many iterations for permutations [" << iteration << ", " << mapper.permutations() << "]" << std::endl;
                 return false;
             }
         }
