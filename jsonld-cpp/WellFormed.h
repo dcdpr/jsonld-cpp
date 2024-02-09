@@ -98,8 +98,6 @@ public:
      */
     static bool rdf_graph_name(const std::string& str);
 
-
-
 };
 
 

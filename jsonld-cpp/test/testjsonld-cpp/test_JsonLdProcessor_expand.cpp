@@ -41,10 +41,10 @@ public:
         if(!testCase.options.specVersion.empty())
             std::cout << "SpecVersion: " << testCase.options.specVersion;
         if(testCase.options.specVersion == "json-ld-1.1") {
-            std::cout << std::endl;
+            std::cout << std::endl << std::endl;
         }
         else if(testCase.options.specVersion == "json-ld-1.0") {
-            std::cout << " ...skipping for now.\n";
+            std::cout << " ...skipping for now." << std::endl;
             GTEST_SKIP();
         }
         else
@@ -78,17 +78,12 @@ public:
 
         const nlohmann::ordered_json& expected = expectedDocument->getJSONContent();
 
-        const nlohmann::json a1 = expanded;
-        const nlohmann::json e1 = expected;
+        // Note: The ordered_json object that JsonLdProcessor::expand() returns will not be easily comparable
+        // unless we convert it to a regular json object so the elements are sorted lexicographically.
+        const nlohmann::json expandedSorted = expanded;
+        const nlohmann::json expectedSorted = expected;
 
-
-        //EXPECT_TRUE(expected == expanded);
-        std::cout << "  Actual JSON: " << expanded.dump() << std::endl;
-        std::cout << "Expected JSON: " << expected.dump() << std::endl;
-
-        EXPECT_TRUE(a1 == e1);
-        std::cout << "  Actual basic JSON: " << a1.dump() << std::endl;
-        std::cout << "Expected basic JSON: " << e1.dump() << std::endl;
+        EXPECT_TRUE(expandedSorted == expectedSorted);
     }
 
     static void performExpandTestFromAlternateManifest(const std::string& testName, const std::string& manifestName) {

@@ -2,7 +2,6 @@
 #include "jsonld-cpp/RDFQuad.h"
 #include "jsonld-cpp/RDFTriple.h"
 #include "jsonld-cpp/RDFDataset.h"
-#include "jsonld-cpp/BlankNodeNames.h"
 #include "jsonld-cpp/RDFRegex.h"
 #include "jsonld-cpp/JsonLdError.h"
 
@@ -11,6 +10,7 @@
 #include <vector>
 #include <iomanip>
 #include <regex>
+#include <iostream>
 
 
 namespace {
@@ -74,83 +74,110 @@ namespace {
         }
     }
 
+    void extractUnicodeCodepoint(const std::smatch &match, std::string &u) {
+        std::string hex = match[2].matched ? match[2].str() : match[3].str(); // todo: magic numbers?
+        long v = std::stol(hex, nullptr, 16);
+
+        auto it = std::back_inserter(u);
+        if (v < 0x80)                        // one octet
+            *(it++) = static_cast<char>(v);
+        else if (v < 0x800) {                // two octets
+            *(it++) = static_cast<char>((v >> 6) | 0xc0);
+            *(it++) = static_cast<char>((v & 0x3f) | 0x80);
+        } else if (v < 0x10000) {            // three octets
+            *(it++) = static_cast<char>((v >> 12) | 0xe0);
+            *(it++) = static_cast<char>(((v >> 6) & 0x3f) | 0x80);
+            *(it++) = static_cast<char>((v & 0x3f) | 0x80);
+        } else {                             // four octets
+            *(it++) = static_cast<char>((v >> 18) | 0xf0);
+            *(it++) = static_cast<char>(((v >> 12) & 0x3f) | 0x80);
+            *(it++) = static_cast<char>(((v >> 6) & 0x3f) | 0x80);
+            *(it++) = static_cast<char>((v & 0x3f) | 0x80);
+        }
+    }
+
+    bool extractControlCharacter(const std::smatch &match, std::string &u) {
+        char c = match[1].str()[0];
+        switch (c) {
+            case 'b':
+                u = "\b";
+                break;
+            case 't':
+                u = "\t";
+                break;
+            case 'n':
+                u = "\n";
+                break;
+            case 'v':
+                u = "\v";
+                break;
+            case 'f':
+                u = "\f";
+                break;
+            case 'r':
+                u = "\r";
+                break;
+            case '\'':
+                u = "'";
+                break;
+            case '\"':
+                u = "\"";
+                break;
+            case '\\':
+                u = '\\';
+                break;
+            default:
+                return false;
+        }
+        return true;
+    }
+
     /**
      * Un-escapes input string, writes output to given stringstream
      * See N-Quads escaping rules: https://www.w3.org/TR/turtle/#sec-escapes
      */
     void unescape(const std::string &str, std::stringstream &ss) {
-        std::string rval = str;
-        if (!str.empty()) {
-            std::regex charsRgx(RDFRegex::UCHAR_MATCHED);
-            auto chars_begin =
-                    std::sregex_iterator(str.begin(), str.end(), charsRgx);
-            auto chars_end = std::sregex_iterator();
-            for (std::sregex_iterator reg_it = chars_begin; reg_it != chars_end; ++reg_it) {
-                const std::smatch &match = *reg_it;
-                std::string match_str = match.str();
 
-                std::string u;
-                if (!match[1].matched) {
-                    std::string hex = match[2].matched ? match[2].str() : match[3].str();
-                    long v = std::stol(hex, nullptr, 16);
+        if(str.empty())
+            return;
 
-                    auto it = std::back_inserter(u);
-                    if (v < 0x80)                        // one octet
-                        *(it++) = static_cast<char>(v);
-                    else if (v < 0x800) {                // two octets
-                        *(it++) = static_cast<char>((v >> 6) | 0xc0);
-                        *(it++) = static_cast<char>((v & 0x3f) | 0x80);
-                    } else if (v < 0x10000) {            // three octets
-                        *(it++) = static_cast<char>((v >> 12) | 0xe0);
-                        *(it++) = static_cast<char>(((v >> 6) & 0x3f) | 0x80);
-                        *(it++) = static_cast<char>((v & 0x3f) | 0x80);
-                    } else {                             // four octets
-                        *(it++) = static_cast<char>((v >> 18) | 0xf0);
-                        *(it++) = static_cast<char>(((v >> 12) & 0x3f) | 0x80);
-                        *(it++) = static_cast<char>(((v >> 6) & 0x3f) | 0x80);
-                        *(it++) = static_cast<char>((v & 0x3f) | 0x80);
-                    }
-                } else {
-                    char c = match[1].str()[0];
-                    switch (c) {
-                        case 'b':
-                            u = "\b";
-                            break;
-                        case 't':
-                            u = "\t";
-                            break;
-                        case 'n':
-                            u = "\n";
-                            break;
-                        case 'v':
-                            u = "\v";
-                            break;
-                        case 'f':
-                            u = "\f";
-                            break;
-                        case 'r':
-                            u = "\r";
-                            break;
-                        case '\'':
-                            u = "'";
-                            break;
-                        case '\"':
-                            u = "\"";
-                            break;
-                        case '\\':
-                            u = "\\";
-                            break;
-                        default:
-                            continue;
-                    }
-                }
-                std::regex pat(NQuadsSerialization::escape(match[0].str()));
-                rval = std::regex_replace(rval, pat, u);
-            }
+        std::regex charsRgx(RDFRegex::UCHAR_MATCHED);
+        auto chars_begin = std::sregex_iterator(str.begin(), str.end(), charsRgx);
+        auto chars_end = std::sregex_iterator();
 
+        if(chars_begin == chars_end) {
+            ss << str;
+            return;
         }
 
-        ss << rval;
+        std::string unescaped_result;
+        auto out = std::back_inserter(unescaped_result);
+        std::smatch last_match;
+
+        for (std::sregex_iterator reg_it = chars_begin; reg_it != chars_end; ++reg_it) {
+            const std::smatch &match = *reg_it;
+
+            out = std::copy(match.prefix().first, match.prefix().second, out);
+
+            std::string u;
+            if (!match[1].matched) {
+                extractUnicodeCodepoint(match, u);
+            } else {
+                if(!extractControlCharacter(match, u))
+                {
+                    last_match = match;
+                    continue;
+                }
+            }
+
+            out = match.format(out, u, std::regex_constants::format_default);
+
+            last_match = match;
+        }
+        if(last_match.ready())
+            std::copy(last_match.suffix().first, last_match.suffix().second, out);
+
+        ss << unescaped_result;
     }
 
 }
@@ -161,7 +188,7 @@ namespace {
  */
 void NQuadsSerialization::outputIRI(const std::string & value, std::stringstream & ss) {
     ss << "<";
-    ::escape(value, ss);
+    ss << value;
     ss << ">";
 }
 
@@ -262,11 +289,7 @@ std::string NQuadsSerialization::toNQuad(const RDF::RDFQuad& quad) {
 }
 
 std::string NQuadsSerialization::toNQuad(const RDF::RDFTriple& triple) {
-    // converting an RDFTriple to a nquad might not be a real thing (todo: refer to something in the spec), but it is nice to do
-    // so RDFTriple.toString() can quickly convert itself to a string for printing/debugging
-
     return toNQuad({triple.getSubject(), triple.getPredicate(), triple.getObject(), nullptr});
-
 }
 
 RDF::RDFDataset NQuadsSerialization::parse(std::string input) {

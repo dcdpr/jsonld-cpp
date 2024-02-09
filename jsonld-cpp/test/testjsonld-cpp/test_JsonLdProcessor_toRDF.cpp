@@ -40,10 +40,10 @@ public:
         if(!testCase.options.specVersion.empty())
             std::cout << "SpecVersion: " << testCase.options.specVersion;
         if(testCase.options.specVersion == "json-ld-1.1") {
-            std::cout << std::endl;
+            std::cout << std::endl << std::endl;
         }
         else if(testCase.options.specVersion == "json-ld-1.0") {
-            std::cout << " ...skipping for now.\n";
+            std::cout << " ...skipping for now." << std::endl;
             GTEST_SKIP();
         }
         else
@@ -65,9 +65,6 @@ public:
             RDF::RDFDataset expected = expectedDocument->getRDFContent();
 
             EXPECT_TRUE(areIsomorphic(actual, expected));
-
-            std::cout << "  Actual RDF: " << NQuadsSerialization::toNQuads(actual) << std::endl;
-            std::cout << "Expected RDF: " << NQuadsSerialization::toNQuads(expected) << std::endl;
 
         }
         catch (JsonLdError &e) {
