@@ -285,15 +285,14 @@ namespace {
 
             // 13.7)
             // Set the term definition of term in active context to definition and the value
-            // associated with defined's entry term to true and return.
+            // associated with defined's entry term to true.
             activeContext.getTermDefinitions()[term] = definition;
             defined[term] = true;
-            return;
         }
 
         // 14)
-        // If value contains the entry @id and its value does not equal term
-        if (value.contains(JsonLdConsts::ID) &&
+        // Otherwise, if value contains the entry @id and its value does not equal term
+        else if (value.contains(JsonLdConsts::ID) &&
             (!value.at(JsonLdConsts::ID).is_string() || term != value.at(JsonLdConsts::ID))) {
 
             auto id = value.at(JsonLdConsts::ID);
