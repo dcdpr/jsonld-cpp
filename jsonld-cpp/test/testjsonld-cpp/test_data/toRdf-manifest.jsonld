@@ -397,6 +397,13 @@
       "input": "toRdf/0132-in.jsonld",
       "expect": "toRdf/0132-out.nq"
     }, {
+      "@id": "#t0133",
+      "@type": ["jld:PositiveEvaluationTest", "jld:ToRDFTest"],
+      "name": "Reverse term with property based indexed container",
+      "purpose": "Expanding a reverse term using @container: @index and @index set to a property (from expand#t0131)",
+      "input": "toRdf/0133-in.jsonld",
+      "expect": "toRdf/0133-out.nq"
+    }, {
       "@id": "#tc001",
       "@type": ["jld:PositiveEvaluationTest", "jld:ToRDFTest"],
       "name": "adding new term",
@@ -683,6 +690,22 @@
       "purpose": "Adding a minimal/empty property-scoped context should not affect expansion of terms defined in the outer scope.",
       "input": "toRdf/c036-in.jsonld",
       "expect": "toRdf/c036-out.nq",
+      "option": {"specVersion": "json-ld-1.1"}
+    }, {
+      "@id": "#tc037",
+      "@type": ["jld:PositiveEvaluationTest", "jld:ToRDFTest"],
+      "name": "property-scoped contexts which are alias of @nest",
+      "purpose": "Nesting terms may have property-scoped contexts defined.",
+      "input": "toRdf/c037-in.jsonld",
+      "expect": "toRdf/c037-out.nq",
+      "option": {"specVersion": "json-ld-1.1"}
+    }, {
+      "@id": "#tc038",
+      "@type": ["jld:PositiveEvaluationTest", "jld:ToRDFTest"],
+      "name": "Bibframe example (poor-mans inferrence)",
+      "purpose": "Nesting terms may have property-scoped contexts defined.",
+      "input": "toRdf/c038-in.jsonld",
+      "expect": "toRdf/c038-out.nq",
       "option": {"specVersion": "json-ld-1.1"}
     }, {
       "@id": "#tdi01",
@@ -3341,6 +3364,14 @@
       "option": {"specVersion": "json-ld-1.1"},
       "input": "toRdf/pr40-in.jsonld",
       "expect": "toRdf/pr40-out.nq"
+    }, {
+      "@id": "#tpr41",
+      "@type": ["jld:PositiveEvaluationTest", "jld:ToRDFTest"],
+      "name": "Allows protected redefinition of equivalent id terms",
+      "purpose": "Check protected redefinition of equivalent id terms in different forms.",
+      "option": {"specVersion": "json-ld-1.1"},
+      "input": "toRdf/pr41-in.jsonld",
+      "expect": "toRdf/pr41-out.nq"
     }, {
       "@id": "#trt01",
       "@type": ["jld:PositiveEvaluationTest", "jld:ToRDFTest"],

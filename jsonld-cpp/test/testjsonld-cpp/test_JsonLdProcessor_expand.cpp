@@ -84,6 +84,8 @@ public:
         const nlohmann::json expectedSorted = expected;
 
         EXPECT_TRUE(expandedSorted == expectedSorted);
+        std::cout << "  Actual basic JSON: " << expandedSorted.dump() << std::endl;
+        std::cout << "Expected basic JSON: " << expectedSorted.dump() << std::endl;
     }
 
     static void performExpandTestFromAlternateManifest(const std::string& testName, const std::string& manifestName) {
@@ -635,6 +637,10 @@ TEST_F(JsonLdProcessorExpandTest, expand_t0130) {
     performExpandTestFromManifest("#t0130");
 }
 
+TEST_F(JsonLdProcessorExpandTest, expand_t0131) {
+    performExpandTestFromManifest("#t0131");
+}
+
 TEST_F(JsonLdProcessorExpandTest, expand_tc001) {
     performExpandTestFromManifest("#tc001");
 }
@@ -777,6 +783,14 @@ TEST_F(JsonLdProcessorExpandTest, expand_tc035) {
 
 TEST_F(JsonLdProcessorExpandTest, expand_tc036) {
     performExpandTestFromManifest("#tc036");
+}
+
+TEST_F(JsonLdProcessorExpandTest, expand_tc037) {
+    performExpandTestFromManifest("#tc037");
+}
+
+TEST_F(JsonLdProcessorExpandTest, expand_tc038) {
+    performExpandTestFromManifest("#tc038");
 }
 
 TEST_F(JsonLdProcessorExpandTest, expand_tdi01) {
@@ -1569,6 +1583,10 @@ TEST_F(JsonLdProcessorExpandTest, expand_tpr39) {
 
 TEST_F(JsonLdProcessorExpandTest, expand_tpr40) {
     performExpandTestFromManifest("#tpr40");
+}
+
+TEST_F(JsonLdProcessorExpandTest, expand_tpr41) {
+    performExpandTestFromManifest("#tpr41");
 }
 
 TEST_F(JsonLdProcessorExpandTest, expand_tso01) {
