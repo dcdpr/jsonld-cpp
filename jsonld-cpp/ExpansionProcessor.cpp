@@ -1397,12 +1397,12 @@ namespace {
                 // associated with nesting-key. Updates to active context are restricted to the
                 // recursive operation, and do not propagate to subsequent iterations on nested
                 // values and nesting-key.
+                Context copyActiveContext = activeContext;
 
                 // 3)
                 // If active property has a term definition in active context with a local
                 // context, initialize property-scoped context to that local context.
-                Context copyActiveContext = activeContext;
-                std::unique_ptr<json> localPropertyScopedContext = initializePropertyScopedContext(copyActiveContext, activeProperty);
+                std::unique_ptr<json> localPropertyScopedContext = initializePropertyScopedContext(copyActiveContext, &nestingKey);
 
                 // 8)
                 // If property-scoped context is defined, set active context to the result of the
@@ -1410,7 +1410,7 @@ namespace {
                 // local context, base URL from the term definition for active property in active
                 // context and true for override protected.
                 if(localPropertyScopedContext != nullptr) {
-                    copyActiveContext = updateActiveContext(copyActiveContext, activeProperty, localPropertyScopedContext.get());
+                    copyActiveContext = updateActiveContext(copyActiveContext, &nestingKey, localPropertyScopedContext.get());
                 }
 
                 json localNests = json::object();
