@@ -1,7 +1,6 @@
 #include <regex>
 #include "WellFormed.h"
 #include "JsonLdUtils.h"
-#include "BlankNodeNames.h"
 #include "RDFRegex.h"
 
 bool WellFormed::iri(const std::string &str) {
@@ -14,13 +13,6 @@ bool WellFormed::blankNodeIdentifier(const std::string &str) {
     return std::regex_match(str, match, re);
 }
 
-/**
- * Check if str is a well-formed language.
- *
- *
- * @param str
- * @return
- */
 bool WellFormed::language(const std::string &str) {
     // The JSON-LD spec mentions in several places that a "language is
     // well-formed according to section 2.2.9 of [BCP47]" and BCP47 contains
@@ -32,7 +24,6 @@ bool WellFormed::language(const std::string &str) {
     std::smatch match;
     return std::regex_match(str, match, re);
 }
-
 
 bool WellFormed::literal(const std::string &str) {
     std::regex re(RDFRegex::LITERAL);
@@ -55,5 +46,4 @@ bool WellFormed::rdf_object(const std::string &str) {
 bool WellFormed::rdf_graph_name(const std::string &str) {
     return iri(str) || blankNodeIdentifier(str);
 }
-
 

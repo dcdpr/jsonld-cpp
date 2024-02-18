@@ -159,13 +159,21 @@ public:
         return *this;
     }
 
-    bool isFrameExpansion() const;
+    bool isFrameExpansion() const {
+        return frameExpansion_;
+    }
 
-    void setFrameExpansion(bool frameExpansion);
+    void setFrameExpansion(bool frameExpansion) {
+        frameExpansion_ = frameExpansion;
+    }
 
-    bool isOrdered() const;
+    bool isOrdered() const {
+        return ordered_;
+    }
 
-    void setOrdered(bool ordered);
+    void setOrdered(bool ordered) {
+        ordered_ = ordered;
+    }
 
     bool getCompactArrays() const {
         return compactArrays_;
@@ -197,9 +205,6 @@ public:
 
     void setProcessingMode(const std::string& processingMode) {
         this->processingMode_ = processingMode;
-//        if (processingMode == JsonLdConsts::JSON_LD_1_1) {
-//            omitGraph_ = true;
-//        }
     }
 
     std::string getBase() const {
@@ -250,9 +255,13 @@ public:
         this->documentLoader_ = std::move(documentLoader);
     }
 
-    const std::string &getHashAlgorithm() const;
+    const std::string &getHashAlgorithm() const {
+        return hashAlgorithm_;
+    }
 
-    void setHashAlgorithm(const std::string &hashAlgorithm);
+    void setHashAlgorithm(const std::string &hashAlgorithm) {
+        hashAlgorithm_ = hashAlgorithm;
+    }
 
 };
 

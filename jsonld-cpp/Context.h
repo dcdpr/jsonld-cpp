@@ -61,13 +61,13 @@ public:
 
     std::string getDefaultBaseDirection() const; // used by expansion processor
 
-    const JsonLdOptions &getOptions() const;// used by expansion processor
+    const JsonLdOptions &getOptions() const;// used by context and expansion processor
 
     void setDefaultBaseDirection(const std::string & direction); // used by context processor
 
-    const nlohmann::ordered_json &getTermDefinitions() const;
+    const nlohmann::ordered_json &getTermDefinitions() const; // used by context processor
 
-    nlohmann::ordered_json &getTermDefinitions() ;
+    nlohmann::ordered_json &getTermDefinitions(); // used by context processor
 };
 
 #endif //LIBJSONLD_CPP_CONTEXT_H

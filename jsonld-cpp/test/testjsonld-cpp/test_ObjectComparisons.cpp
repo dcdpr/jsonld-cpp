@@ -107,8 +107,7 @@ namespace {
     };
 
     // sort order should be: A < C < B ... similar to literals < blanknode < IRI
-    struct BasePtrLess :
-            public std::binary_function<const std::shared_ptr<Base>, const std::shared_ptr<Base>, bool> {
+    struct BasePtrLess {
         bool operator()(const std::shared_ptr<Base> & ps1, const std::shared_ptr<Base> & ps2) const {
             if(ps1->isB()) {
                 if(!ps2->isB())
@@ -128,22 +127,19 @@ namespace {
         }
     };
 
-    struct APtrLess :
-            public std::binary_function<const std::shared_ptr<A>, const std::shared_ptr<A>, bool> {
+    struct APtrLess {
         bool operator()(const std::shared_ptr<A> & ps1, const std::shared_ptr<A> & ps2) const {
             return ps1->getValue() < ps2->getValue();
         }
     };
 
-    struct BPtrLess :
-            public std::binary_function<const std::shared_ptr<B>, const std::shared_ptr<B>, bool> {
+    struct BPtrLess {
         bool operator()(const std::shared_ptr<B> & ps1, const std::shared_ptr<B> & ps2) const {
             return ps1->getValue() < ps2->getValue();
         }
     };
 
-    struct CPtrLess :
-            public std::binary_function<const std::shared_ptr<C>, const std::shared_ptr<C>, bool> {
+    struct CPtrLess {
         bool operator()(const std::shared_ptr<C> & ps1, const std::shared_ptr<C> & ps2) const {
             return ps1->getValue() < ps2->getValue();
         }

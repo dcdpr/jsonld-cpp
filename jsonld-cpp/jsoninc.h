@@ -12,6 +12,7 @@
 #pragma GCC diagnostic ignored "-Wall"
 #pragma GCC diagnostic ignored "-Wextra"
 #define JSON_USE_IMPLICIT_CONVERSIONS 0
+#define JSON_USE_GLOBAL_UDLS 0
 #include "jsonld-cpp/json.hpp"
 #pragma clang diagnostic pop
 #pragma GCC diagnostic pop

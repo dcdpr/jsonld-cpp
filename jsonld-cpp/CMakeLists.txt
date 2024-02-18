@@ -107,9 +107,7 @@ set_target_properties(jsonld-cpp PROPERTIES CXX_EXTENSIONS OFF)
 
 # Set version
 
-target_compile_definitions(jsonld-cpp PRIVATE -DJSONLDCPP_VERSION_MAJOR=${JSONLDCPP_VERSION_MAJOR})
-target_compile_definitions(jsonld-cpp PRIVATE -DJSONLDCPP_VERSION_MINOR=${JSONLDCPP_VERSION_MINOR})
-target_compile_definitions(jsonld-cpp PRIVATE -DJSONLDCPP_VERSION_PATCH=${JSONLDCPP_VERSION_PATCH})
+target_compile_definitions(jsonld-cpp PRIVATE -DJSONLDCPP_VERSION=${JSONLDCPP_VERSION})
 
 if(JSONLDCPP_BUILD_TESTS)
   enable_testing()

@@ -161,9 +161,6 @@ namespace {
             if (!graph.contains(id)) {
                 json tmp = { { JsonLdConsts::ID, id } };
                 graph[id] = tmp;
-                // knowing the insertion order comes in handy later in RDFDataset::graphToRDF()
-                // todo: does it still come in handy?
-                graph["key_insertion_order"].push_back(id);
             }
             // 6.4)
             // Reference the value of the id entry of graph using the variable node.
@@ -653,9 +650,7 @@ namespace {
         // For each subject and node in graph ordered by subject:
         std::vector<std::string> subjects;
         for (auto& el : graph.items()) {
-            // skip the key_insertion_order helper we added in generateNodeMap()
-            if(el.key() != "key_insertion_order") // todo: do i still need to bother with the key insertion order?
-                subjects.push_back(el.key());
+            subjects.push_back(el.key());
         }
         std::sort(subjects.begin(), subjects.end());
 

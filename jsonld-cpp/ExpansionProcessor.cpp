@@ -281,13 +281,15 @@ namespace {
         return activeContext;
     }
 
-    void expandObjectElement_step13(const std::string *activeProperty, const json &element, const std::string &baseUrl,
-             Context &typeScopedContext, const std::string &inputType, Context &activeContext, json &result,
-                                    json &nests);
+    void expandObjectElement_step13(
+            const std::string *activeProperty, const json &element, const std::string &baseUrl,
+            Context &typeScopedContext, const std::string &inputType, Context &activeContext, json &result,
+            json &nests);
 
-    void expandObjectElement_step14(Context &activeContext, const std::string *activeProperty, const json &element,
-                                    const std::string &baseUrl, Context &typeScopedContext, json &result,
-                                    json &nests, const std::string &inputType);
+    void expandObjectElement_step14(
+            Context &activeContext, const json &element,
+            const std::string &baseUrl, Context &typeScopedContext, json &result,
+            json &nests, const std::string &inputType);
 
     json expandObjectElement(
             Context activeContext,
@@ -366,7 +368,7 @@ namespace {
 
         // 14)
         // For each key nesting-key in nests, ordered lexicographically if ordered is true:
-        expandObjectElement_step14(activeContext, activeProperty, element, baseUrl, typeScopedContext, result,
+        expandObjectElement_step14(activeContext, element, baseUrl, typeScopedContext, result,
                                    nests, inputType);
 
         // 15)
@@ -1009,7 +1011,7 @@ namespace {
                 for (json::iterator it = element_value.begin(); it != element_value.end(); ++it) {
                     value_keys.push_back(it.key());
                 }
-                // todo: if I comment the next line then I fix 7 tests, but that doesn't seem right
+
                 if(activeContext.getOptions().isOrdered())
                     std::sort(value_keys.begin(), value_keys.end());
 
@@ -1349,7 +1351,7 @@ namespace {
         }
     }
 
-    void expandObjectElement_step14(Context &activeContext, const std::string *activeProperty, const json &element,
+    void expandObjectElement_step14(Context &activeContext, const json &element,
                                     const std::string &baseUrl, Context &typeScopedContext, json &result,
                                     json &nests, const std::string &inputType) {
         // 14)
@@ -1421,7 +1423,7 @@ namespace {
 
                 // 14)
                 // For each key nesting-key in nests, ordered lexicographically if ordered is true:
-                expandObjectElement_step14(copyActiveContext, &nestingKey, nestedValue, baseUrl, typeScopedContext, result,
+                expandObjectElement_step14(copyActiveContext, nestedValue, baseUrl, typeScopedContext, result,
                                            localNests, inputType);
 
             }
@@ -1450,7 +1452,7 @@ json ExpansionProcessor::expand(
     // 2)
     // If active property is @default, initialize the frameExpansion flag to false.
     if (activeProperty != nullptr && *activeProperty == JsonLdConsts::DEFAULT) {
-        //todo: activeContext.getOptions().setFrameExpansion(false);
+        // todo: activeContext.getOptions().setFrameExpansion(false);
     }
 
     // 3)

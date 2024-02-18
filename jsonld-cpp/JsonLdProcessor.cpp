@@ -127,8 +127,7 @@ RDFDataset JsonLdProcessor::toRDF(const std::string& documentLocation, JsonLdOpt
 
     // 1)
     // Create a new Promise promise and return it. The following steps are then deferred.
-    // Note: we do not feel Promises are appropriate in this spec
-    // todo: word more nicely and make sure you denote personal notes from spec notes
+    // Note: the current implementation of jsonld-cpp does not use Promises.
 
     // 2)
     // Set expanded input to the result of using the expand() method using input and options
