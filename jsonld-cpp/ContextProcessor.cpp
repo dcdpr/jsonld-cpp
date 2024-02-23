@@ -281,7 +281,7 @@ namespace {
 
             // 13.6)
             // Set the reverse property flag of definition to true.
-            definition[JsonLdConsts::REVERSE] = true;
+            definition[JsonLdConsts::IS_REVERSE_PROPERTY_FLAG] = true;
 
             // 13.7)
             // Set the term definition of term in active context to definition and the value

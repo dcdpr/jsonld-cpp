@@ -12,7 +12,7 @@ bool Context::isReverseProperty(const std::string &property) const {
     if (td.is_null()) {
         return false;
     }
-    return td.contains(JsonLdConsts::REVERSE) && td.at(JsonLdConsts::REVERSE);
+    return td.contains(JsonLdConsts::IS_REVERSE_PROPERTY_FLAG) && td.at(JsonLdConsts::IS_REVERSE_PROPERTY_FLAG);
 }
 
 json Context::getTermDefinition(const std::string & key) const {
