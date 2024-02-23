@@ -108,7 +108,7 @@ namespace {
             case 'n':
                 u = "\n";
                 break;
-            case 'v':
+            case 'v': // todo: why here?
                 u = "\v";
                 break;
             case 'f':

@@ -7,7 +7,6 @@
 using json = nlohmann::ordered_json;
 
 bool Context::isReverseProperty(const std::string &property) const {
-    // todo: should move this function and others that just return termdef props to a new TermDefinition class?
     auto td = getTermDefinition(property);
     if (td.is_null()) {
         return false;

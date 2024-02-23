@@ -58,7 +58,6 @@ set(LIB_SOURCE_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/FileLoader.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/JSONDocument.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/JsonLdError.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/JsonLdOptions.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/JsonLdProcessor.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/JsonLdUrl.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/JsonLdUtils.cpp

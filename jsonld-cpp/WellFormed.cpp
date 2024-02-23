@@ -1,7 +1,7 @@
+#include "jsonld-cpp/WellFormed.h"
+#include "jsonld-cpp/JsonLdUtils.h"
+#include "jsonld-cpp/RDFRegex.h"
 #include <regex>
-#include "WellFormed.h"
-#include "JsonLdUtils.h"
-#include "RDFRegex.h"
 
 bool WellFormed::iri(const std::string &str) {
     return JsonLdUtils::isAbsoluteIri(str);

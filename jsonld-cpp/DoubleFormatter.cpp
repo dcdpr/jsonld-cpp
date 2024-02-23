@@ -10,7 +10,6 @@ std::string DoubleFormatter::format(double d) {
     ss << std::uppercase << std::scientific << std::setprecision(numDigits) << d;
     std::string s = ss.str();
 
-    // todo: there must be a nicer way to do this.
     std::regex preceding_zeros("(\\.[1-9]+)0+E");
     std::string s2 = std::regex_replace(s, preceding_zeros, "$1E");
 

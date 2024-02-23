@@ -65,22 +65,3 @@ TEST(DocumentLoaderTest, process_duplicate_quads_when_reading) {
     EXPECT_EQ(expected.numTriples(), 2);
 }
 
-
-// todo: need to re-implement cache for these tests to be meaningful
-//TEST(DocumentLoaderTest, load_sample_document_from_cache) {
-//    FileLoader dl;
-//    dl.addDocumentToCache("foo.json", R"({ "pi": 3 })");
-//
-//    RemoteDocument d = dl.loadDocument("foo.json");
-//    EXPECT_EQ(3, d.getJSONContent()["pi"]);
-//}
-//
-//TEST(DocumentLoaderTest, load_document_from_cache_miss) {
-//    FileLoader dl;
-//    dl.addDocumentToCache("foo.json", R"({ "pi": 3 })");
-//
-//    EXPECT_THROW(dl.loadDocument("bar.json"), std::runtime_error);
-//}
-
-
-

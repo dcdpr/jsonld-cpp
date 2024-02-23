@@ -537,8 +537,6 @@ namespace {
             if(JsonLdUtils::containsOrEquals(definition[JsonLdConsts::CONTAINER], JsonLdConsts::TYPE)){
                 // 19.4.1)
                 // If type mapping in definition is undefined, set it to @id.
-                // todo this is a place where termdef having member vars like 'containermapping'
-                //  and 'typemapping' would come in handy
                 if(!definition.contains(JsonLdConsts::TYPE))
                     definition[JsonLdConsts::TYPE] = JsonLdConsts::ID;
 
@@ -1020,8 +1018,8 @@ namespace {
                 // Continue with the next context.
                 continue;
             }
-                // 5.2)
-                // If context is a string,
+            // 5.2)
+            // If context is a string,
             else if (context.is_string()) {
                 // 5.2.1)
                 // Initialize context to the result of resolving context against base URL. If base

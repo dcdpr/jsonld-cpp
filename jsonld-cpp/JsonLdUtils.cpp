@@ -8,7 +8,7 @@
 
 using json = nlohmann::ordered_json;
 using namespace JsonLdConsts;
-//todo: the large functions in here need to be refactored and commented
+
 namespace {
 
     std::set<std::string> knownKeywords = {
@@ -60,19 +60,6 @@ bool JsonLdUtils::isKeyword(const std::string& str) {
 
 bool JsonLdUtils::isKeywordForm(const std::string& str) {
     std::regex re(R"(@[A-Za-z]+)");
-    std::smatch match;
-    return std::regex_match(str, match, re);
-}
-
-bool JsonLdUtils::isLanguageForm(const std::string& str) {
-    // this is different from isLanguageTagForm because we aren't matching the '@'
-    std::regex re("([a-z]+(?:-[a-zA-Z0-9]+)*)");
-    std::smatch match;
-    return std::regex_match(str, match, re);
-}
-
-bool JsonLdUtils::isLanguageTagForm(const std::string& str) {
-    std::regex re(RDFRegex::LANGUAGE);
     std::smatch match;
     return std::regex_match(str, match, re);
 }
@@ -176,7 +163,6 @@ bool JsonLdUtils::deepContains(const json& values, const json& value) {
 }
 
 void JsonLdUtils::mergeValue(nlohmann::json & obj, const std::string& key, const json& value) {
-    //assert(!obj.is_null());
     if(obj.is_null())
         return;
 

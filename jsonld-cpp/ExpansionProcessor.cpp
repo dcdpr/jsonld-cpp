@@ -785,7 +785,6 @@ namespace {
                         if(!WellFormed::language(v)) {
                             std::cerr << "Warning: language tag " << v << " is not well-formed.\n";
                         }
-                        // todo: When the frameExpansion flag is set...
                         std::transform(v.begin(), v.end(), v.begin(), &tolower);
                         expandedValue = v;
                     } else {
@@ -1342,9 +1341,9 @@ namespace {
                     JsonLdUtils::addValue(reverseMap, expandedProperty, item, true);
                 }
             }
-                // 13.14)
-                // Otherwise, key is not a reverse property. Use add value to add expanded value to
-                // the expanded property entry in result using true for as array.
+            // 13.14)
+            // Otherwise, key is not a reverse property. Use add value to add expanded value to
+            // the expanded property entry in result using true for as array.
             else {
                 JsonLdUtils::addValue(result, expandedProperty, expandedValue, true);
             }
@@ -1452,7 +1451,6 @@ json ExpansionProcessor::expand(
     // 2)
     // If active property is @default, initialize the frameExpansion flag to false.
     if (activeProperty != nullptr && *activeProperty == JsonLdConsts::DEFAULT) {
-        // todo: activeContext.getOptions().setFrameExpansion(false);
     }
 
     // 3)

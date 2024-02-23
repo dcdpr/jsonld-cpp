@@ -232,7 +232,7 @@ namespace {
                 nlohmann::json elemIndex = element[JsonLdConsts::INDEX];
                 if (node.contains(JsonLdConsts::INDEX)) {
                     if (node.at(JsonLdConsts::INDEX) != elemIndex) {
-                        throw JsonLdError(JsonLdError::ConflictingIndexes); // todo: I don't think there is a test for this, can we ask for one or make one?
+                        throw JsonLdError(JsonLdError::ConflictingIndexes);
                     }
                 }
                 node[JsonLdConsts::INDEX] = elemIndex;

@@ -4,6 +4,7 @@
 #include <string>
 
 namespace RDFRegex {
+    // todo: remove note
     // Note: The following regexes for matching RDF data is not quite complete. Please see
     // https://www.w3.org/TR/n-quads/#sec-grammar for other items needed when unicode support
     // is completed.
