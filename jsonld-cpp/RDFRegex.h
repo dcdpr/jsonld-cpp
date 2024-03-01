@@ -4,32 +4,37 @@
 #include <string>
 
 namespace RDFRegex {
-    // todo: remove note
-    // Note: The following regexes for matching RDF data is not quite complete. Please see
-    // https://www.w3.org/TR/n-quads/#sec-grammar for other items needed when unicode support
-    // is completed.
+
     extern const std::string EOLN;
-    extern const std::string WS;
-    extern const std::string WSO;
     extern const std::string EMPTY;
 
-    extern const std::string IRI;
     extern const std::string BNODE;
-    extern const std::string PLAIN;
-    extern const std::string DATATYPE;
     extern const std::string LANGUAGE;
     extern const std::string LITERAL;
 
     extern const std::string SUBJECT;
-    extern const std::string PROPERTY;
+    extern const std::string PREDICATE;
     extern const std::string OBJECT;
     extern const std::string GRAPH;
 
     extern const std::string QUAD;
 
-    extern const std::string HEX;
-    extern const std::string UCHAR_MATCHED;
+    extern const int QUAD_SUBJECT_AS_IRI;
+    extern const int QUAD_SUBJECT_AS_BNODE;
+    extern const int QUAD_PREDICATE;
+    extern const int QUAD_OBJECT_AS_IRI;
+    extern const int QUAD_OBJECT_AS_BNODE;
+    extern const int QUAD_OBJECT_AS_LITERAL;
+    extern const int QUAD_OBJECT_AS_LITERAL_DATATYPE;
+    extern const int QUAD_OBJECT_AS_LITERAL_LANGUAGETAG;
+    extern const int QUAD_GRAPH_AS_IRI;
+    extern const int QUAD_GRAPH_AS_BNODE;
 
+    extern const std::string UNICODE_CODEPOINT;
+
+    extern const int UNICODE_CONTROL_CHARS;
+    extern const int UNICODE_BASIC_MULTILINGUAL_PLANE;
+    extern const int UNICODE_HIGHER_PLANE;
 
 }
 

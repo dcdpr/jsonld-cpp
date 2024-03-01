@@ -12,13 +12,14 @@
 #include <regex>
 #include <iostream>
 
+using namespace RDFRegex;
 
 namespace {
 
     // return vector of strings after splitting input string into lines
     std::vector<std::string> splitLines(std::string &input) {
         std::vector<std::string> lines;
-        std::regex rgx(RDFRegex::EOLN);
+        std::regex rgx(EOLN);
         std::sregex_token_iterator i(input.begin(), input.end(), rgx, -1);
         std::sregex_token_iterator end;
 
@@ -75,7 +76,9 @@ namespace {
     }
 
     void extractUnicodeCodepoint(const std::smatch &match, std::string &u) {
-        std::string hex = match[2].matched ? match[2].str() : match[3].str(); // todo: magic numbers?
+        std::string hex = match[UNICODE_BASIC_MULTILINGUAL_PLANE].matched ?
+                          match[UNICODE_BASIC_MULTILINGUAL_PLANE].str() :
+                          match[UNICODE_HIGHER_PLANE].str();
         long v = std::stol(hex, nullptr, 16);
 
         auto it = std::back_inserter(u);
@@ -97,7 +100,7 @@ namespace {
     }
 
     bool extractControlCharacter(const std::smatch &match, std::string &u) {
-        char c = match[1].str()[0];
+        char c = match[UNICODE_CONTROL_CHARS].str()[0];
         switch (c) {
             case 'b':
                 u = "\b";
@@ -107,9 +110,6 @@ namespace {
                 break;
             case 'n':
                 u = "\n";
-                break;
-            case 'v': // todo: why here?
-                u = "\v";
                 break;
             case 'f':
                 u = "\f";
@@ -141,7 +141,7 @@ namespace {
         if(str.empty())
             return;
 
-        std::regex charsRgx(RDFRegex::UCHAR_MATCHED);
+        std::regex charsRgx(UNICODE_CODEPOINT);
         auto chars_begin = std::sregex_iterator(str.begin(), str.end(), charsRgx);
         auto chars_end = std::sregex_iterator();
 
@@ -160,7 +160,7 @@ namespace {
             out = std::copy(match.prefix().first, match.prefix().second, out);
 
             std::string u;
-            if (!match[1].matched) {
+            if (!match[UNICODE_CONTROL_CHARS].matched) {
                 extractUnicodeCodepoint(match, u);
             } else {
                 if(!extractControlCharacter(match, u))
@@ -293,11 +293,11 @@ std::string NQuadsSerialization::toNQuad(const RDF::RDFTriple& triple) {
 }
 
 RDF::RDFDataset NQuadsSerialization::parse(std::string input) {
-    RDF::RDFDataset dataset((JsonLdOptions()));//todo: should be a version of this that passes in existing options object?
+    RDF::RDFDataset dataset((JsonLdOptions()));
 
     std::vector<std::string> lines = ::splitLines(input);
-    std::regex emptyRgx(RDFRegex::EMPTY);
-    std::regex quadRgx(RDFRegex::QUAD);
+    std::regex emptyRgx(EMPTY);
+    std::regex quadRgx(QUAD);
     std::smatch match;
 
     int lineNumber = 0;
@@ -311,44 +311,44 @@ RDF::RDFDataset NQuadsSerialization::parse(std::string input) {
         // parse quad with regex
         if (!std::regex_match(line, match, quadRgx))
             throw JsonLdError(JsonLdError::SyntaxError,
-                                  "Error while parsing N-Quads; invalid quad. line:" + std::to_string(lineNumber));
+                              "Error while parsing N-Quads; invalid quad. line:" + std::to_string(lineNumber));
 
         // extract subject from matches
         std::shared_ptr<RDF::Node> subject;
-        if(match[1].matched)
-            subject = std::make_shared<RDF::IRI>(unescape(match[1].str()));
+        if(match[QUAD_SUBJECT_AS_IRI].matched)
+            subject = std::make_shared<RDF::IRI>(unescape(match[QUAD_SUBJECT_AS_IRI].str()));
         else
-            subject = std::make_shared<RDF::BlankNode>(unescape(match[2].str()));
+            subject = std::make_shared<RDF::BlankNode>(unescape(match[QUAD_SUBJECT_AS_BNODE].str()));
 
         // extract predicate from matches
-        std::shared_ptr<RDF::Node> predicate = std::make_shared<RDF::IRI>(unescape(match[3].str()));
+        std::shared_ptr<RDF::Node> predicate = std::make_shared<RDF::IRI>(unescape(match[QUAD_PREDICATE].str()));
 
         // extract object from matches
         std::shared_ptr<RDF::Node> object;
-        if(match[4].matched)
-            object = std::make_shared<RDF::IRI>(unescape(match[4].str()));
-        else if(match[5].matched)
-            object = std::make_shared<RDF::BlankNode>(unescape(match[5].str()));
+        if(match[QUAD_OBJECT_AS_IRI].matched)
+            object = std::make_shared<RDF::IRI>(unescape(match[QUAD_OBJECT_AS_IRI].str()));
+        else if(match[QUAD_OBJECT_AS_BNODE].matched)
+            object = std::make_shared<RDF::BlankNode>(unescape(match[QUAD_OBJECT_AS_BNODE].str()));
         else {
-            std::string language = unescape(match[8].str());
+            std::string language = unescape(match[QUAD_OBJECT_AS_LITERAL_LANGUAGETAG].str());
             std::string datatype;
-            if (match[7].matched)
-                datatype = unescape(match[7].str());
+            if (match[QUAD_OBJECT_AS_LITERAL_DATATYPE].matched)
+                datatype = unescape(match[QUAD_OBJECT_AS_LITERAL_DATATYPE].str());
             else {
-                if (match[8].matched)
+                if (match[QUAD_OBJECT_AS_LITERAL_LANGUAGETAG].matched)
                     datatype = JsonLdConsts::RDF_LANGSTRING;
                 else
                     datatype = JsonLdConsts::XSD_STRING;
             }
-            object = std::make_shared<RDF::Literal>(unescape(match[6].str()), &datatype, &language);
+            object = std::make_shared<RDF::Literal>(unescape(match[QUAD_OBJECT_AS_LITERAL].str()), &datatype, &language);
         }
 
         // extract graph name from matches ('@default' is used for the default graph)
         std::string name = "@default";
-        if (match[9].matched) {
-            name = unescape(match[9].str());
-        } else if (match[10].matched) {
-            name = unescape(match[10].str());
+        if (match[QUAD_GRAPH_AS_IRI].matched) {
+            name = unescape(match[QUAD_GRAPH_AS_IRI].str());
+        } else if (match[QUAD_GRAPH_AS_BNODE].matched) {
+            name = unescape(match[QUAD_GRAPH_AS_BNODE].str());
         }
 
         // add RDFTriple to graph in dataset
