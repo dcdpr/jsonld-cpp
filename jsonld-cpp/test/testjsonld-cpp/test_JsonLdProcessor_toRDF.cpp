@@ -1970,21 +1970,6 @@ TEST_F(JsonLdProcessorToRDFTest, toRdf_twf07) {
     performToRDFTestFromManifest("#twf07");
 }
 
-TEST_F(JsonLdProcessorToRDFTest, toRdf_0300) {
-    // this is an extra test Dan added while trying to debug issues with canonicalize test 0008
-    performToRDFTestFromManifest("#t0300", "toRdf-manifest-extra.jsonld");
-}
-
-TEST_F(JsonLdProcessorToRDFTest, toRdf_0301) {
-    // this is an extra test Dan added while trying to debug issues with canonicalize test 0020
-    performToRDFTestFromManifest("#t0301", "toRdf-manifest-extra.jsonld");
-}
-
-TEST_F(JsonLdProcessorToRDFTest, toRdf_0302) {
-    // this is an extra test Dan added while trying to debug issues with canonicalize test 0044
-    performToRDFTestFromManifest("#t0302", "toRdf-manifest-extra.jsonld");
-}
-
 // This test would run everything in the manifest all at once, but is disabled for now
 // until after we get everything working using the single test functions above.
 TEST_F(JsonLdProcessorToRDFTest, DISABLED_toRdf_with_manifest) {

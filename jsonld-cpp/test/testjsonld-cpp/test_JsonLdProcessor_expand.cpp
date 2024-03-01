@@ -1645,21 +1645,6 @@ TEST_F(JsonLdProcessorExpandTest, expand_ttn02) {
     performExpandTestFromManifest("#ttn02");
 }
 
-TEST_F(JsonLdProcessorExpandTest, expand_0300) {
-    // this is an extra test Dan added while trying to debug issues with canonicalize test 0008
-    performExpandTestFromManifest("#t0300", "expand-manifest-extra.jsonld");
-}
-
-TEST_F(JsonLdProcessorExpandTest, expand_0301) {
-    // this is an extra test Dan added while trying to debug issues with canonicalize test 0020
-    performExpandTestFromManifest("#t0301", "expand-manifest-extra.jsonld");
-}
-
-TEST_F(JsonLdProcessorExpandTest, expand_0302) {
-    // this is an extra test Dan added while trying to debug issues with canonicalize test 0044
-    performExpandTestFromManifest("#t0302", "expand-manifest-extra.jsonld");
-}
-
 // This test would run everything in the manifest all at once, but is disabled for now
 // until after we get everything working using the single test functions above.
 TEST_F(JsonLdProcessorExpandTest, DISABLED_expand_with_manifest) {
