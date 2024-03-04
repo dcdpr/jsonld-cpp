@@ -345,17 +345,20 @@ namespace {
         assert(list.is_array());
         assert(listTriples.empty());
 
-        // 1) If list is empty, return rdf:nil.
+        // 1)
+        // If list is empty, return rdf:nil.
         if(list.empty())
             return std::make_shared<IRI>(JsonLdConsts::RDF_NIL);
 
-        // 2) Otherwise, create an array bnodes composed of a newly generated blank node
+        // 2)
+        // Otherwise, create an array bnodes composed of a newly generated blank node
         // identifier for each entry in list.
         std::vector<std::string> bnodes;
         for(size_t i=list.size(); i--;)
             bnodes.push_back(blankNodeNames.get());
 
-        // 3) For each pair of subject from bnodes and item from list:
+        // 3)
+        // For each pair of subject from bnodes and item from list:
         for (json::size_type index=0; index < list.size(); index++) {
             std::string subject = bnodes[index];
             json item = list[index];
@@ -364,7 +367,8 @@ namespace {
             // Initialize embedded triples to a new empty array.
             std::vector<RDFTriple> embeddedTriples;
 
-            // 3.2) Initialize object to the result of using the Object to RDF Conversion
+            // 3.2)
+            // Initialize object to the result of using the Object to RDF Conversion
             // algorithm passing item and embedded triples for list triples.
             std::shared_ptr<RDF::Node> object = objectToRDF(item, embeddedTriples, options, blankNodeNames);
 
@@ -395,7 +399,8 @@ namespace {
                 listTriples.emplace_back(s, p, o);
             }
 
-            // 3.5) Append all values from embedded triples to list triples
+            // 3.5)
+            // Append all values from embedded triples to list triples
             for(const auto& t : embeddedTriples)
                 listTriples.push_back(t);
         }
@@ -502,13 +507,13 @@ namespace {
                     nullptr);
         }
 
+        // 10)
+        // Otherwise, if value is a number with a non-zero fractional part (the result of a
+        // modulo‑1 operation) or an absolute value greater or equal to 10^21, or value is a
+        // number and datatype equals xsd:double, convert value to a string in canonical
+        // lexical form of an xsd:double as defined in [XMLSCHEMA11-2] and described in
+        // § 8.6 Data Round Tripping. If datatype is null, set datatype to xsd:double.
         else if (value.is_number()) {
-            // 10)
-            // Otherwise, if value is a number with a non-zero fractional part (the result of a
-            // modulo‑1 operation) or an absolute value greater or equal to 10^21, or value is a
-            // number and datatype equals xsd:double, convert value to a string in canonical
-            // lexical form of an xsd:double as defined in [XMLSCHEMA11-2] and described in
-            // § 8.6 Data Round Tripping. If datatype is null, set datatype to xsd:double.
             if (std::fmod(value.get<double>(), 1) != 0.0 ||
                 value.get<double>() >= (1e21) ||
                 datatype == JsonLdConsts::XSD_DOUBLE) {
@@ -542,6 +547,7 @@ namespace {
             else
                 datatypeStr = JsonLdConsts::XSD_STRING;
         }
+
         // 13)
         // If item contains an @direction entry and rdfDirection is not null, item is a value
         // object which is serialized using special rules.
@@ -729,10 +735,11 @@ namespace {
                 // Otherwise, if property is not well-formed, continue with the next property-values pair.
                 else if (!WellFormed::iri(property)) {
                     continue;
-                } else {
+                }
 
-                    // 1.3.2.5)
-                    // Otherwise, property is an IRI or blank node identifier. For each item in values:
+                // 1.3.2.5)
+                // Otherwise, property is an IRI or blank node identifier. For each item in values:
+                else {
                     values = &node[property];
                     for (const auto& item : *values) {
 

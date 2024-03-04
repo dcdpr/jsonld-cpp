@@ -160,8 +160,8 @@ namespace {
                 result[JsonLdConsts::TYPE] = typeMapping;
             }
         }
-            // 5)
-            // Otherwise, if value is a string:
+        // 5)
+        // Otherwise, if value is a string:
         else if (value.is_string()) {
             // 5.1)
             // Initialize language to the language mapping for active property in active
@@ -405,33 +405,33 @@ namespace {
                    (result[JsonLdConsts::VALUE].is_array() && result[JsonLdConsts::VALUE].empty()))
                     return {};
 
-                    // 15.4)
-                    // Otherwise, if the value of result's @value entry is not a string and result
-                    // contains the entry @language, an invalid language-tagged value error has been
-                    // detected (only strings can be language-tagged) and processing is aborted.
+                // 15.4)
+                // Otherwise, if the value of result's @value entry is not a string and result
+                // contains the entry @language, an invalid language-tagged value error has been
+                // detected (only strings can be language-tagged) and processing is aborted.
                 else if(!result[JsonLdConsts::VALUE].is_string() && result.contains(JsonLdConsts::LANGUAGE))
                     throw JsonLdError(JsonLdError::InvalidLanguageTaggedValue);
 
-                    // 15.5)
-                    // Otherwise, if the result has an @type entry and its value is not an IRI, an
-                    // invalid typed value error has been detected and processing is aborted.
+                // 15.5)
+                // Otherwise, if the result has an @type entry and its value is not an IRI, an
+                // invalid typed value error has been detected and processing is aborted.
                 else if (result.contains(JsonLdConsts::TYPE) &&
                          (!result[JsonLdConsts::TYPE].is_string() || !JsonLdUtils::isAbsoluteIri(result[JsonLdConsts::TYPE].get<std::string>())))
                     throw JsonLdError(JsonLdError::InvalidTypedValue);
             }
         }
 
-            // 16)
-            // Otherwise, if result contains the entry @type and its associated value is not an
-            // array, set it to an array containing only the associated value.
+        // 16)
+        // Otherwise, if result contains the entry @type and its associated value is not an
+        // array, set it to an array containing only the associated value.
         else if (result.contains(JsonLdConsts::TYPE)) {
             if (!result[JsonLdConsts::TYPE].is_array()) {
                 result[JsonLdConsts::TYPE] = json::array({result[JsonLdConsts::TYPE]});
             }
         }
 
-            // 17)
-            // Otherwise, if result contains the entry @set or @list:
+        // 17)
+        // Otherwise, if result contains the entry @set or @list:
         else if (result.contains(JsonLdConsts::SET) || result.contains(JsonLdConsts::LIST)) {
             // 17.1)
             // The result must contain at most one other entry which must be @index. Otherwise, an
@@ -585,8 +585,8 @@ namespace {
                                           "value of @id must be a string");
                     }
                 }
-                    // 13.4.4)
-                    // If expanded property is @type:
+                // 13.4.4)
+                // If expanded property is @type:
                 else if (expandedProperty == JsonLdConsts::TYPE) {
                     // 13.4.4.1)
                     // If value is neither a string nor an array of strings, an invalid type
@@ -618,19 +618,19 @@ namespace {
                     if(element_value.is_object())
                         expandedValue = element_value;
 
-                        // 13.4.4.3)
-                        // Otherwise, if value is a default object, set expanded value to a new default
-                        // object with the value of @default set to the result of IRI expanding value
-                        // using type-scoped context for active context, and true for document relative.
+                    // 13.4.4.3)
+                    // Otherwise, if value is a default object, set expanded value to a new default
+                    // object with the value of @default set to the result of IRI expanding value
+                    // using type-scoped context for active context, and true for document relative.
                     else if(JsonLdUtils::isDefaultObject(element_value)) {
                         expandedValue = json::object();
                         expandedValue[JsonLdConsts::DEFAULT] =
                                 ContextProcessor::expandIri(typeScopedContext, element_value.at(JsonLdConsts::DEFAULT).get<std::string>(), true, true);
                     }
-                        // 13.4.4.4)
-                        // Otherwise, set expanded value to the result of IRI expanding each of its
-                        // values using type-scoped context for active context, and true for document
-                        // relative.
+                    // 13.4.4.4)
+                    // Otherwise, set expanded value to the result of IRI expanding each of its
+                    // values using type-scoped context for active context, and true for document
+                    // relative.
                     else {
 
                         if(element_value.is_string()) {
@@ -734,11 +734,11 @@ namespace {
                         }
                         expandedValue = element_value;
                     }
-                        // 13.4.7.2)
-                        // Otherwise, if value is not a scalar or null, an invalid value object
-                        // value error has been detected and processing is aborted. When the
-                        // frameExpansion flag is set, value MAY be an empty map or an array
-                        // of scalar values.
+                    // 13.4.7.2)
+                    // Otherwise, if value is not a scalar or null, an invalid value object
+                    // value error has been detected and processing is aborted. When the
+                    // frameExpansion flag is set, value MAY be an empty map or an array
+                    // of scalar values.
                     else if(element_value.is_null() || JsonLdUtils::isScalar(element_value) ||
                             (activeContext.getOptions().isFrameExpansion() && (JsonLdUtils::isEmptyObject(element_value) || JsonLdUtils::isArrayOfScalars(element_value)))) {
                         // 13.4.7.3)
@@ -821,8 +821,8 @@ namespace {
                         throw JsonLdError(JsonLdError::InvalidBaseDirection);
                     }
                 }
-                    // 13.4.10)
-                    // If expanded property is @index:
+                // 13.4.10)
+                // If expanded property is @index:
                 else if (expandedProperty == JsonLdConsts::INDEX) {
                     // 13.4.10.1
                     // If value is not a string, an invalid @index value error has been detected
@@ -834,8 +834,8 @@ namespace {
                     // Otherwise, set expanded value to value.
                     expandedValue = element_value;
                 }
-                    // 13.4.11)
-                    // If expanded property is @list:
+                // 13.4.11)
+                // If expanded property is @list:
                 else if (expandedProperty == JsonLdConsts::LIST) {
                     // 13.4.11.1)
                     // If active property is null or @graph, continue with the next key from
@@ -853,15 +853,15 @@ namespace {
                         expandedValue = json::array({expandedValue});
                     }
                 }
-                    // 13.4.12)
-                    // If expanded property is @set, set expanded value to the result of using this
-                    // algorithm recursively, passing active context, active property, value for
-                    // element, base URL, and the frameExpansion and ordered flags.
+                // 13.4.12)
+                // If expanded property is @set, set expanded value to the result of using this
+                // algorithm recursively, passing active context, active property, value for
+                // element, base URL, and the frameExpansion and ordered flags.
                 else if (expandedProperty == JsonLdConsts::SET) {
                     expandedValue = ExpansionProcessor::expand(activeContext, activeProperty, element_value, baseUrl);
                 }
-                    // 13.4.13)
-                    // If expanded property is @reverse:
+                // 13.4.13)
+                // If expanded property is @reverse:
                 else if (expandedProperty == JsonLdConsts::REVERSE) {
                     // 13.4.13.1)
                     // If value is not a map, an invalid @reverse value error has been detected and
@@ -987,9 +987,9 @@ namespace {
                 expandedValue[JsonLdConsts::VALUE] = element_value;
                 expandedValue[JsonLdConsts::TYPE] = JsonLdConsts::JSON;
             }
-                // 13.7)
-                // Otherwise, if container mapping includes @language and value is a map then
-                // value is expanded from a language map as follows:
+            // 13.7)
+            // Otherwise, if container mapping includes @language and value is a map then
+            // value is expanded from a language map as follows:
             else if (arrayContains(containerMapping, JsonLdConsts::LANGUAGE) && element_value.is_object()) {
                 // 13.7.1)
                 // Initialize expanded value to an empty array.
@@ -1075,9 +1075,9 @@ namespace {
                     }
                 }
             }
-                // 13.8)
-                // Otherwise, if container mapping includes @index, @type, or @id and value is a
-                // map then value is expanded from an map as follows:
+            // 13.8)
+            // Otherwise, if container mapping includes @index, @type, or @id and value is a
+            // map then value is expanded from an map as follows:
             else if (element_value.is_object() &&
                      (arrayContains(containerMapping, JsonLdConsts::INDEX) ||
                       arrayContains(containerMapping, JsonLdConsts::TYPE) ||
@@ -1131,8 +1131,8 @@ namespace {
                                     indexTermDefinition.at(JsonLdConsts::BASEURL).get<std::string>());
                         }
                     }
-                        // 13.8.3.3)
-                        // Otherwise, set map context to active context.
+                    // 13.8.3.3)
+                    // Otherwise, set map context to active context.
                     else
                         mapContext = activeContext;
 
@@ -1204,21 +1204,21 @@ namespace {
                                 throw JsonLdError(JsonLdError::InvalidValueObject);
                         }
 
-                            // 13.8.3.7.3)
-                            // Otherwise, if container mapping includes @index, item does not have an
-                            // entry @index, and expanded index is not @none, add the key-value pair
-                            // (@index-index) to item.
+                        // 13.8.3.7.3)
+                        // Otherwise, if container mapping includes @index, item does not have an
+                        // entry @index, and expanded index is not @none, add the key-value pair
+                        // (@index-index) to item.
                         else if(arrayContains(containerMapping, JsonLdConsts::INDEX) &&
                                 !item.contains(JsonLdConsts::INDEX) &&
                                 expandedIndex != JsonLdConsts::NONE) {
                             item[JsonLdConsts::INDEX] = index;
                         }
 
-                            // 13.8.3.7.4)
-                            // Otherwise, if container mapping includes @id, item does not have the entry
-                            // @id, and expanded index is not @none, add the key-value pair
-                            // (@id-expanded index) to item, where expanded index is set to the result
-                            // of IRI expandingindex using true for document relative and false for vocab.
+                        // 13.8.3.7.4)
+                        // Otherwise, if container mapping includes @id, item does not have the entry
+                        // @id, and expanded index is not @none, add the key-value pair
+                        // (@id-expanded index) to item, where expanded index is set to the result
+                        // of IRI expandingindex using true for document relative and false for vocab.
                         else if(arrayContains(containerMapping, JsonLdConsts::ID) &&
                                 !item.contains(JsonLdConsts::ID) &&
                                 expandedIndex != JsonLdConsts::NONE) {
@@ -1226,11 +1226,11 @@ namespace {
                             item[JsonLdConsts::ID] = expandedIndex2;
                         }
 
-                            // 13.8.3.7.5)
-                            // Otherwise, if container mapping includes @type and expanded index is
-                            // not @none, initialize types to a new array consisting of expanded index
-                            // followed by any existing values of @type in item. Add the key-value pair
-                            // (@type-types) to item.
+                        // 13.8.3.7.5)
+                        // Otherwise, if container mapping includes @type and expanded index is
+                        // not @none, initialize types to a new array consisting of expanded index
+                        // followed by any existing values of @type in item. Add the key-value pair
+                        // (@type-types) to item.
                         else if(arrayContains(containerMapping, JsonLdConsts::TYPE) &&
                                 expandedIndex != JsonLdConsts::NONE) {
                             auto itemTypes = item[JsonLdConsts::TYPE];
@@ -1250,10 +1250,10 @@ namespace {
                     }
                 }
             }
-                // 13.9)
-                // Otherwise, initialize expanded value to the result of using this algorithm
-                // recursively, passing active context, key for active property, value for element,
-                // base URL, and the frameExpansion and ordered flags.
+            // 13.9)
+            // Otherwise, initialize expanded value to the result of using this algorithm
+            // recursively, passing active context, key for active property, value for element,
+            // base URL, and the frameExpansion and ordered flags.
             else {
                 expandedValue = ExpansionProcessor::expand(activeContext, &key, element_value, baseUrl);
             }
@@ -1462,12 +1462,12 @@ json ExpansionProcessor::expand(
     // If element is an array
     if(element.is_array())
         return expandArrayElement(activeContext, activeProperty, element, baseUrl, fromMap);
-        // 6)
-        // [If] element is a map.
+    // 6)
+    // [If] element is a map.
     else if(element.is_object())
         return expandObjectElement(activeContext, activeProperty, element, baseUrl, propertyScopedContext.get(), fromMap);
-        // 4)
-        // [else] element is a scalar
+    // 4)
+    // [else] element is a scalar
     else
     {
         // 4.1)

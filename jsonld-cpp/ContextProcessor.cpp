@@ -141,17 +141,17 @@ namespace {
             value = { { JsonLdConsts::ID, nullptr} };
         }
 
-            // 8)
-            // Otherwise, if value is a string, convert it to a map consisting of a single entry whose
-            // key is @id and whose value is value. Set simple term to true.
+        // 8)
+        // Otherwise, if value is a string, convert it to a map consisting of a single entry whose
+        // key is @id and whose value is value. Set simple term to true.
         else if (value.is_string()) {
             value = { { JsonLdConsts::ID, value} };
             simpleTerm = true;
         }
 
-            // 9)
-            // Otherwise, value MUST be a map, if not, an invalid term definition error has been
-            // detected and processing is aborted. Set simple term to false.
+        // 9)
+        // Otherwise, value MUST be a map, if not, an invalid term definition error has been
+        // detected and processing is aborted. Set simple term to false.
         else if (!(value.is_object())) {
             throw JsonLdError(JsonLdError::InvalidTermDefinition);
         }
@@ -302,8 +302,8 @@ namespace {
             // retained to be able to detect future redefinitions of this term.
             if(!id.is_null()) {
 
-                // 14.2)
-                // otherwise
+             // 14.2)
+             // otherwise
 
                 // 14.2.1)
                 // If the value associated with the @id entry is not a string, an invalid IRI
@@ -411,7 +411,7 @@ namespace {
         // 16)
         // Otherwise if the term contains a slash (/):
         else if (term.find('/') != std::string::npos) {
-            // 16.1
+            // 16.1)
             // Term is a relative IRI reference.
             assert(JsonLdUtils::isRelativeIri(term));
 
@@ -909,13 +909,13 @@ namespace {
             return activeContext.getVocabularyMapping() + value;
         }
 
-            // 8)
-            // Otherwise, if document relative is true, set value to the result of resolving value
-            // against the base IRI from active context. Only the basic algorithm in section 5.2
-            // of [RFC3986] is used; neither Syntax-Based Normalization nor Scheme-Based Normalization
-            // are performed. Characters additionally allowed in IRI references are treated in the
-            // same way that unreserved characters are treated in URI references, per section 6.5
-            // of [RFC3987].
+        // 8)
+        // Otherwise, if document relative is true, set value to the result of resolving value
+        // against the base IRI from active context. Only the basic algorithm in section 5.2
+        // of [RFC3986] is used; neither Syntax-Based Normalization nor Scheme-Based Normalization
+        // are performed. Characters additionally allowed in IRI references are treated in the
+        // same way that unreserved characters are treated in URI references, per section 6.5
+        // of [RFC3987].
         else if (relative) {
             if(!activeContext.getBaseIri().empty())
                 return JsonLdUrl::resolve(&(activeContext.getBaseIri()), &value);
