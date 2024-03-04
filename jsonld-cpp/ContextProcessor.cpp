@@ -22,7 +22,7 @@ namespace {
 
     Context process(
             const Context & activeContext,
-            const json & localContext,
+            const json & ilocalContext,
             const std::string &baseURL,
             std::vector<std::string> remoteContexts,
             bool overrideProtected,
@@ -934,18 +934,15 @@ namespace {
             const json & ilocalContext,
             const std::string &baseURL,
             std::vector<std::string> remoteContexts,
-            bool ioverrideProtected,
-            bool ipropagate,
-            bool ivalidateScopedContext) {
+            bool overrideProtected,
+            bool propagate,
+            bool validateScopedContext) {
 
         // Comments in this function are labeled with numbers that correspond to sections
         // from the description of the context processing algorithm.
         // See: https://www.w3.org/TR/json-ld11-api/#context-processing-algorithm
 
         std::string originalBaseURL = baseURL;
-        bool overrideProtected = ioverrideProtected;
-        bool propagate = ipropagate;
-        bool validateScopedContext = ivalidateScopedContext;
 
         // 1)
         // Initialize result to the result of cloning active context, with inverse context set to null.
@@ -977,7 +974,6 @@ namespace {
         if (!ilocalContext.is_array())
             localContext = json::array({ilocalContext});
         else {
-            //localContext.insert(ilocalContext.begin(), ilocalContext.end());
             for (const auto& e : ilocalContext) {
                 localContext.push_back(e);
             }
@@ -1411,15 +1407,15 @@ namespace {
 Context
 ContextProcessor::process(
         const Context & activeContext,
-        const json & ilocalContext,
+        const json & localContext,
         const std::string &baseURL,
-        bool ioverrideProtected,
-        bool ipropagate,
-        bool ivalidateScopedContext) {
+        bool overrideProtected,
+        bool propagate,
+        bool validateScopedContext) {
 
     std::vector<std::string> remoteContexts;
-    return ::process(activeContext, ilocalContext, baseURL, remoteContexts,
-                   ioverrideProtected, ipropagate, ivalidateScopedContext);
+    return ::process(activeContext, localContext, baseURL, remoteContexts,
+                   overrideProtected, propagate, validateScopedContext);
 }
 
 std::string ContextProcessor::expandIri(Context & activeContext, std::string value, bool relative, bool vocab) {

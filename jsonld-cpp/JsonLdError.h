@@ -59,8 +59,8 @@ public:
     static const char InvalidIncludedValue[];
     static const char ProtectedTermRedefinition[];
 
-    JsonLdError(const std::string& itype, const nlohmann::ordered_json& idetail);
-    explicit JsonLdError(const std::string& itype);
+    JsonLdError(const std::string& type, const nlohmann::ordered_json& detail);
+    explicit JsonLdError(const std::string& type);
 
     const char* what() const noexcept override;
 

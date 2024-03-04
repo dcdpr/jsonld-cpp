@@ -1,7 +1,9 @@
+#include <utility>
+
 #include "jsonld-cpp/MediaType.h"
 
-MediaType::MediaType(const std::string &itype, const std::string &isubType) :
-        type(itype), subType(isubType) {}
+MediaType::MediaType(std::string type, std::string subType) :
+        type(std::move(type)), subType(std::move(subType)) {}
 
 MediaType MediaType::of(const std::string &type, const std::string &subType) {
     return {type, subType};

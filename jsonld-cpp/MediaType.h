@@ -26,7 +26,7 @@ private:
     std::string type;
     std::string subType;
 
-    MediaType(const std::string &itype, const std::string &isubType);
+    MediaType(std::string type, std::string subType);
 };
 
 

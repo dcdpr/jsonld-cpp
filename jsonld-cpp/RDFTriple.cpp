@@ -6,23 +6,23 @@
 
 namespace RDF {
 
-    RDFTriple::RDFTriple(std::shared_ptr<Node> isubject, std::shared_ptr<Node> ipredicate, std::shared_ptr<Node> iobject) {
-        setSubject(std::move(isubject));
-        setPredicate(std::move(ipredicate));
-        setObject(std::move(iobject));
+    RDFTriple::RDFTriple(std::shared_ptr<Node> subject, std::shared_ptr<Node> predicate, std::shared_ptr<Node> object) {
+        setSubject(std::move(subject));
+        setPredicate(std::move(predicate));
+        setObject(std::move(object));
     }
 
-    RDFTriple::RDFTriple(const std::string& isubject, const std::string& ipredicate, const std::string& iobject) {
-        BlankNodeNames::hasFormOfBlankNodeName(isubject) ?
-            setSubject(std::make_shared<BlankNode>(isubject)) :
-            setSubject(std::make_shared<IRI>(isubject));
+    RDFTriple::RDFTriple(const std::string& subject, const std::string& predicate, const std::string& object) {
+        BlankNodeNames::hasFormOfBlankNodeName(subject) ?
+            setSubject(std::make_shared<BlankNode>(subject)) :
+            setSubject(std::make_shared<IRI>(subject));
 
-        setPredicate(std::make_shared<IRI>(ipredicate));
+        setPredicate(std::make_shared<IRI>(predicate));
 
-        BlankNodeNames::hasFormOfBlankNodeName(iobject) ?
-            setObject(std::make_shared<BlankNode>(iobject)) :
-            setObject(std::make_shared<IRI>(iobject));
-            // note: iobject could represent a Literal here, but we can't tell that from the string
+        BlankNodeNames::hasFormOfBlankNodeName(object) ?
+            setObject(std::make_shared<BlankNode>(object)) :
+            setObject(std::make_shared<IRI>(object));
+            // note: object could represent a Literal here, but we can't tell that from the string
             // itself. If a Literal is needed then the shared_ptr form of constructor should be used.
     }
 

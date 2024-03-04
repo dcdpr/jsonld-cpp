@@ -15,15 +15,15 @@ namespace RDF {
         std::shared_ptr<Node> object;
 
     protected:
-        void setSubject(std::shared_ptr<Node> isubject) { subject = std::move(isubject); }
-        void setPredicate(std::shared_ptr<Node> ipredicate) { predicate = std::move(ipredicate); }
-        void setObject(std::shared_ptr<Node> iobject) { object = std::move(iobject); }
+        void setSubject(std::shared_ptr<Node> subject) { this->subject = std::move(subject); }
+        void setPredicate(std::shared_ptr<Node> predicate) { this->predicate = std::move(predicate); }
+        void setObject(std::shared_ptr<Node> object) { this->object = std::move(object); }
 
     public:
 
-        RDFTriple(std::shared_ptr<Node> isubject, std::shared_ptr<Node> ipredicate, std::shared_ptr<Node> iobject);
+        RDFTriple(std::shared_ptr<Node> subject, std::shared_ptr<Node> predicate, std::shared_ptr<Node> object);
 
-        RDFTriple(const std::string& isubject, const std::string& ipredicate, const std::string& iobject);
+        RDFTriple(const std::string& subject, const std::string& predicate, const std::string& object);
 
         RDFTriple(const RDFTriple &rhs);
         RDFTriple(RDFTriple&& rhs) noexcept;

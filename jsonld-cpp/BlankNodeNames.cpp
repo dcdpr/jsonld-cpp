@@ -6,8 +6,8 @@
 
 BlankNodeNames::BlankNodeNames() = default;
 
-BlankNodeNames::BlankNodeNames(std::string iprefix)
-        : prefix(std::move(iprefix)) { }
+BlankNodeNames::BlankNodeNames(std::string prefix)
+        : prefix(std::move(prefix)) { }
 
 std::string BlankNodeNames::get() {
     std::stringstream ss;

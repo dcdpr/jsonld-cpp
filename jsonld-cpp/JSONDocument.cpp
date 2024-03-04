@@ -4,8 +4,8 @@
 #include <utility>
 #include <sstream>
 
-JSONDocument::JSONDocument(MediaType icontentType, nlohmann::ordered_json idocument, std::string idocumentUrl)
-        : contentType(std::move(icontentType)), documentUrl(std::move(idocumentUrl)), document(std::move(idocument))
+JSONDocument::JSONDocument(MediaType contentType, nlohmann::ordered_json document, std::string documentUrl)
+        : contentType(std::move(contentType)), documentUrl(std::move(documentUrl)), document(std::move(document))
 {
 }
 

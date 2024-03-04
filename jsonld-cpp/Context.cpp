@@ -23,8 +23,8 @@ json Context::getTermDefinition(const std::string & key) const {
 }
 
 
-Context::Context(const JsonLdOptions& ioptions)
-        : options(ioptions)
+Context::Context(const JsonLdOptions& options)
+        : options(options)
 {
     setBaseIri(options.getBase());
     termDefinitions = json::object();

@@ -6,8 +6,8 @@
 
 namespace RDF {
 
-    RDFDataset::RDFDataset(const JsonLdOptions & ioptions)
-            : options(ioptions) {
+    RDFDataset::RDFDataset(const JsonLdOptions & options)
+            : options(options) {
     }
 
     RDFGraph RDFDataset::getGraph(const std::string & graphName) const {

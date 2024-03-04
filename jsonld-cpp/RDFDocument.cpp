@@ -5,8 +5,8 @@
 #include <utility>
 #include <sstream>
 
-RDFDocument::RDFDocument(MediaType icontentType, RDF::RDFDataset idocument)
-        : contentType(std::move(icontentType)), document(std::move(idocument))
+RDFDocument::RDFDocument(MediaType contentType, RDF::RDFDataset document)
+        : contentType(std::move(contentType)), document(std::move(document))
 {
 }
 
