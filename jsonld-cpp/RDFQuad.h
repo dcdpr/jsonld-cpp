@@ -14,10 +14,6 @@ namespace RDF {
     private:
         std::shared_ptr<RDFQuadImpl> pimpl_;
 
-        std::shared_ptr<Node> graph;
-
-        void setGraph(std::shared_ptr<Node> igraph)  { graph = std::move(igraph); }
-
     public:
 
         RDFQuad(std::shared_ptr<Node> subject, std::shared_ptr<Node> predicate, std::shared_ptr<Node> object,
