@@ -19,22 +19,22 @@ namespace RDFRegex {
 
     extern const std::string QUAD;
 
-    extern const int QUAD_SUBJECT_AS_IRI;
-    extern const int QUAD_SUBJECT_AS_BNODE;
-    extern const int QUAD_PREDICATE;
-    extern const int QUAD_OBJECT_AS_IRI;
-    extern const int QUAD_OBJECT_AS_BNODE;
-    extern const int QUAD_OBJECT_AS_LITERAL;
-    extern const int QUAD_OBJECT_AS_LITERAL_DATATYPE;
-    extern const int QUAD_OBJECT_AS_LITERAL_LANGUAGETAG;
-    extern const int QUAD_GRAPH_AS_IRI;
-    extern const int QUAD_GRAPH_AS_BNODE;
+    extern const std::size_t QUAD_SUBJECT_AS_IRI;
+    extern const std::size_t QUAD_SUBJECT_AS_BNODE;
+    extern const std::size_t QUAD_PREDICATE;
+    extern const std::size_t QUAD_OBJECT_AS_IRI;
+    extern const std::size_t QUAD_OBJECT_AS_BNODE;
+    extern const std::size_t QUAD_OBJECT_AS_LITERAL;
+    extern const std::size_t QUAD_OBJECT_AS_LITERAL_DATATYPE;
+    extern const std::size_t QUAD_OBJECT_AS_LITERAL_LANGUAGETAG;
+    extern const std::size_t QUAD_GRAPH_AS_IRI;
+    extern const std::size_t QUAD_GRAPH_AS_BNODE;
 
     extern const std::string UNICODE_CODEPOINT;
 
-    extern const int UNICODE_CONTROL_CHARS;
-    extern const int UNICODE_BASIC_MULTILINGUAL_PLANE;
-    extern const int UNICODE_HIGHER_PLANE;
+    extern const std::size_t UNICODE_CONTROL_CHARS;
+    extern const std::size_t UNICODE_BASIC_MULTILINGUAL_PLANE;
+    extern const std::size_t UNICODE_HIGHER_PLANE;
 
 }
 

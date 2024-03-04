@@ -32,23 +32,23 @@ namespace RDFRegex {
     const std::string QUAD("^" + WSO + SUBJECT + PREDICATE + OBJECT + GRAPH + WSO + "$");
 
     // These indexes represent the 'capturing group' within the large QUAD regex above
-    const int QUAD_SUBJECT_AS_IRI = 1;
-    const int QUAD_SUBJECT_AS_BNODE = 2;
-    const int QUAD_PREDICATE = 3;
-    const int QUAD_OBJECT_AS_IRI = 4;
-    const int QUAD_OBJECT_AS_BNODE = 5;
-    const int QUAD_OBJECT_AS_LITERAL = 6;
-    const int QUAD_OBJECT_AS_LITERAL_DATATYPE = 7;
-    const int QUAD_OBJECT_AS_LITERAL_LANGUAGETAG = 8;
-    const int QUAD_GRAPH_AS_IRI = 9;
-    const int QUAD_GRAPH_AS_BNODE = 10;
+    const std::size_t QUAD_SUBJECT_AS_IRI = 1;
+    const std::size_t QUAD_SUBJECT_AS_BNODE = 2;
+    const std::size_t QUAD_PREDICATE = 3;
+    const std::size_t QUAD_OBJECT_AS_IRI = 4;
+    const std::size_t QUAD_OBJECT_AS_BNODE = 5;
+    const std::size_t QUAD_OBJECT_AS_LITERAL = 6;
+    const std::size_t QUAD_OBJECT_AS_LITERAL_DATATYPE = 7;
+    const std::size_t QUAD_OBJECT_AS_LITERAL_LANGUAGETAG = 8;
+    const std::size_t QUAD_GRAPH_AS_IRI = 9;
+    const std::size_t QUAD_GRAPH_AS_BNODE = 10;
 
     const std::string UNICODE_CODEPOINT(R"(\u005C(?:([tbnrf\\\"'])|(?:u()" + HEX + "{4}))|(?:U(" + HEX + "{8})))");
 
     // These indexes represent the 'capturing group' within the UNICODE_CODEPOINT regex above
-    const int UNICODE_CONTROL_CHARS = 1;
-    const int UNICODE_BASIC_MULTILINGUAL_PLANE = 2;
-    const int UNICODE_HIGHER_PLANE = 3;
+    const std::size_t UNICODE_CONTROL_CHARS = 1;
+    const std::size_t UNICODE_BASIC_MULTILINGUAL_PLANE = 2;
+    const std::size_t UNICODE_HIGHER_PLANE = 3;
 
 }
 
