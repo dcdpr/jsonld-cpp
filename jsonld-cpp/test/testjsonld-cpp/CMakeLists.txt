@@ -20,6 +20,10 @@ add_library(
     TestCaseOptions.h
 )
 
+# These do not seem to be inherited from the jsonld-cpp::jsonld-cpp dependency, perhaps
+# because there is conflict from properties in other dependencies? Set it here to be sure.
+set_target_properties(libjsonld-cpp_test PROPERTIES CXX_EXTENSIONS OFF)
+
 target_link_libraries(
     libjsonld-cpp_test
     jsonld-cpp::jsonld-cpp
@@ -48,8 +52,10 @@ add_executable(
     test_UriParser.cpp
 )
 
-target_compile_features(UnitTests_jsonld-cpp PRIVATE cxx_std_11)
+# These do not seem to be inherited from the jsonld-cpp::jsonld-cpp dependency, perhaps
+# because there is conflict from properties in other dependencies? Set it here to be sure.
 set_target_properties(UnitTests_jsonld-cpp PROPERTIES CXX_EXTENSIONS OFF)
+
 target_compile_definitions(UnitTests_jsonld-cpp PUBLIC TEST_RESOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/")
 
 target_link_libraries(UnitTests_jsonld-cpp PUBLIC libjsonld-cpp_test )
@@ -69,8 +75,10 @@ foreach(ALGO ${ALGORITHMS})
         test_JsonLdProcessor_${ALGO}.cpp
     )
 
-    target_compile_features(UnitTests_JsonLdProcessor_${ALGO}_jsonld-cpp PRIVATE cxx_std_11)
+    # These do not seem to be inherited from the jsonld-cpp::jsonld-cpp dependency, perhaps
+    # because there is conflict from properties in other dependencies? Set it here to be sure.
     set_target_properties(UnitTests_JsonLdProcessor_${ALGO}_jsonld-cpp PROPERTIES CXX_EXTENSIONS OFF)
+
     target_compile_definitions(UnitTests_JsonLdProcessor_${ALGO}_jsonld-cpp PUBLIC TEST_RESOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/")
 
     target_link_libraries(UnitTests_JsonLdProcessor_${ALGO}_jsonld-cpp libjsonld-cpp_test)

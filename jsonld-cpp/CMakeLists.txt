@@ -8,7 +8,6 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 project(jsonld-cpp-library VERSION ${JSONLDCPP_VERSION}
         LANGUAGES CXX )
 
-set(CMAKE_CXX_STANDARD 11)
 include(GNUInstallDirs)
 
 find_package(uriparser 0.9.5 CONFIG REQUIRED char wchar_t)
@@ -101,7 +100,7 @@ target_link_libraries(jsonld-cpp PUBLIC uriparser::uriparser)
 
 # Misc properties
 
-target_compile_features(jsonld-cpp PRIVATE cxx_std_11)
+target_compile_features(jsonld-cpp PUBLIC cxx_std_14)
 set_target_properties(jsonld-cpp PROPERTIES CXX_EXTENSIONS OFF)
 
 # Set version

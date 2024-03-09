@@ -9,7 +9,6 @@ add_executable(jsonld2rdf jsonld2rdf.cpp)
 
 # Misc properties
 
-target_compile_features(jsonld2rdf PRIVATE cxx_std_11)
 set_target_properties(jsonld2rdf PROPERTIES CXX_EXTENSIONS OFF)
 
 # Set version

@@ -23,7 +23,7 @@ add_executable(
 target_compile_features(
     implementation-report
     PRIVATE
-    cxx_std_11
+    cxx_std_14
 )
 set_target_properties(
     implementation-report
