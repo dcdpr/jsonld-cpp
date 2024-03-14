@@ -2,7 +2,6 @@ include(CTest)
 
 
 add_subdirectory(testjsonld-cpp)
-add_subdirectory(implementation-report)
 
 if(JSONLDCPP_BUILD_GOOGLETEST)
   # Turn off some warnings to silence issues coming from googletest code
