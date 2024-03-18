@@ -3,6 +3,8 @@
 
 std::string JsonLdUrl::resolve(const std::string *baseUri, const std::string *pathToResolve) {
     if (baseUri == nullptr) {
+        if(pathToResolve == nullptr)
+            return "";
         return *pathToResolve;
     }
     if (pathToResolve == nullptr || pathToResolve->empty()) {
