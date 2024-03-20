@@ -1,6 +1,8 @@
 #include "TestCase.h"
+
 #include <jsonld-cpp/FileLoader.h>
 #include <jsonld-cpp/JsonLdConsts.h>
+
 #include "UriBaseRewriter.h"
 #include "TestCaseOptions.h"
 
@@ -13,7 +15,7 @@ namespace {
 
 }
 
-TestCase::TestCase(const std::string &itestsBase) : testsBase(itestsBase) {}
+TestCase::TestCase(const std::string &testsBase) : testsBase(testsBase) {}
 
 TestCase TestCase::create(
         nlohmann::json manifestEntry,

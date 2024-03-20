@@ -1,5 +1,7 @@
-#include "jsonld-cpp/UriParser.h"
+#include "jsonld-cpp/detail/UriParser.h"
+
 #include <uriparser/Uri.h>
+
 
 class UriParserImpl {
 public:

@@ -1,5 +1,5 @@
 #pragma ide diagnostic ignored "cert-err58-cpp"
-#include <jsonld-cpp/RDFRegex.h>
+#include <jsonld-cpp/detail/RDFRegex.h>
 #include <regex>
 
 #include <gtest/gtest.h>

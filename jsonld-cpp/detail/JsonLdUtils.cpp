@@ -1,10 +1,13 @@
-#include "jsonld-cpp/JsonLdUtils.h"
-#include "jsonld-cpp/JsonLdConsts.h"
-#include "jsonld-cpp/RDFRegex.h"
-#include "jsonld-cpp/Uri.h"
-#include "jsonld-cpp/BlankNodeNames.h"
+#include "jsonld-cpp/detail/JsonLdUtils.h"
+
 #include <set>
 #include <regex>
+#include <algorithm>
+
+#include "jsonld-cpp/JsonLdConsts.h"
+#include "jsonld-cpp/detail/RDFRegex.h"
+#include "jsonld-cpp/detail/Uri.h"
+#include "jsonld-cpp/BlankNodeNames.h"
 
 using json = nlohmann::ordered_json;
 using namespace JsonLdConsts;

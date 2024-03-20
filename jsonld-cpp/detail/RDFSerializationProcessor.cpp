@@ -1,13 +1,19 @@
-#include "jsonld-cpp/RDFSerializationProcessor.h"
+#include "jsonld-cpp/detail/RDFSerializationProcessor.h"
+
+#include <vector>
+#include <cmath>
+#include <iostream>
+#include <sstream>
+#include <memory>
+#include <algorithm>
+
 #include "jsonld-cpp/JsonLdOptions.h"
 #include "jsonld-cpp/RDFDataset.h"
 #include "jsonld-cpp/BlankNodeNames.h"
-#include "jsonld-cpp/JsonLdUtils.h"
+#include "jsonld-cpp/detail/JsonLdUtils.h"
 #include "jsonld-cpp/JsonLdError.h"
-#include "jsonld-cpp/DoubleFormatter.h"
-#include "jsonld-cpp/WellFormed.h"
-#include <cmath>
-#include <iostream>
+#include "jsonld-cpp/detail/DoubleFormatter.h"
+#include "jsonld-cpp/detail/WellFormed.h"
 
 using json = nlohmann::ordered_json;
 
@@ -432,7 +438,6 @@ namespace {
 
         // 1)
         // If item is a node object and the value of its @id entry is not well-formed, return null.
-        // todo: better detection of node object
         if (JsonLdUtils::isObject(item) && !JsonLdUtils::isListObject(item) && !JsonLdUtils::isValueObject(item)) {
             std::string id = item[JsonLdConsts::ID].get<std::string>();
             if (!WellFormed::blankNodeIdentifier(id) && !WellFormed::iri(id)) {

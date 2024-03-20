@@ -1,9 +1,12 @@
 #include "jsonld-cpp/RDFDocument.h"
+
+#include <iterator>
+#include <sstream>
+#include <utility>
+
 #include "jsonld-cpp/NQuadsSerialization.h"
 #include "jsonld-cpp/JsonLdError.h"
-#include <fstream>
-#include <utility>
-#include <sstream>
+
 
 RDFDocument::RDFDocument(MediaType contentType, RDF::RDFDataset document)
         : contentType(std::move(contentType)), document(std::move(document))
@@ -45,7 +48,7 @@ RDFDocument RDFDocument::of(const MediaType& contentType, std::istream &in) {
         lines.push_back(line);
     std::sort(lines.begin(), lines.end());
     std::stringstream result;
-    copy(lines.begin(), lines.end(), std::ostream_iterator<std::string>(result, "\n"));
+    std::copy(lines.begin(), lines.end(), std::ostream_iterator<std::string>(result, "\n"));
     // parse tmp string into an RDFDataset
     RDF::RDFDataset dataset = NQuadsSerialization::parse(result.str());
     return {contentType, dataset};

@@ -1,5 +1,5 @@
 #include "jsonld-cpp/JsonLdUrl.h"
-#include "jsonld-cpp/Uri.h"
+#include "jsonld-cpp/detail/Uri.h"
 
 std::string JsonLdUrl::resolve(const std::string *baseUri, const std::string *pathToResolve) {
     if (baseUri == nullptr) {

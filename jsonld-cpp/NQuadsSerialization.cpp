@@ -1,9 +1,4 @@
 #include "jsonld-cpp/NQuadsSerialization.h"
-#include "jsonld-cpp/RDFQuad.h"
-#include "jsonld-cpp/RDFTriple.h"
-#include "jsonld-cpp/RDFDataset.h"
-#include "jsonld-cpp/RDFRegex.h"
-#include "jsonld-cpp/JsonLdError.h"
 
 #include <string>
 #include <sstream>
@@ -11,6 +6,13 @@
 #include <iomanip>
 #include <regex>
 #include <iostream>
+
+#include "jsonld-cpp/RDFQuad.h"
+#include "jsonld-cpp/RDFTriple.h"
+#include "jsonld-cpp/RDFDataset.h"
+#include "jsonld-cpp/detail/RDFRegex.h"
+#include "jsonld-cpp/JsonLdError.h"
+
 
 using namespace RDFRegex;
 

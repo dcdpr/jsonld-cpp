@@ -6,6 +6,7 @@
 
 class RemoteDocument;
 
+
 class DocumentLoader {
 public:
     DocumentLoader() = default;

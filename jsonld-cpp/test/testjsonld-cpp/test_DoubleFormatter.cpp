@@ -1,5 +1,5 @@
 #pragma ide diagnostic ignored "cert-err58-cpp"
-#include <jsonld-cpp/DoubleFormatter.h>
+#include <jsonld-cpp/detail/DoubleFormatter.h>
 
 #include <gtest/gtest.h>
 #pragma clang diagnostic push

@@ -1,9 +1,11 @@
 #ifndef LIBJSONLD_CPP_RDFTRIPLE_H
 #define LIBJSONLD_CPP_RDFTRIPLE_H
 
-#include "jsonld-cpp/RDFNode.h"
 #include <memory>
 #include <string>
+#include <utility>
+
+#include "jsonld-cpp/RDFNode.h"
 
 
 namespace RDF {

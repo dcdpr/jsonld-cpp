@@ -1,11 +1,11 @@
 #include "jsonld-cpp/JsonLdProcessor.h"
 #include "jsonld-cpp/JsonLdError.h"
-#include "jsonld-cpp/Context.h"
+#include "jsonld-cpp/detail/Context.h"
 #include "jsonld-cpp/RDFDataset.h"
-#include "jsonld-cpp/ExpansionProcessor.h"
-#include "jsonld-cpp/RDFSerializationProcessor.h"
+#include "jsonld-cpp/detail/ExpansionProcessor.h"
+#include "jsonld-cpp/detail/RDFSerializationProcessor.h"
 #include "jsonld-cpp/RemoteDocument.h"
-#include "jsonld-cpp/ContextProcessor.h"
+#include "jsonld-cpp/detail/ContextProcessor.h"
 
 using RDF::RDFDataset;
 using json = nlohmann::ordered_json;

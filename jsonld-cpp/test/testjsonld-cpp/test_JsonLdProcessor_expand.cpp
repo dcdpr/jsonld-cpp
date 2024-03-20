@@ -1,7 +1,9 @@
 #pragma ide diagnostic ignored "cert-err58-cpp"
-#include <jsonld-cpp/JsonLdError.h>
 #include <jsonld-cpp/JsonLdProcessor.h>
+
+#include <jsonld-cpp/JsonLdError.h>
 #include <jsonld-cpp/RemoteDocument.h>
+
 #include "ManifestLoader.h"
 
 #include <gtest/gtest.h>

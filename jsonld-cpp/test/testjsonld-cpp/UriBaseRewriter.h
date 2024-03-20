@@ -1,6 +1,8 @@
 #ifndef LIBJSONLD_CPP_URIBASEREWRITER_H
 #define LIBJSONLD_CPP_URIBASEREWRITER_H
 
+#include <memory>
+#include <string>
 
 #include <jsonld-cpp/DocumentLoader.h>
 
@@ -11,11 +13,11 @@
 class UriBaseRewriter : public DocumentLoader {
 public:
 
-    UriBaseRewriter(const std::string &sourceBase, const std::string &targetBase,
+    UriBaseRewriter(std::string sourceBase, std::string targetBase,
                     std::unique_ptr<DocumentLoader> loader);
 
-    UriBaseRewriter(const UriBaseRewriter & other);             // copy constructor
-    UriBaseRewriter& operator=(const UriBaseRewriter & other);  // copy assignment
+    UriBaseRewriter(const UriBaseRewriter & other);
+    UriBaseRewriter& operator=(const UriBaseRewriter & other);
 
     std::unique_ptr<RemoteDocument> loadDocument(const std::string &url) override;
 

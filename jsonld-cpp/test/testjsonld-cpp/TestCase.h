@@ -1,12 +1,14 @@
 #ifndef LIBJSONLD_CPP_TESTCASE_H
 #define LIBJSONLD_CPP_TESTCASE_H
 
-#include <jsonld-cpp/jsoninc.h>
-#include "TestCaseOptions.h"
-
 #include <string>
 #include <set>
+
+#include <jsonld-cpp/jsoninc.h>
 #include <jsonld-cpp/JsonLdOptions.h>
+
+#include "TestCaseOptions.h"
+
 
 class TestCase {
 public:

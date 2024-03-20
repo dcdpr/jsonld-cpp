@@ -1,9 +1,10 @@
 #ifndef LIBJSONLD_CPP_RDFQUAD_H
 #define LIBJSONLD_CPP_RDFQUAD_H
 
-#include "jsonld-cpp/RDFNode.h"
 #include <memory>
 #include <string>
+
+#include "jsonld-cpp/RDFNode.h"
 
 
 namespace RDF {

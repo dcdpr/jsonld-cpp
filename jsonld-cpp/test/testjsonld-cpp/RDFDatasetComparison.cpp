@@ -1,8 +1,13 @@
-#include "jsonld-cpp/RDFDatasetComparison.h"
+#include "RDFDatasetComparison.h"
+
+#include <memory>
+#include <vector>
 #include <map>
 #include <set>
 #include <string>
 #include <iostream>
+
+#include <jsonld-cpp/RDFQuad.h>
 
 
 namespace {

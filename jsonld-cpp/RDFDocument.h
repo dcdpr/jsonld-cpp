@@ -1,9 +1,13 @@
 #ifndef LIBJSONLD_CPP_RDFDOCUMENT_H
 #define LIBJSONLD_CPP_RDFDOCUMENT_H
 
-#include "jsonld-cpp/RemoteDocument.h"
-#include "jsonld-cpp/RDFDataset.h"
+#include <string>
+#include <istream>
+
+#include "jsonld-cpp/jsoninc.h"
 #include "jsonld-cpp/MediaType.h"
+#include "jsonld-cpp/RDFDataset.h"
+#include "jsonld-cpp/RemoteDocument.h"
 
 
 class RDFDocument : public RemoteDocument {

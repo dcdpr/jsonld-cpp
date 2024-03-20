@@ -1,10 +1,13 @@
 #ifndef LIBJSONLD_CPP_MANIFESTLOADER_H
 #define LIBJSONLD_CPP_MANIFESTLOADER_H
 
-#include <jsonld-cpp/FileLoader.h>
-#include "TestCase.h"
 #include <string>
 #include <map>
+
+#include <jsonld-cpp/FileLoader.h>
+
+#include "TestCase.h"
+
 
 /**
  * Loads a test manifest file and returns collection of TestCases

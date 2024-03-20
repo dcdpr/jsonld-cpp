@@ -1,12 +1,18 @@
-#include "jsonld-cpp/ExpansionProcessor.h"
-#include "jsonld-cpp/Context.h"
-#include "jsonld-cpp/JsonLdUtils.h"
-#include "jsonld-cpp/JsonLdError.h"
-#include "jsonld-cpp/ContextProcessor.h"
-#include "jsonld-cpp/WellFormed.h"
+#include "jsonld-cpp/detail/ExpansionProcessor.h"
+
 #include <set>
+#include <vector>
 #include <string>
 #include <iostream>
+#include <sstream>
+#include <algorithm>
+#include <memory>
+
+#include "jsonld-cpp/detail/Context.h"
+#include "jsonld-cpp/detail/JsonLdUtils.h"
+#include "jsonld-cpp/JsonLdError.h"
+#include "jsonld-cpp/detail/ContextProcessor.h"
+#include "jsonld-cpp/detail/WellFormed.h"
 
 using json = nlohmann::ordered_json;
 

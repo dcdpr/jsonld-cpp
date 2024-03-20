@@ -1,6 +1,6 @@
 #include "jsonld-cpp/RDFQuad.h"
 #include "jsonld-cpp/RDFTriple.h"
-#include "jsonld-cpp/DoubleFormatter.h"
+#include "jsonld-cpp/detail/DoubleFormatter.h"
 #include "jsonld-cpp/BlankNodeNames.h"
 #include "jsonld-cpp/NQuadsSerialization.h"
 

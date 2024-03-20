@@ -1,11 +1,11 @@
 #ifndef LIBJSONLD_CPP_RDFNODE_H
 #define LIBJSONLD_CPP_RDFNODE_H
 
-#include "jsonld-cpp/jsoninc.h"
 #include <memory>
 #include <string>
 
-// todo: probably need more comments in here
+#include "jsonld-cpp/jsoninc.h"
+
 
 namespace RDF {
 

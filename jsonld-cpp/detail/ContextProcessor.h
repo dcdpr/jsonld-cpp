@@ -1,9 +1,10 @@
 #ifndef LIBJSONLD_CPP_CONTEXTPROCESSOR_H
 #define LIBJSONLD_CPP_CONTEXTPROCESSOR_H
 
-#include "jsonld-cpp/Context.h"
-#include "jsonld-cpp/jsoninc.h"
 #include <string>
+
+#include "jsonld-cpp/detail/Context.h"
+#include "jsonld-cpp/jsoninc.h"
 
 struct ContextProcessor {
 

@@ -1,5 +1,5 @@
 #pragma ide diagnostic ignored "cert-err58-cpp"
-#include <jsonld-cpp/JsonLdUrl.h>
+#include "jsonld-cpp/JsonLdUrl.h"
 
 #include <gtest/gtest.h>
 

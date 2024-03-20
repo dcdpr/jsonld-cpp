@@ -1,13 +1,17 @@
 #include "UriBaseRewriter.h"
-#include "jsonld-cpp/RemoteDocument.h"
+
+#include <jsonld-cpp/RemoteDocument.h>
+
+#include <utility>
+
 
 UriBaseRewriter::UriBaseRewriter(
-        const std::string &isourceBase,
-        const std::string &itargetBase,
-        std::unique_ptr<DocumentLoader> iloader) :
-        sourceBase(isourceBase),
-        targetBase(itargetBase),
-        loader(std::move(iloader)) {}
+        std::string sourceBase,
+        std::string targetBase,
+        std::unique_ptr<DocumentLoader> loader) :
+        sourceBase(std::move(sourceBase)),
+        targetBase(std::move(targetBase)),
+        loader(std::move(loader)) {}
 
 std::unique_ptr<RemoteDocument> UriBaseRewriter::loadDocument(const std::string &url) {
 

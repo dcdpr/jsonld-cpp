@@ -1,6 +1,6 @@
 #pragma ide diagnostic ignored "cert-err58-cpp"
 #include <jsonld-cpp/RDFDataset.h>
-#include <jsonld-cpp/RDFDatasetComparison.h>
+#include "RDFDatasetComparison.h"
 
 #include <gtest/gtest.h>
 #pragma clang diagnostic push

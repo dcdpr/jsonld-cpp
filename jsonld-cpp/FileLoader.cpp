@@ -1,11 +1,13 @@
 #include "jsonld-cpp/FileLoader.h"
+
+#include <sstream>
+#include <fstream>
+
 #include "jsonld-cpp/MediaType.h"
 #include "jsonld-cpp/JsonLdError.h"
 #include "jsonld-cpp/RemoteDocument.h"
 #include "jsonld-cpp/JSONDocument.h"
 #include "jsonld-cpp/RDFDocument.h"
-#include <sstream>
-#include <fstream>
 
 
 namespace {

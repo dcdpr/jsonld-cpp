@@ -1,5 +1,7 @@
-#include "jsonld-cpp/Uri.h"
-#include "jsonld-cpp/UriParser.h"
+#include "jsonld-cpp/detail/Uri.h"
+
+#include "jsonld-cpp/detail/UriParser.h"
+
 
 bool Uri::isUri(const std::string &uri) {
     if(uri.empty())

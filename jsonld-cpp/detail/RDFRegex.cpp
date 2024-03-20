@@ -1,4 +1,4 @@
-#include "jsonld-cpp/RDFRegex.h"
+#include "jsonld-cpp/detail/RDFRegex.h"
 
 namespace {
 

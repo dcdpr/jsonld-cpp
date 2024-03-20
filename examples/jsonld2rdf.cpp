@@ -12,7 +12,6 @@
 #include <jsonld-cpp/JsonLdOptions.h>
 #include <jsonld-cpp/JsonLdProcessor.h>
 #include <jsonld-cpp/RDFDataset.h>
-#include <jsonld-cpp/NQuadsSerialization.h>
 #include <iostream>
 #include <fstream>
 
@@ -49,9 +48,7 @@ int main (int argc, char *argv[]) {
     opts.setDocumentLoader(std::move(loader));
 
     RDF::RDFDataset dataset = JsonLdProcessor::toRDF(fileUri, opts);
-    std::string nquads =  NQuadsSerialization::toNQuads(dataset);
-
-    std::cout << nquads;
+    std::cout << dataset;
     std::flush(std::cout);
 
     return 0;

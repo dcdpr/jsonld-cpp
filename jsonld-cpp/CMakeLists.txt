@@ -16,74 +16,80 @@ find_package(uriparser 0.9.5 CONFIG REQUIRED char wchar_t)
 # Define library target
 
 set(LIB_HEADER_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/Context.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/ContextProcessor.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/DocumentLoader.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/DoubleFormatter.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/ExpansionProcessor.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/FileLoader.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/JSONDocument.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/JsonLdConsts.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/JsonLdError.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/JsonLdOptions.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/JsonLdProcessor.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/JsonLdUrl.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/JsonLdUtils.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/MediaType.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/NQuadsSerialization.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/RDFDataset.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/RDFDatasetComparison.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/RDFDocument.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/RDFNode.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/RDFSerializationProcessor.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/RDFTriple.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/RDFRegex.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/RDFQuad.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/RemoteDocument.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/BlankNodeNames.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/Uri.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/UriParser.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/json.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/jsoninc.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/WellFormed.h
+        BlankNodeNames.h
+        DocumentLoader.h
+        FileLoader.h
+        JSONDocument.h
+        JsonLdConsts.h
+        JsonLdError.h
+        JsonLdOptions.h
+        JsonLdProcessor.h
+        JsonLdUrl.h
+        MediaType.h
+        NQuadsSerialization.h
+        RDFDataset.h
+        RDFDocument.h
+        RDFNode.h
+        RDFQuad.h
+        RDFTriple.h
+        RemoteDocument.h
+        json.hpp
+        jsoninc.h
+)
+
+set(LIB_PRIVATE_HEADER_FILES
+        detail/Context.h
+        detail/ContextProcessor.h
+        detail/DoubleFormatter.h
+        detail/ExpansionProcessor.h
+        detail/JsonLdUtils.h
+        detail/RDFRegex.h
+        detail/RDFSerializationProcessor.h
+        detail/Uri.h
+        detail/UriParser.h
+        detail/WellFormed.h
 )
 
 set(LIB_SOURCE_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/Context.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/ContextProcessor.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/DocumentLoader.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/DoubleFormatter.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/ExpansionProcessor.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/FileLoader.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/JSONDocument.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/JsonLdError.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/JsonLdProcessor.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/JsonLdUrl.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/JsonLdUtils.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/MediaType.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/NQuadsSerialization.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/RDFDataset.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/RDFDatasetComparison.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/RDFDocument.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/RDFNode.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/RDFRegex.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/RDFSerializationProcessor.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/RDFTriple.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/RDFQuad.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/RemoteDocument.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/BlankNodeNames.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/Uri.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/UriParser.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/WellFormed.cpp
+        BlankNodeNames.cpp
+        DocumentLoader.cpp
+        FileLoader.cpp
+        JSONDocument.cpp
+        JsonLdError.cpp
+        JsonLdProcessor.cpp
+        JsonLdUrl.cpp
+        MediaType.cpp
+        NQuadsSerialization.cpp
+        RDFDataset.cpp
+        RDFDocument.cpp
+        RDFNode.cpp
+        RDFQuad.cpp
+        RDFTriple.cpp
+        RemoteDocument.cpp
+        detail/Context.cpp
+        detail/ContextProcessor.cpp
+        detail/DoubleFormatter.cpp
+        detail/ExpansionProcessor.cpp
+        detail/JsonLdUtils.cpp
+        detail/RDFRegex.cpp
+        detail/RDFSerializationProcessor.cpp
+        detail/Uri.cpp
+        detail/UriParser.cpp
+        detail/WellFormed.cpp
 )
 
-add_library(jsonld-cpp STATIC ${LIB_HEADER_FILES} ${LIB_SOURCE_FILES})
+add_library(jsonld-cpp STATIC ${LIB_HEADER_FILES} ${LIB_PRIVATE_HEADER_FILES} ${LIB_SOURCE_FILES})
 add_library(jsonld-cpp::jsonld-cpp ALIAS jsonld-cpp)
 
 
 set_property(
         TARGET jsonld-cpp
-        PROPERTY PUBLIC_HEADER ${LIB_HEADER_FILES} ${LIB_INT_HEADER_FILES}
+        PROPERTY PUBLIC_HEADER ${LIB_HEADER_FILES}
+)
+
+set_property(
+        TARGET jsonld-cpp
+        PROPERTY PRIVATE_HEADER ${LIB_PRIVATE_HEADER_FILES}
 )
 
 # Set include directory

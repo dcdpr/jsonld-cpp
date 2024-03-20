@@ -1,7 +1,9 @@
-#include "jsonld-cpp/Context.h"
+#include "jsonld-cpp/detail/Context.h"
+
+#include <memory>
+
 #include "jsonld-cpp/JsonLdUrl.h"
 #include "jsonld-cpp/RemoteDocument.h"
-#include <memory>
 
 
 using json = nlohmann::ordered_json;

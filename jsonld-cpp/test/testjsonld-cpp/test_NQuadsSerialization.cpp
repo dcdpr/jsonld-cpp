@@ -1,5 +1,5 @@
 #pragma ide diagnostic ignored "cert-err58-cpp"
-#include <jsonld-cpp/NQuadsSerialization.h>
+#include "jsonld-cpp/NQuadsSerialization.h"
 
 #include <gtest/gtest.h>
 #pragma clang diagnostic push

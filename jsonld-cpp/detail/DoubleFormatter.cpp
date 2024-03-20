@@ -1,4 +1,5 @@
-#include "jsonld-cpp/DoubleFormatter.h"
+#include "jsonld-cpp/detail/DoubleFormatter.h"
+
 #include <sstream>
 #include <regex>
 #include <iomanip>

@@ -1,7 +1,7 @@
 #ifndef LIBJSONLD_CPP_RDFDATASETCOMPARISON_H
 #define LIBJSONLD_CPP_RDFDATASETCOMPARISON_H
 
-#include "jsonld-cpp/RDFDataset.h"
+#include <jsonld-cpp/RDFDataset.h>
 
 // Thanks to titanium-json-ld for this class
 

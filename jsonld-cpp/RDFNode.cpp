@@ -1,6 +1,7 @@
 #include "jsonld-cpp/RDFNode.h"
+
 #include "jsonld-cpp/JsonLdConsts.h"
-#include "jsonld-cpp/DoubleFormatter.h"
+#include "jsonld-cpp/detail/DoubleFormatter.h"
 
 
 namespace RDF {

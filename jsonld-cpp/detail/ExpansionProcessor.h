@@ -1,6 +1,8 @@
 #ifndef LIBJSONLD_CPP_EXPANSIONPROCESSOR_H
 #define LIBJSONLD_CPP_EXPANSIONPROCESSOR_H
 
+#include <string>
+
 #include "jsonld-cpp/jsoninc.h"
 
 class Context;
