@@ -3,13 +3,15 @@
 
 // This application reads a jsonld file and, if possible, outputs
 // a normalized RDF dataset in NQuads format. This can then be piped
-// to a hashing utility like sh256sum and used to compare with RDF
+// to a hashing utility like sha256sum and used to compare with RDF
 // generated from other documents.
 
 // Usage: jsonld2rdf <filename>
 
-#include "JsonLdOptions.h"
-#include "JsonLdProcessor.h"
+#include <jsonld-cpp/FileLoader.h>
+#include <jsonld-cpp/JsonLdOptions.h>
+#include <jsonld-cpp/JsonLdProcessor.h>
+#include <jsonld-cpp/RDFDataset.h>
 #include <iostream>
 #include <fstream>
 
@@ -26,18 +28,27 @@ int main (int argc, char *argv[]) {
     }
 
     std::ifstream fsIn { inputFilename };
+
+    if(fsIn.fail()) {
+        std::cout << inputFilename << " not found." << std::endl;
+        return 2;
+    }
+
     std::string inputStr {std::istreambuf_iterator<char>(fsIn), std::istreambuf_iterator<char>() };
+
+    if(inputStr.empty()) {
+        std::cout << inputFilename << " is empty." << std::endl;
+        return 3;
+    }
 
     std::string fileUri = "file://" + inputFilename;
 
-    DocumentLoader dl;
-    dl.addDocumentToCache(fileUri, inputStr);
+    std::unique_ptr<FileLoader> loader(new FileLoader);
     JsonLdOptions opts(fileUri);
-    opts.setDocumentLoader(dl);
+    opts.setDocumentLoader(std::move(loader));
 
-    std::string nquads = JsonLdProcessor::normalize(fileUri, opts);
-
-    std::cout << nquads;
+    RDF::RDFDataset dataset = JsonLdProcessor::toRDF(fileUri, opts);
+    std::cout << dataset;
     std::flush(std::cout);
 
     return 0;

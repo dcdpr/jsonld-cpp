@@ -4,7 +4,22 @@ JSON-LD Implementation for C++
 This is a C++ implementation of JSON-LD (http://json-ld.org)
 
 Development is still in progress--currently it only supports the
-expand(), toRdf() and normalize() functions.
+expand() and toRdf() functions.
+
+jsonld-cpp uses [http-link-header-cpp](https://github.com/danpape/http-link-header-cpp.git)
+and includes it as a submodule.  When cloning, use ```git clone --recursive```
+to include the submodule.  See repo documentation for dependencies.
+
+## Implementation Notes
+
+Some parts of the JSON-LD API spec make note of using Promises to return
+API results. This C++ does not support any Promise-like capability.
+
+The RemoteDocument implementation currently only supports local files, not
+documents from arbitrary URLs.
+
+...?
+
 
 ## Building jsonld-cpp
 
@@ -22,30 +37,27 @@ cmake ..
 make
 ```
 
+You may run into permission issues during the build when the dependencies are
+being installed during the build step.  To install them in the project directory
+instead run cmake with the following command:
+
+```
+cmake .. "-DCMAKE_INSTALL_PREFIX=$(pwd)/install"
+```
+
 You can also run all the tests:
 
 ```
 make test
 ```
 
-### Installing prerequirements
+### Installing prerequisites
 
 If the above doesn't work, you probably need to install some
-prerequirements. For example, on a fresh Debian Stretch system:
+prerequisites. For example, on a fresh Debian Bullseye system:
 
 ```
-$ sudo apt-get install make gcc g++
-```
-
-It is worth getting the latest cmake, so you may want to install that the hard way:
-
-```
-wget https://cmake.org/files/v3.13/cmake-3.16.1.tar.gz
-tar xzf cmake-3.16.1.tar.gz
-cd cmake-3.16.1
-./configure
-make 
-sudo make install
+$ sudo apt-get install make cmake gcc g++ libssl-dev
 ```
 
 Now you can again try to build jsonld-cpp.
@@ -59,12 +71,18 @@ also two example files showing how the normalized RDF could be hashed to
 show that the two documents are equivalent:
 
 ```
-$ ./build/debug/examples/jsonld2rdf examples/ex01a.jsonld | shasum -a 256
+$ ./build/debug/jsonld-cpp-examples-prefix/src/jsonld-cpp-examples-build/jsonld2rdf examples/ex01a.jsonld | shasum -a 256
 cb92d57d8b7abf09e4642338049bd9ee91a0ee0fe327e0a6061a8bbc2f4314bf  -
-$ ./build/debug/examples/jsonld2rdf examples/ex01b.jsonld | shasum -a 256
+$ ./build/debug/jsonld-cpp-examples-prefix/src/jsonld-cpp-examples-build/jsonld2rdf examples/ex01b.jsonld | shasum -a 256
 cb92d57d8b7abf09e4642338049bd9ee91a0ee0fe327e0a6061a8bbc2f4314bf  -
 ```
 
 
+### Debugging
+To include debugging symbols for gdb and compile_commands.json file, run cmake
+with the following arguments:
 
+```
+cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+```
 

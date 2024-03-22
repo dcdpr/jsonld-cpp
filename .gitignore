@@ -35,3 +35,12 @@
 cmake-build-debug
 build
 scratch
+
+# Vim tempfiles
+*.swp
+
+# vm project files
+.vimrc
+
+# gdb files
+.cache/

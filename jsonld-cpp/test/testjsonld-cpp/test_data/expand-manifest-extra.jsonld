@@ -1,0 +1,32 @@
+{
+  "@context": ["context.jsonld", {"@base": "expand-manifest-extra"}],
+  "@id": "",
+  "@type": "mf:Manifest",
+  "name": "Expansion (Extra)",
+  "description": "These tests implement the requirements for the JSON-LD [Expansion Algorithm](https://www.w3.org/TR/json-ld11-api/#expansion-algorithm). They are 'extra' because they were created locally to test specific issues while developing jsonld-cpp.",
+  "baseIri": "https://w3c.github.io/json-ld-api/tests/",
+  "sequence": [
+    {
+      "@id": "#t0300",
+      "@type": ["jld:PositiveEvaluationTest", "jld:ExpandTest"],
+      "name": "@value with @language",
+      "purpose": "Keep expanded values with @language, drop non-conforming value objects containing just @language",
+      "input": "expand/0300-in.jsonld",
+      "expect": "expand/0300-out.jsonld"
+    }, {
+      "@id": "#t0301",
+      "@type": ["jld:PositiveEvaluationTest", "jld:ExpandTest"],
+      "name": "do not remove @graph if not at top-level",
+      "purpose": "@graph used under a node is retained",
+      "input": "expand/0301-in.jsonld",
+      "expect": "expand/0301-out.jsonld"
+    }, {
+      "@id": "#t0302",
+      "@type": ["jld:PositiveEvaluationTest", "jld:ExpandTest"],
+      "name": "Index maps with language mappings",
+      "purpose": "Ensure index maps use language mapping",
+      "input": "expand/0302-in.jsonld",
+      "expect": "expand/0302-out.jsonld"
+    }
+  ]
+}
