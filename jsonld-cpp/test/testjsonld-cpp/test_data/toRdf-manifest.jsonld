@@ -2231,19 +2231,26 @@
       "expectErrorCode": "invalid @prefix value",
       "option": {"specVersion": "json-ld-1.1"}
     }, {
-     "@id": "#ter54",
-     "@type": [ "jld:NegativeEvaluationTest", "jld:ToRDFTest" ],
-     "name": "Invalid value object, multiple values for @type.",
-     "purpose": "The value of @type in a value object MUST be a string or null.",
-     "input": "toRdf/er54-in.jsonld",
-     "expectErrorCode": "invalid typed value"
+      "@id": "#ter54",
+      "@type": [ "jld:NegativeEvaluationTest", "jld:ToRDFTest" ],
+      "name": "Invalid value object, multiple values for @type.",
+      "purpose": "The value of @type in a value object MUST be a string or null.",
+      "input": "toRdf/er54-in.jsonld",
+      "expectErrorCode": "invalid typed value"
     }, {
-     "@id": "#ter55",
-     "@type": [ "jld:NegativeEvaluationTest", "jld:ToRDFTest" ],
-     "name": "Invalid term definition, multiple values for @type.",
-     "purpose": "The value of @type in an expanded term definition object MUST be a string or null.",
-     "input": "toRdf/er55-in.jsonld",
-     "expectErrorCode": "invalid type mapping"
+      "@id": "#ter55",
+      "@type": [ "jld:NegativeEvaluationTest", "jld:ToRDFTest" ],
+      "name": "Invalid term definition, multiple values for @type.",
+      "purpose": "The value of @type in an expanded term definition object MUST be a string or null.",
+      "input": "toRdf/er55-in.jsonld",
+      "expectErrorCode": "invalid type mapping"
+    }, {
+      "@id": "#ter56",
+      "@type": [ "jld:NegativeEvaluationTest", "jld:ToRDFTest" ],
+      "name": "Invalid redefinition of @context keyword.",
+      "purpose": "Verifies that an exception is raised when attempting to redefine @context.",
+      "input": "expand/er56-in.jsonld",
+      "expectErrorCode": "keyword redefinition"
     }, {
       "@id": "#tin01",
       "@type": ["jld:PositiveEvaluationTest", "jld:ToRDFTest"],
@@ -3372,6 +3379,22 @@
       "option": {"specVersion": "json-ld-1.1"},
       "input": "toRdf/pr41-in.jsonld",
       "expect": "toRdf/pr41-out.nq"
+    }, {
+      "@id": "#tpr42",
+      "@type": ["jld:NegativeEvaluationTest", "jld:ToRDFTest"],
+      "name": "Fail if protected flag not retained during redefinition",
+      "purpose": "Check protected redefinition retains protected flag.",
+      "option": {"specVersion": "json-ld-1.1"},
+      "input": "toRdf/pr42-in.jsonld",
+      "expectErrorCode": "protected term redefinition"
+    }, {
+      "@id": "#tpr43",
+      "@type": ["jld:PositiveEvaluationTest", "jld:ToRDFTest"],
+      "name": "Clear protection in @graph @container with null context.",
+      "purpose": "Clear protection in @graph @container with null context.",
+      "option": {"specVersion": "json-ld-1.1"},
+      "input": "toRdf/pr43-in.jsonld",
+      "expect": "toRdf/pr43-out.nq"
     }, {
       "@id": "#trt01",
       "@type": ["jld:PositiveEvaluationTest", "jld:ToRDFTest"],

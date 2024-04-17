@@ -1079,6 +1079,10 @@ TEST_F(JsonLdProcessorExpandTest, expand_ter55) {
     performExpandTestFromManifest("#ter55");
 }
 
+TEST_F(JsonLdProcessorExpandTest, expand_ter56) {
+    performExpandTestFromManifest("#ter56");
+}
+
 TEST_F(JsonLdProcessorExpandTest, expand_tes01) {
     performExpandTestFromManifest("#tes01");
 }
@@ -1589,6 +1593,14 @@ TEST_F(JsonLdProcessorExpandTest, expand_tpr40) {
 
 TEST_F(JsonLdProcessorExpandTest, expand_tpr41) {
     performExpandTestFromManifest("#tpr41");
+}
+
+TEST_F(JsonLdProcessorExpandTest, expand_tpr42) {
+    performExpandTestFromManifest("#tpr42");
+}
+
+TEST_F(JsonLdProcessorExpandTest, expand_tpr43) {
+    performExpandTestFromManifest("#tpr43");
 }
 
 TEST_F(JsonLdProcessorExpandTest, expand_tso01) {
