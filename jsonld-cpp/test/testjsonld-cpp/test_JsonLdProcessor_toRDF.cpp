@@ -1307,6 +1307,10 @@ TEST_F(JsonLdProcessorToRDFTest, toRdf_ter55) {
     performToRDFTestFromManifest("#ter55");
 }
 
+TEST_F(JsonLdProcessorToRDFTest, toRdf_ter56) {
+    performToRDFTestFromManifest("#ter56");
+}
+
 TEST_F(JsonLdProcessorToRDFTest, toRdf_tin01) {
     performToRDFTestFromManifest("#tin01");
 }
@@ -1885,6 +1889,14 @@ TEST_F(JsonLdProcessorToRDFTest, toRdf_tpr40) {
 
 TEST_F(JsonLdProcessorToRDFTest, toRdf_tpr41) {
     performToRDFTestFromManifest("#tpr41");
+}
+
+TEST_F(JsonLdProcessorToRDFTest, toRdf_tpr42) {
+    performToRDFTestFromManifest("#tpr42");
+}
+
+TEST_F(JsonLdProcessorToRDFTest, toRdf_tpr43) {
+    performToRDFTestFromManifest("#tpr43");
 }
 
 TEST_F(JsonLdProcessorToRDFTest, toRdf_trt01) {
