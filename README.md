@@ -4,8 +4,8 @@ JSON-LD Implementation for C++
 This is a C++ implementation of JSON-LD 1.1 Processing Algorithms and API (http://json-ld.org)
 
 Development is still in progress--this library currently only supports the
-```[expand()](https://www.w3.org/TR/json-ld11-api/#expansion-algorithm)``` and
-```[toRdf()](https://www.w3.org/TR/json-ld11-api/#deserialize-json-ld-to-rdf-algorithm)```
+[```expand()```](https://www.w3.org/TR/json-ld11-api/#expansion-algorithm) and
+[```toRdf()```](https://www.w3.org/TR/json-ld11-api/#deserialize-json-ld-to-rdf-algorithm)
 processing algorithms.
 
 ## Implementation Notes
